@@ -11,14 +11,22 @@ def get_sucursal(db: Session, sucursal_id: int):
         raise HTTPException(status_code=404, detail="Sucursal no encontrada")
     return sucursal
 
-def create_sucursal(db: Session, nombre: str, zona: str, direccion: str, superficie: str):
+def create_sucursal(db: Session, nombre: str, zona: str, direccion: str, superficie: str, current_entity: dict):
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    if current_entity["type"] != "usuario":
+        raise HTTPException(status_code=403, detail="No tienes permisos")
     db_sucursal = Sucursal(nombre=nombre, zona=zona, direccion=direccion, superficie=superficie)
     db.add(db_sucursal)
     db.commit()
     db.refresh(db_sucursal)
     return db_sucursal
 
-def update_sucursal(db: Session, sucursal_id: int, nombre: str = None, zona: str = None, direccion: str = None, superficie: str = None):
+def update_sucursal(db: Session, sucursal_id: int, nombre: str = None, zona: str = None, direccion: str = None, superficie: str = None, current_entity: dict = None):
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    if current_entity["type"] != "usuario":
+        raise HTTPException(status_code=403, detail="No tienes permisos")
     db_sucursal = db.query(Sucursal).filter(Sucursal.id == sucursal_id).first()
     if not db_sucursal:
         raise HTTPException(status_code=404, detail="Sucursal no encontrada")
@@ -35,7 +43,11 @@ def update_sucursal(db: Session, sucursal_id: int, nombre: str = None, zona: str
     db.refresh(db_sucursal)
     return db_sucursal
 
-def delete_sucursal(db: Session, sucursal_id: int):
+def delete_sucursal(db: Session, sucursal_id: int, current_entity: dict):
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    if current_entity["type"] != "usuario":
+        raise HTTPException(status_code=403, detail="No tienes permisos")
     db_sucursal = db.query(Sucursal).filter(Sucursal.id == sucursal_id).first()
     if not db_sucursal:
         raise HTTPException(status_code=404, detail="Sucursal no encontrada")
