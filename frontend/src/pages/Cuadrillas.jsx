@@ -4,6 +4,7 @@ import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import CuadrillaForm from '../components/CuadrillaForm';
 import { getCuadrillas, deleteCuadrilla } from '../services/cuadrillaService';
 import { AuthContext } from '../context/AuthContext';
+import { FaPlus } from 'react-icons/fa';
 
 const Cuadrillas = () => {
   const { currentEntity } = useContext(AuthContext);
@@ -58,13 +59,14 @@ const Cuadrillas = () => {
 
   return (
     <Container className="mt-4">
-      <Row className="mb-3">
+      <Row className="align-items-center mb-2">
         <Col>
           <h2>Gestión de Cuadrillas</h2>
         </Col>
         <Col className="text-end">
-          <Button variant="primary" onClick={() => setShowForm(true)}>
-            Crear Cuadrilla
+          <Button className="custom-button" onClick={() => setShowForm(true)}>
+            <FaPlus />
+            Agregar
           </Button>
         </Col>
       </Row>

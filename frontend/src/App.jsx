@@ -15,7 +15,13 @@ const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
   const { currentEntity, loading } = React.useContext(AuthContext);
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    );
   }
 
   if (!currentEntity) {

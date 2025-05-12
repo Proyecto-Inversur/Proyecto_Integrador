@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { createUser, updateUser } from '../services/userService';
+import '../styles/formularios.css';
 
 const UserForm = ({ user, onClose }) => {
   const [formData, setFormData] = useState({
@@ -84,12 +85,13 @@ const UserForm = ({ user, onClose }) => {
               value={formData.rol}
               onChange={handleChange}
               required
+              className='form-select'
             >
               <option value="Administrador">Administrador</option>
               <option value="Encargado de Mantenimiento">Encargado de Mantenimiento</option>
             </Form.Select>
           </Form.Group>
-          <Button variant="primary" type="submit">
+          <Button className="custom-save-button" type="submit">
             Guardar
           </Button>
         </Form>

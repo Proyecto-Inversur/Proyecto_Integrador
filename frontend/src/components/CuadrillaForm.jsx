@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Form, InputGroup, Dropdown, FormControl } from 'react-bootstrap';
 import { createCuadrilla, updateCuadrilla } from '../services/cuadrillaService';
 import { getZonas, createZona, deleteZona } from '../services/zonaService';
+import { FaPlus } from 'react-icons/fa';
+import '../styles/formularios.css';
 
 const CuadrillaForm = ({ cuadrilla, onClose }) => {
   const [formData, setFormData] = useState({
@@ -72,18 +74,12 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
     }
   };
 
-  const handleDeleteZona = async (id, e) => {
-    e.stopPropagation();
-    console.log('Intentando eliminar zona con ID:', id); // Debug: verificar ID
-    if (!id) {
-      setError('ID de zona no válido.');
-      return;
-    }
+  const handleDeleteZona = async (id) => {
     try {
       await deleteZona(id);
       setZonas(zonas.filter((zona) => zona.id !== id));
       if (formData.zona === zonas.find((z) => z.id === id)?.nombre) {
-        setFormData({ ...formData, zona: '' });
+        setFormData({ ...formData, zona: null });
       }
       setError(null);
     } catch (error) {
@@ -137,34 +133,42 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
           <Form.Group className="mb-3" controlId="zona">
             <Form.Label className="required required-asterisk">Zona</Form.Label>
             <Dropdown show={dropdownOpen} onToggle={toggleDropdown} ref={dropdownRef}>
-              <FormControl
-                name="zona"
-                value={formData.zona}
-                onChange={(e) => setFormData({ ...formData, zona: e.target.value })}
-                placeholder="Seleccione una zona"
-                readOnly
-                onClick={toggleDropdown}
-                required
-              />
-              <Dropdown.Menu style={{ width: '100%' }}>
+              <Dropdown.Toggle
+                id="dropdown-zona"
+                className="custom-dropdown-toggle"
+              >
+                {formData.zona || 'Seleccione una zona'}
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="w-100">
                 {zonas.map((zona) => (
                   <Dropdown.Item
                     key={zona.id}
+                    as="div"
+                    className="custom-dropdown-item"
                     onClick={() => handleZonaSelect(zona.nombre)}
-                    className="custom-option"
                   >
-                    <span>{zona.nombre}</span>
+                    <span
+                      className="custom-dropdown-item-span"
+                    >
+                      {zona.nombre}
+                    </span>
                     <Button
-                      variant="outline-danger"
                       size="sm"
-                      onClick={(e) => handleDeleteZona(zona.id, e)}
+                      className="custom-delete-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteZona(zona.id);
+                      }}
                     >
                       ×
                     </Button>
                   </Dropdown.Item>
                 ))}
-                <Dropdown.Item onClick={() => handleZonaSelect('new')}>
-                  Agregar nueva zona...
+                <Dropdown.Item
+                  onClick={() => handleZonaSelect('new')}
+                  className="custom-dropdown-item-add"
+                >
+                  <span className="custom-dropdown-item-add-span"><FaPlus /></span> Agregar nueva zona...
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
@@ -177,7 +181,7 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
                   placeholder="Escriba la nueva zona"
                 />
                 <Button
-                  variant="outline-primary"
+                  className="custom-add-button"
                   onClick={handleNewZonaSubmit}
                   disabled={!newZona.trim()}
                 >
@@ -206,7 +210,7 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
               required={!cuadrilla}
             />
           </Form.Group>
-          <Button variant="primary" type="submit">
+          <Button className="custom-save-button" type="submit">
             Guardar
           </Button>
         </Form>

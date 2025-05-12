@@ -3,6 +3,7 @@ import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import UserForm from '../components/UserForm';
 import { getUsers, deleteUser } from '../services/userService';
 import { AuthContext } from '../context/AuthContext';
+import { FaPlus } from 'react-icons/fa';
 
 const Users = () => {
   const { currentEntity } = useContext(AuthContext);
@@ -56,13 +57,14 @@ const Users = () => {
 
   return (
     <Container className="mt-4">
-      <Row className="mb-3">
+      <Row className="align-items-center mb-2">
         <Col>
           <h2>Gestión de Usuarios</h2>
         </Col>
         <Col className="text-end">
-          <Button variant="primary" onClick={() => setShowForm(true)}>
-            Crear Usuario
+          <Button className="custom-button" onClick={() => setShowForm(true)}>
+            <FaPlus />
+            Agregar
           </Button>
         </Col>
       </Row>
