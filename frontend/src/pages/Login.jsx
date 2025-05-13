@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert, Spinner } from 'react-bootstrap';
+import { AuthContext } from '../context/AuthContext';
 import { auth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from '../services/firebase';
 import { FcGoogle } from 'react-icons/fc';
 import '../styles/login.css';
@@ -12,35 +13,65 @@ const Login = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const googleProvider = new GoogleAuthProvider();
+  const { verifyUser, verifying } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, contrasena);
       const idToken = await userCredential.user.getIdToken();
       localStorage.setItem('authToken', idToken);
-      setError(null);
-      setTimeout(() => {
+      const verificationResult = await verifyUser(userCredential.user, idToken);
+      if (verificationResult.success) {
         navigate('/');
-      }, 5000);
+      } else {
+        setError('Error al verificar el usuario después de múltiples intentos');
+        localStorage.removeItem('authToken');
+      }
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
+      localStorage.removeItem('authToken');
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setError(null);
+
     try {
       const userCredential = await signInWithPopup(auth, googleProvider);
       const idToken = await userCredential.user.getIdToken();
       localStorage.setItem('authToken', idToken);
-      setError(null);
-      setTimeout(() => {
+      const verificationResult = await verifyUser(userCredential.user, idToken);
+      if (verificationResult.success) {
         navigate('/');
-      }, 5000);
+      } else {
+        setError('Error al verificar el usuario después de múltiples intentos');
+        localStorage.removeItem('authToken');
+      }
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión con Google');
+      localStorage.removeItem('authToken');
     }
   };
+
+  if (verifying) {
+    return (
+      <div className="main-bg">
+        <div className="login-container text-c animated flipInX">
+          <div>
+            <img src={logoInversur} alt="Inversur Logo" className="logo" />
+          </div>
+          <div className="container-content d-flex justify-content-center align-items-center min-vh-50">
+            <Spinner animation="border" role="status" style={{ color: 'white' }}>
+              <span className="visually-hidden">Verificando...</span>
+            </Spinner>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="main-bg">
@@ -80,7 +111,6 @@ const Login = () => {
             <FcGoogle size={20} />
             Iniciar Sesión con Google
           </Button>
-
           <p className="margin-t text-whitesmoke">
             <small>Inversur © 2025</small>
           </p>

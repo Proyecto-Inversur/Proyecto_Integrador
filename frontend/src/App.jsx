@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -12,7 +12,7 @@ import Login from './pages/Login';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
-  const { currentEntity, loading } = React.useContext(AuthContext);
+  const { currentEntity, loading } = useContext(AuthContext);
 
   if (loading) {
     return (
@@ -32,7 +32,7 @@ const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
     return <Navigate to="/" replace />;
   }
 
-  if (usersOnly && (currentEntity.type !== 'usuario')) {
+  if (usersOnly && currentEntity.type !== 'usuario') {
     return <Navigate to="/" replace />;
   }
 
@@ -41,53 +41,26 @@ const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
 
 const AppContent = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentEntity, loading } = useContext(AuthContext);
   const isLoginPage = location.pathname === '/login';
+
+  useEffect(() => {
+    if (currentEntity && !loading && isLoginPage) {
+      navigate('/', { replace: true });
+    }
+  }, [currentEntity, loading, isLoginPage, navigate]);
 
   return (
     <div className="d-flex flex-column min-vh-100">
       {!isLoginPage && <Navbar />}
       <main className="flex-grow-1">
         <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute currentEntity>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/mantenimiento"
-            element={
-              <ProtectedRoute currentEntity>
-                <Mantenimiento />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <ProtectedRoute adminOnly>
-                <Users />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/sucursales"
-            element={
-              <ProtectedRoute usersOnly>
-                <Sucursales />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cuadrillas"
-            element={
-              <ProtectedRoute usersOnly>
-                <Cuadrillas />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/mantenimiento" element={<ProtectedRoute><Mantenimiento /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute adminOnly><Users /></ProtectedRoute>} />
+          <Route path="/sucursales" element={<ProtectedRoute usersOnly><Sucursales /></ProtectedRoute>} />
+          <Route path="/cuadrillas" element={<ProtectedRoute usersOnly><Cuadrillas /></ProtectedRoute>} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>
