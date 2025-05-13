@@ -56,7 +56,7 @@ const Users = () => {
   };
 
   return (
-    <Container className="mt-4">
+    <Container className="custom-container">
       <Row className="align-items-center mb-2">
         <Col>
           <h2>Gestión de Usuarios</h2>
@@ -77,7 +77,7 @@ const Users = () => {
           onClose={handleFormClose}
         />
       )}
-
+    <div className="table-responsive">
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -114,6 +114,7 @@ const Users = () => {
           ))}
         </tbody>
       </Table>
+    </div>
     </Container>
   );
 };

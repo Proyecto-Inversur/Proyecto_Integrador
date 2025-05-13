@@ -12,9 +12,9 @@ import os
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_admin(
-        email="2105905@ucc.edu.ar",
-        nombre="Tomas",
-        password="Jimbo132"
+        email="2113461@ucc.edu.ar",
+        nombre="Facundo",
+        password="Facundo2002"
     )
     yield
     pass

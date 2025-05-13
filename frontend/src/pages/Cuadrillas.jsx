@@ -58,7 +58,7 @@ const Cuadrillas = () => {
   };
 
   return (
-    <Container className="mt-4">
+    <Container className="custom-container">
       <Row className="align-items-center mb-2">
         <Col>
           <h2>Gestión de Cuadrillas</h2>
@@ -79,7 +79,7 @@ const Cuadrillas = () => {
           onClose={handleFormClose}
         />
       )}
-
+    <div className="table-responsive">
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -116,6 +116,7 @@ const Cuadrillas = () => {
           ))}
         </tbody>
       </Table>
+    </div>
     </Container>
   );
 };

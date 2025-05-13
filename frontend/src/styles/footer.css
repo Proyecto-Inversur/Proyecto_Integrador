@@ -4,3 +4,26 @@
   width: 100%;
   z-index: 1040;
 }
+
+
+
+ /* Pantallas grandes (PC) */
+  @media (min-width: 768px) {
+  .footer {
+    position: fixed;
+    }
+}
+  
+  /* Ajustes para pantallas pequeñas (móviles) */
+  @media (max-width: 767px) {
+   .footer {
+    position: fixed;
+    }
+  }
+  
+  /* Ajustes para pantallas muy pequeñas */
+  @media (max-width: 400px) {
+   .footer {
+    position: fixed;
+    }
+  }

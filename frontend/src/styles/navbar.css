@@ -53,4 +53,53 @@
     margin-left: auto;
   }
 
+  .custom-navbar {
+  position: fixed !important;
+  }
+
+}
+
+ /* Pantallas grandes (PC) */
+  @media (min-width: 768px) {
+  .custom-nav-links {
+    display: none !important;
+  }
+
+  .icon-container {
+    margin-left: auto;
+  }
+
+  .custom-navbar {
+  position: fixed !important;
+  }
+}
+  
+  /* Ajustes para pantallas pequeñas (móviles) */
+  @media (max-width: 767px) {
+  .custom-nav-links {
+    display: none !important;
+  }
+
+  .icon-container {
+    margin-left: auto;
+  }
+
+  .custom-navbar {
+  position: fixed !important;
+  }
+}
+  
+  /* Ajustes para pantallas muy pequeñas */
+  @media (max-width: 400px) {
+  .custom-nav-links {
+    display: none !important;
+  }
+
+  .icon-container {
+    margin-left: auto;
+  }
+
+  .custom-navbar {
+  position: fixed !important;
+  }
 }
