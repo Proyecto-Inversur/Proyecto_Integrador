@@ -1,19 +1,28 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Image, Modal, Button } from 'react-bootstrap';
 import logoInversur from '../assets/logo_inversur.png';
 import { FaRegBell, FaUser } from 'react-icons/fa';
+import { AuthContext } from '../context/AuthContext';
+import { auth, signOut } from '../services/firebase';
 import '../styles/navbar.css';
 
 const Navbar = () => {
+  const { currentUser, currentEntity } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
 
   const handleShowNotifications = () => setShowNotifications(true);
   const handleCloseNotifications = () => setShowNotifications(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('authToken');
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   const notifications = [
@@ -37,14 +46,30 @@ const Navbar = () => {
          {/* <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />*/}
           {/*<BootstrapNavbar.Collapse id="basic-navbar-nav">*/}
             <Nav className="me-auto custom-nav-links">
-              <Nav.Link /*as={Link} to="/users"*/>Usuarios</Nav.Link>
-              <Nav.Link as={Link} to="/sucursales">Sucursales</Nav.Link>
-              <Nav.Link /*as={Link} to="/cuadrillas"*/>Cuadrillas</Nav.Link>
-              <Nav.Link /*as={Link} to="/preventivos"*/>Preventivos</Nav.Link>
-              <Nav.Link /*as={Link} to="/mantenimientos-preventivos"*/>Mantenimientos Preventivos</Nav.Link>
-              <Nav.Link /*as={Link} to="/mantenimientos-correctivos"*/>Mantenimientos Correctivos</Nav.Link>
-              <Nav.Link /*as={Link} to="/mapas"*/>Mapa</Nav.Link>
-              <Nav.Link /*as={Link} to="/reportes"*/>Reportes</Nav.Link>
+              {currentEntity && currentEntity.type === 'usuario' && currentEntity.data.rol === 'Administrador' && (
+                <>
+                  <Nav.Link as={Link} to="/users">Usuarios</Nav.Link>
+                </>
+              )}
+              {currentEntity && currentEntity.type === 'usuario' && (
+                <>
+                  <Nav.Link as={Link} to="/cuadrillas">Cuadrillas</Nav.Link>
+                  <Nav.Link as={Link} to="/sucursales">Sucursales</Nav.Link>
+                  <Nav.Link /*as={Link} to="/preventivos"*/>Preventivos</Nav.Link>
+                </>
+              )}
+              {currentEntity && (
+                <>
+                  <Nav.Link /*as={Link} to="/mantenimientos-preventivos"*/>Mantenimientos Preventivos</Nav.Link>
+                  <Nav.Link /*as={Link} to="/mantenimientos-correctivos"*/>Mantenimientos Correctivos</Nav.Link>
+                  <Nav.Link /*as={Link} to="/mapas"*/>Mapa</Nav.Link>
+                </>
+              )}
+              {currentEntity && currentEntity.type === 'usuario' && currentEntity.data.rol === 'Administrador' && (
+                <>
+                  <Nav.Link /*as={Link} to="/reportes"*/>Reportes</Nav.Link>
+                </>
+              )}
             </Nav>
             <Nav className="nav-right">
               <Nav.Link onClick={handleShowNotifications}>

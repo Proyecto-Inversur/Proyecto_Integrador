@@ -25,8 +25,8 @@ class Cuadrilla(Base):
     id = Column(Integer, primary_key=True)
     nombre = Column(String)
     zona = Column(String)
-    email = Column(String)
-    contrasena = Column(String)
+    email = Column(String, unique=True, nullable=False)
+    firebase_uid = Column(String, unique=True, nullable=True)  # ID de Firebase
     
     mantenimientos_preventivos = relationship("MantenimientoPreventivo", back_populates="cuadrilla")
     mantenimientos_correctivos = relationship("MantenimientoCorrectivo", back_populates="cuadrilla")
@@ -78,10 +78,10 @@ class Usuario(Base):
     __tablename__ = "usuario"
     id = Column(Integer, primary_key=True)
     nombre = Column(String)
-    email = Column(String)
-    contrasena = Column(String)
+    email = Column(String, unique=True, nullable=False)
     rol = Column(String)
-
+    firebase_uid = Column(String, unique=True, nullable=True)  # ID de Firebase
+    
     reportes = relationship("Reporte", back_populates="usuario")
 
 class Reporte(Base):
