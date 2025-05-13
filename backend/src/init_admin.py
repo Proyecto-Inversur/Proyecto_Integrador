@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from config.database import SessionLocal
 from api.models import Usuario
-from api.schemas import UserCreate, Role
-from services.auth import create_firebase_user
+from api.schemas import Role
 from fastapi import HTTPException
+from firebase_admin import auth
 
 def init_admin(email: str, nombre: str, password: str, rol: Role = Role.ADMIN):
     db: Session = SessionLocal()
@@ -13,17 +13,27 @@ def init_admin(email: str, nombre: str, password: str, rol: Role = Role.ADMIN):
         if existing_admin:
             print(f"Ya existe un administrador: {existing_admin.email}")
             return
-
-        # Crear el usuario administrador
-        user_data = UserCreate(
+        
+        existing_user = auth.get_user_by_email(email)
+        
+        if existing_user:
+            print(f"El usuario ya existe en Firebase: {email}")
+            firebase_uid = existing_user.uid
+        else:
+            firebase_user = auth.create_user(email=email)
+            firebase_uid = firebase_user.uid
+        
+        db_user = Usuario(
             nombre=nombre,
             email=email,
             rol=rol,
-            contrasena=password
+            firebase_uid=firebase_uid
         )
-        # No necesitamos current_entity para la inicialización
-        new_admin = create_firebase_user(user_data, db, current_entity=None)
-        print(f"Administrador creado: {new_admin.email}")
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        
+        print(f"Administrador creado: {email}")
     except HTTPException as e:
         print(f"Error al crear administrador: {e.detail}")
     except Exception as e:
