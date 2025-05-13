@@ -2,7 +2,7 @@ from firebase_admin import auth
 from sqlalchemy.orm import Session
 from api.models import Usuario, Cuadrilla
 from fastapi import HTTPException
-from api.schemas import UserCreate, CuadrillaCreate, Role
+from api.schemas import UserCreate, UserUpdate, CuadrillaCreate, CuadrillaUpdate, Role
 
 def verify_user_token(token: str, db: Session):
     try:
@@ -78,6 +78,58 @@ def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dic
         return db_user
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al crear usuario: {str(e)}")
+    
+def update_firebase_user(user_id: int, user_data: UserUpdate, db: Session, current_entity: dict):
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    if current_entity["type"] != "usuario" or current_entity["data"]["rol"] != Role.ADMIN:
+        raise HTTPException(status_code=403, detail="No tienes permisos de administrador")
+
+    db_user = db.query(Usuario).filter(Usuario.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    try:
+        # Actualizar datos en Firebase si se proporciona un nuevo email
+        if user_data.email and user_data.email != db_user.email:
+            auth.update_user(
+                db_user.firebase_uid,
+                email=user_data.email
+            )
+            db_user.email = user_data.email
+
+        # Actualizar datos en la base de datos local
+        if user_data.nombre is not None:
+            db_user.nombre = user_data.nombre
+        if user_data.rol is not None:
+            db_user.rol = user_data.rol
+
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al actualizar usuario: {str(e)}")
+
+def delete_firebase_user(user_id: int, db: Session, current_entity: dict):
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    if current_entity["type"] != "usuario" or current_entity["data"]["rol"] != Role.ADMIN:
+        raise HTTPException(status_code=403, detail="No tienes permisos de administrador")
+
+    db_user = db.query(Usuario).filter(Usuario.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    try:
+        # Eliminar usuario en Firebase
+        auth.delete_user(db_user.firebase_uid)
+        
+        # Eliminar usuario en la base de datos local
+        db.delete(db_user)
+        db.commit()
+        return {"message": f"Usuario {db_user.email} eliminado correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al eliminar usuario: {str(e)}")
 
 def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, current_entity: dict):
     if not current_entity:
@@ -106,3 +158,55 @@ def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, curr
         return db_cuadrilla
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al crear cuadrilla: {str(e)}")
+
+def update_firebase_cuadrilla(cuadrilla_id: int, cuadrilla_data: CuadrillaUpdate, db: Session, current_entity: dict):
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    if current_entity["type"] != "usuario":
+        raise HTTPException(status_code=403, detail="No tienes permisos")
+
+    db_cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.id == cuadrilla_id).first()
+    if not db_cuadrilla:
+        raise HTTPException(status_code=404, detail="Cuadrilla no encontrada")
+
+    try:
+        # Actualizar datos en Firebase si se proporciona un nuevo email
+        if cuadrilla_data.email and cuadrilla_data.email != db_cuadrilla.email:
+            auth.update_user(
+                db_cuadrilla.firebase_uid,
+                email=cuadrilla_data.email
+            )
+            db_cuadrilla.email = cuadrilla_data.email
+
+        # Actualizar datos en la base de datos local
+        if cuadrilla_data.nombre is not None:
+            db_cuadrilla.nombre = cuadrilla_data.nombre
+        if cuadrilla_data.zona is not None:
+            db_cuadrilla.zona = cuadrilla_data.zona
+
+        db.commit()
+        db.refresh(db_cuadrilla)
+        return db_cuadrilla
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al actualizar cuadrilla: {str(e)}")
+
+def delete_firebase_cuadrilla(cuadrilla_id: int, db: Session, current_entity: dict):
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    if current_entity["type"] != "usuario":
+        raise HTTPException(status_code=403, detail="No tienes permisos")
+
+    db_cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.id == cuadrilla_id).first()
+    if not db_cuadrilla:
+        raise HTTPException(status_code=404, detail="Cuadrilla no encontrada")
+
+    try:
+        # Eliminar cuadrilla en Firebase
+        auth.delete_user(db_cuadrilla.firebase_uid)
+        
+        # Eliminar cuadrilla en la base de datos local
+        db.delete(db_cuadrilla)
+        db.commit()
+        return {"message": f"Cuadrilla {db_cuadrilla.email} eliminada correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error al eliminar cuadrilla: {str(e)}")
