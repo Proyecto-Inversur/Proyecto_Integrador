@@ -41,7 +41,8 @@
   border-color: red !important;
   padding: 0.1rem 0.3rem;
   font-size: 0.8rem;
-  margin-left: 83% !important;
+  position: absolute;
+  left: 90%;
 }
 
 /* Estilo para el Dropdown Item de "Agregar nueva zona" */
@@ -103,4 +104,12 @@
 .form-label.required {
   position: relative;
   padding-right: 15px;
+}
+
+
+@media (max-width: 991px) {
+  .custom-delete-button {
+  position: absolute;
+  left: 90%;
+  }
 }

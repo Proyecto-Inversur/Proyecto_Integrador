@@ -5,6 +5,8 @@
     justify-content: center;
     align-items: flex-start;
     width: 100%;
+    padding-top: 12rem;
+    padding-bottom: 6rem;
   }
   
   /* Contenedor del contenido */
@@ -78,6 +80,7 @@
       width: 4.5rem;
       height: 4.5rem;
     }
+
   }
   
   /* Ajustes para pantallas pequeñas (móviles) */
@@ -99,6 +102,11 @@
       width: 3.5rem;
       height: 3.5rem;
     }
+
+    .home-container{
+      padding-top: 6rem;
+      padding-bottom: 6rem;
+    }
   }
   
   /* Ajustes para pantallas muy pequeñas */
@@ -111,5 +119,10 @@
     .home-button svg {
       width: 3rem;
       height: 3rem;
+    }
+
+    .home-container{
+      padding-top: 8rem;
+      padding-bottom: 8rem;
     }
   }

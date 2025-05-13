@@ -34,8 +34,8 @@ const Navbar = () => {
               className="custom-logo"
             />
           </BootstrapNavbar.Brand>
-          <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
-          <BootstrapNavbar.Collapse id="basic-navbar-nav">
+         {/* <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />*/}
+          {/*<BootstrapNavbar.Collapse id="basic-navbar-nav">*/}
             <Nav className="me-auto custom-nav-links">
               <Nav.Link /*as={Link} to="/users"*/>Usuarios</Nav.Link>
               <Nav.Link as={Link} to="/sucursales">Sucursales</Nav.Link>
@@ -54,7 +54,7 @@ const Navbar = () => {
                 </div>
               </Nav.Link>
             </Nav>
-          </BootstrapNavbar.Collapse>
+          {/*</BootstrapNavbar.Collapse>*/}
         </Container>
       </BootstrapNavbar>
 

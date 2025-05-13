@@ -50,3 +50,12 @@
   display: flex;
   justify-content: flex-end;
 }
+
+body {
+  background: white;
+}
+
+.custom-container{
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
