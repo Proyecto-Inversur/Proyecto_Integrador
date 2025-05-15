@@ -4,6 +4,81 @@ from src.api.models import Usuario, Cuadrilla
 from src.api.schemas import UserCreate, UserUpdate, CuadrillaCreate, CuadrillaUpdate, Role
 from fastapi import HTTPException
 
+def test_verify_user_token_user_success(db_session, mocker):
+    """Test successful verification of a user token"""
+    # Mock Firebase verify_id_token
+    mocker.patch(
+        "firebase_admin.auth.verify_id_token",
+        return_value={"email": "user@test.com", "uid": "test-uid"}
+    )
+
+    # Create a user in the database
+    db_user = Usuario(
+        nombre="Test User",
+        email="user@test.com",
+        rol=Role.ADMIN,
+        firebase_uid=None  # Simulate user without firebase_uid
+    )
+    db_session.add(db_user)
+    db_session.commit()
+
+    # Call verify_user_token
+    result = auth_service.verify_user_token("valid_token", db_session)
+
+    # Assertions
+    assert result["type"] == "usuario"
+    assert result["data"]["id"] == db_user.id
+    assert result["data"]["nombre"] == "Test User"
+    assert result["data"]["email"] == "user@test.com"
+    assert result["data"]["rol"] == Role.ADMIN
+    # Verify firebase_uid was updated
+    db_session.refresh(db_user)
+    assert db_user.firebase_uid == "test-uid"
+
+def test_verify_user_token_cuadrilla_success(db_session, mocker):
+    """Test successful verification of a cuadrilla token"""
+    # Mock Firebase verify_id_token
+    mocker.patch(
+        "firebase_admin.auth.verify_id_token",
+        return_value={"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"}
+    )
+
+    # Create a cuadrilla in the database
+    db_cuadrilla = Cuadrilla(
+        nombre="Test Cuadrilla",
+        email="cuadrilla@test.com",
+        zona="Zona Test",
+        firebase_uid=None  # Simulate cuadrilla without firebase_uid
+    )
+    db_session.add(db_cuadrilla)
+    db_session.commit()
+
+    # Call verify_user_token
+    result = auth_service.verify_user_token("valid_token", db_session)
+
+    # Assertions
+    assert result["type"] == "cuadrilla"
+    assert result["data"]["id"] == db_cuadrilla.id
+    assert result["data"]["nombre"] == "Test Cuadrilla"
+    assert result["data"]["email"] == "cuadrilla@test.com"
+    assert result["data"]["zona"] == "Zona Test"
+    # Verify firebase_uid was updated
+    db_session.refresh(db_cuadrilla)
+    assert db_cuadrilla.firebase_uid == "cuadrilla-uid"
+
+def test_verify_user_token_invalid_token(db_session, mocker):
+    """Test token verification with invalid token"""
+    # Mock Firebase verify_id_token to raise an exception
+    mocker.patch(
+        "firebase_admin.auth.verify_id_token",
+        side_effect=Exception("Invalid token")
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        auth_service.verify_user_token("invalid_token", db_session)
+    assert exc.value.status_code == 401
+    assert "Token inválido" in exc.value.detail
+
 def test_create_firebase_user(db_session, mocker):
     """Test creating a user with admin permissions"""
     # Mock Firebase create_user
