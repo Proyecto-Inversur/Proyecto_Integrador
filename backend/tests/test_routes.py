@@ -17,7 +17,10 @@ def test_routes_registered():
     """ Verifica que se registraron los routers principales """
     expected_routes = [
         "/sucursales",
-        "/zonas"
+        "/zonas",
+        "/users",
+        "/cuadrillas",
+        "/auth"
     ]
 
     app_routes = [route.path for route in app.routes]

@@ -1,20 +1,13 @@
 import pytest
 from fastapi.testclient import TestClient
 from src.api.routes import app
-from src.config.database import SessionLocal
 
 client = TestClient(app)
-
-def override_get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 app.dependency_overrides = {}
 
 def test_create_sucursal():
+    """Test creating a sucursal"""
     response = client.post("/sucursales/", json={
         "nombre": "Sucursal Controller",
         "zona": "Zona Controller",
@@ -24,14 +17,29 @@ def test_create_sucursal():
     assert response.status_code == 200
     data = response.json()
     assert data["nombre"] == "Sucursal Controller"
+    assert data["zona"] == "Zona Controller"
+    assert data["direccion"] == "Dirección Controller"
+    assert data["superficie"] == "80m2"
     assert "id" in data
 
 def test_listar_sucursales():
+    """Test listing all sucursales"""
+    # Primero creamos
+    client.post("/sucursales/", json={
+        "nombre": "Sucursal para GET",
+        "zona": "Zona GET",
+        "direccion": "Dirección GET",
+        "superficie": "85m2"
+    })
+    
     response = client.get("/sucursales/")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) >= 1
 
 def test_get_sucursal():
+    """Test retrieving a single sucursal by ID"""
     # Primero creamos
     post_response = client.post("/sucursales/", json={
         "nombre": "Sucursal para GET",
@@ -47,6 +55,7 @@ def test_get_sucursal():
     assert get_response.json()["id"] == sucursal_id
 
 def test_update_sucursal():
+    """Test updating a sucursal"""
     # Crear
     post_response = client.post("/sucursales/", json={
         "nombre": "Sucursal para UPDATE",
@@ -67,6 +76,7 @@ def test_update_sucursal():
     assert put_response.json()["nombre"] == "Sucursal Actualizada"
 
 def test_delete_sucursal():
+    """Test deleting a sucursal"""
     # Crear
     post_response = client.post("/sucursales/", json={
         "nombre": "Sucursal para DELETE",

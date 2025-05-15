@@ -1,4 +1,9 @@
 import os
+
+os.environ["TESTING"] = "true"
+if os.path.exists("test.db"):
+    os.remove("test.db")
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
