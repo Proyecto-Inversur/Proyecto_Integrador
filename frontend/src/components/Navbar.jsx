@@ -72,7 +72,7 @@ const Navbar = () => {
               )}
             </Nav>
             <Nav className="nav-right">
-              <Nav.Link onClick={handleShowNotifications}>
+              <Nav.Link onClick={handleShowNotifications} aria-label="Notificaciones">
                 <div className="icon-container">
                   <FaUser size={22} className="icon-user" />
                   <FaRegBell size={14} className="icon-bell" />
