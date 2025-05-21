@@ -1,17 +1,17 @@
 import React from 'react';
-import { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Form, InputGroup, Dropdown, FormControl } from 'react-bootstrap';
+import { useState, useEffect, useRef, useContext } from 'react';
+import { Modal, Button, Form, InputGroup, Dropdown, Alert } from 'react-bootstrap';
 import { createCuadrilla, updateCuadrilla } from '../services/cuadrillaService';
 import { getZonas, createZona, deleteZona } from '../services/zonaService';
+import { AuthContext } from '../context/AuthContext';
+import { FcGoogle } from 'react-icons/fc';
 import { FaPlus } from 'react-icons/fa';
 import '../styles/formularios.css';
 
 const CuadrillaForm = ({ cuadrilla, onClose }) => {
   const [formData, setFormData] = useState({
-    nombre: null,
-    zona: null,
-    email: null,
-    contrasena: null,
+    nombre: '',
+    zona: '',
   });
   const [zonas, setZonas] = useState([]);
   const [newZona, setNewZona] = useState('');
@@ -19,12 +19,12 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [error, setError] = useState(null);
   const dropdownRef = useRef(null);
+  const { signInWithGoogleForRegistration } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchZonas = async () => {
       try {
         const response = await getZonas();
-        console.log('Zonas cargadas:', response.data); // Debug: inspeccionar datos
         setZonas(response.data);
       } catch (error) {
         console.error('Error fetching zonas:', error);
@@ -37,8 +37,6 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
       setFormData({
         nombre: cuadrilla.nombre || null,
         zona: cuadrilla.zona || null,
-        email: cuadrilla.email || null,
-        contrasena: null,
       });
     }
   }, [cuadrilla]);
@@ -95,13 +93,19 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
       if (cuadrilla) {
         await updateCuadrilla(cuadrilla.id, formData);
       } else {
-        await createCuadrilla(formData);
+        const { idToken, email } = await signInWithGoogleForRegistration();
+        const payload = { ...formData, email, id_token: idToken };
+        await createCuadrilla(payload);
       }
       onClose();
     } catch (error) {
       console.error('Error saving cuadrilla:', error);
-      setError('Error al guardar la cuadrilla.');
+      setError(error.message || 'Error al guardar la cuadrilla.');
     }
+  };
+
+  const isFormValid = () => {
+    return formData.nombre.trim() && formData.zona.trim();
   };
 
   const toggleDropdown = () => {
@@ -190,28 +194,13 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
               </InputGroup>
             )}
           </Form.Group>
-          <Form.Group className="mb-3" controlId="email">
-            <Form.Label className="required required-asterisk">Email</Form.Label>
-            <Form.Control
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="contrasena">
-            <Form.Label className="required required-asterisk">Contraseña</Form.Label>
-            <Form.Control
-              type="password"
-              name="contrasena"
-              value={formData.contrasena}
-              onChange={handleChange}
-              required={!cuadrilla}
-            />
-          </Form.Group>
-          <Button className="custom-save-button" type="submit">
-            Guardar
+          <Button
+            className="custom-save-button d-flex align-items-center justify-content-center gap-2"
+            type="submit"
+            disabled={!isFormValid()}
+          >
+            <FcGoogle size={20} />
+            {cuadrilla ? 'Guardar' : 'Registrar con Google'}
           </Button>
         </Form>
       </Modal.Body>

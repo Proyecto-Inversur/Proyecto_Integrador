@@ -12,8 +12,8 @@ class Role(str, Enum):
 class UserCreate(BaseModel):
     nombre: str
     email: EmailStr
-    contrasena: Optional[str] = None
     rol: Role
+    id_token: str
 
 class UserUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -25,7 +25,7 @@ class CuadrillaCreate(BaseModel):
     nombre: str
     zona: str
     email: EmailStr
-    contrasena: Optional[str] = None
+    id_token: str
 
 class CuadrillaUpdate(BaseModel):
     nombre: Optional[str] = None
