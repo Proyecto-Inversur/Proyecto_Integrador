@@ -10,8 +10,6 @@ def initialize_firebase():
         if os.getenv("FIREBASE_CREDENTIALS"):
             firebase_creds = json.loads(os.getenv("FIREBASE_CREDENTIALS"))
             cred = credentials.Certificate(firebase_creds)
-        else:
-            cred = credentials.Certificate("firebase-adminsdk.json")
         firebase_admin.initialize_app(cred)
     return firebase_admin.get_app()
 

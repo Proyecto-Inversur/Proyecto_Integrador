@@ -12,9 +12,9 @@ import Login from './pages/Login';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
-  const { currentEntity, loading } = useContext(AuthContext);
+  const { currentEntity, loading, verifying } = useContext(AuthContext);
 
-  if (loading) {
+  if (loading || verifying) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="spinner-border" role="status">
@@ -42,14 +42,14 @@ const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentEntity, loading } = useContext(AuthContext);
+  const { currentEntity, loading, verifying } = useContext(AuthContext);
   const isLoginPage = location.pathname === '/login';
 
   useEffect(() => {
-    if (currentEntity && !loading && isLoginPage) {
+    if (currentEntity && !loading && !verifying && isLoginPage) {
       navigate('/', { replace: true });
     }
-  }, [currentEntity, loading, isLoginPage, navigate]);
+  }, [currentEntity, loading, verifying, isLoginPage, navigate]);
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -71,11 +71,11 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <AppContent />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

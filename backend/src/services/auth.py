@@ -15,6 +15,8 @@ def verify_user_token(token: str, db: Session):
 
         user = db.query(Usuario).filter(Usuario.email == email).first()
         if user:
+            if user.firebase_uid and user.firebase_uid != firebase_uid:
+                raise HTTPException(status_code=403, detail="El UID de Firebase no coincide con el registrado para este usuario")
             if not user.firebase_uid:
                 user.firebase_uid = firebase_uid
                 db.commit()
@@ -31,6 +33,8 @@ def verify_user_token(token: str, db: Session):
 
         cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.email == email).first()
         if cuadrilla:
+            if cuadrilla.firebase_uid and cuadrilla.firebase_uid != firebase_uid:
+                raise HTTPException(status_code=403, detail="El UID de Firebase no coincide con el registrado para esta cuadrilla")
             if not cuadrilla.firebase_uid:
                 cuadrilla.firebase_uid = firebase_uid
                 db.commit()
@@ -49,8 +53,7 @@ def verify_user_token(token: str, db: Session):
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token inválido: {str(e)}")
 
-def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dict = None):
-    # Solo verificar permisos si current_entity no es None (es decir, no es inicialización)
+def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dict = None, id_token: str = None):
     if current_entity is not None:
         if not current_entity:
             raise HTTPException(status_code=401, detail="Autenticación requerida")
@@ -58,19 +61,31 @@ def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dic
             raise HTTPException(status_code=403, detail="No tienes permisos de administrador")
     
     try:
-        if user_data.contrasena:
-            firebase_user = auth.create_user(
-                email=user_data.email,
-                password=user_data.contrasena
-            )
-        else:
-            firebase_user = auth.create_user(email=user_data.email)
+        if not id_token:
+            raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
+
+        # Verify the Google ID token
+        decoded_token = auth.verify_id_token(id_token)
+        email = decoded_token.get("email")
+        firebase_uid = decoded_token.get("uid")
+
+        if email != user_data.email:
+            raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
+
+        # Check if user already exists in Firebase
+        try:
+            existing_user = auth.get_user(firebase_uid)
+            if existing_user.email != user_data.email:
+                raise HTTPException(status_code=400, detail="El UID de Firebase ya está asociado a otro email")
+        except auth.UserNotFoundError:
+            # Create a new Firebase user with the provided UID
+            auth.update_user(firebase_uid, email=user_data.email)
 
         db_user = Usuario(
             nombre=user_data.nombre,
             email=user_data.email,
             rol=user_data.rol,
-            firebase_uid=firebase_user.uid
+            firebase_uid=firebase_uid
         )
         db.add(db_user)
         db.commit()
@@ -78,7 +93,7 @@ def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dic
         return db_user
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al crear usuario: {str(e)}")
-    
+
 def update_firebase_user(user_id: int, user_data: UserUpdate, db: Session, current_entity: dict):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
@@ -90,15 +105,6 @@ def update_firebase_user(user_id: int, user_data: UserUpdate, db: Session, curre
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     try:
-        # Actualizar datos en Firebase si se proporciona un nuevo email
-        if user_data.email and user_data.email != db_user.email:
-            auth.update_user(
-                db_user.firebase_uid,
-                email=user_data.email
-            )
-            db_user.email = user_data.email
-
-        # Actualizar datos en la base de datos local
         if user_data.nombre is not None:
             db_user.nombre = user_data.nombre
         if user_data.rol is not None:
@@ -121,36 +127,45 @@ def delete_firebase_user(user_id: int, db: Session, current_entity: dict):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     try:
-        # Eliminar usuario en Firebase
         auth.delete_user(db_user.firebase_uid)
-        
-        # Eliminar usuario en la base de datos local
         db.delete(db_user)
         db.commit()
         return {"message": f"Usuario {db_user.email} eliminado correctamente"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al eliminar usuario: {str(e)}")
 
-def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, current_entity: dict):
+def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, current_entity: dict, id_token: str = None):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     if current_entity["type"] != "usuario":
         raise HTTPException(status_code=403, detail="No tienes permisos")
     
     try:
-        if cuadrilla_data.contrasena:
-            firebase_user = auth.create_user(
-                email=cuadrilla_data.email,
-                password=cuadrilla_data.contrasena
-            )
-        else:
-            firebase_user = auth.create_user(email=cuadrilla_data.email)
+        if not id_token:
+            raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
+
+        # Verify the Google ID token
+        decoded_token = auth.verify_id_token(id_token)
+        email = decoded_token.get("email")
+        firebase_uid = decoded_token.get("uid")
+
+        if email != cuadrilla_data.email:
+            raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
+
+        # Check if user already exists in Firebase
+        try:
+            existing_user = auth.get_user(firebase_uid)
+            if existing_user.email != cuadrilla_data.email:
+                raise HTTPException(status_code=400, detail="El UID de Firebase ya está asociado a otro email")
+        except auth.UserNotFoundError:
+            # Create a new Firebase user with the provided UID
+            auth.update_user(firebase_uid, email=cuadrilla_data.email)
 
         db_cuadrilla = Cuadrilla(
             nombre=cuadrilla_data.nombre,
             zona=cuadrilla_data.zona,
             email=cuadrilla_data.email,
-            firebase_uid=firebase_user.uid
+            firebase_uid=firebase_uid
         )
         db.add(db_cuadrilla)
         db.commit()
@@ -170,15 +185,6 @@ def update_firebase_cuadrilla(cuadrilla_id: int, cuadrilla_data: CuadrillaUpdate
         raise HTTPException(status_code=404, detail="Cuadrilla no encontrada")
 
     try:
-        # Actualizar datos en Firebase si se proporciona un nuevo email
-        if cuadrilla_data.email and cuadrilla_data.email != db_cuadrilla.email:
-            auth.update_user(
-                db_cuadrilla.firebase_uid,
-                email=cuadrilla_data.email
-            )
-            db_cuadrilla.email = cuadrilla_data.email
-
-        # Actualizar datos en la base de datos local
         if cuadrilla_data.nombre is not None:
             db_cuadrilla.nombre = cuadrilla_data.nombre
         if cuadrilla_data.zona is not None:
@@ -201,10 +207,7 @@ def delete_firebase_cuadrilla(cuadrilla_id: int, db: Session, current_entity: di
         raise HTTPException(status_code=404, detail="Cuadrilla no encontrada")
 
     try:
-        # Eliminar cuadrilla en Firebase
         auth.delete_user(db_cuadrilla.firebase_uid)
-        
-        # Eliminar cuadrilla en la base de datos local
         db.delete(db_cuadrilla)
         db.commit()
         return {"message": f"Cuadrilla {db_cuadrilla.email} eliminada correctamente"}
