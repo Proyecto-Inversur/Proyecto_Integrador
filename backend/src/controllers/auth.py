@@ -17,7 +17,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 @router.post("/create-user", response_model=dict)
 async def create_user(user_data: UserCreate, request: Request, db: Session = Depends(get_db)):
     current_entity = request.state.current_entity
-    new_user = create_firebase_user(user_data, db, current_entity)
+    new_user = create_firebase_user(user_data, db, current_entity, user_data.id_token)
     return {"id": new_user.id, "nombre": new_user.nombre, "email": new_user.email, "rol": new_user.rol}
 
 @router.put("/update-user/{user_id}", response_model=dict)
@@ -35,7 +35,7 @@ async def delete_user(user_id: int, request: Request, db: Session = Depends(get_
 @router.post("/create-cuadrilla", response_model=dict)
 async def create_cuadrilla(cuadrilla_data: CuadrillaCreate, request: Request, db: Session = Depends(get_db)):
     current_entity = request.state.current_entity
-    new_cuadrilla = create_firebase_cuadrilla(cuadrilla_data, db, current_entity)
+    new_cuadrilla = create_firebase_cuadrilla(cuadrilla_data, db, current_entity, cuadrilla_data.id_token)
     return {"id": new_cuadrilla.id, "nombre": new_cuadrilla.nombre, "email": new_cuadrilla.email, "zona": new_cuadrilla.zona}
 
 @router.put("/update-cuadrilla/{cuadrilla_id}", response_model=dict)

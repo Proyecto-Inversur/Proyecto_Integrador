@@ -1,23 +1,25 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { useState, useEffect, useContext } from 'react';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { createUser, updateUser } from '../services/userService';
+import { AuthContext } from '../context/AuthContext';
+import { FcGoogle } from 'react-icons/fc';
 import '../styles/formularios.css';
 
 const UserForm = ({ user, onClose }) => {
   const [formData, setFormData] = useState({
-    nombre: null,
-    email: null,
-    contrasena: null,
+    nombre: '',
+    email: '',
     rol: 'Administrador',
   });
+  const [error, setError] = useState(null);
+  const { signInWithGoogleForRegistration } = useContext(AuthContext);
 
   useEffect(() => {
     if (user) {
       setFormData({
         nombre: user.nombre,
         email: user.email,
-        contrasena: null,
         rol: user.rol,
       });
     }
@@ -33,12 +35,19 @@ const UserForm = ({ user, onClose }) => {
       if (user) {
         await updateUser(user.id, formData);
       } else {
-        await createUser(formData);
+        const { idToken, email } = await signInWithGoogleForRegistration();
+        const payload = { ...formData, email, id_token: idToken };
+        await createUser(payload);
       }
       onClose();
     } catch (error) {
       console.error('Error saving user:', error);
+      setError(error.message || 'Error al guardar el usuario.');
     }
+  };
+
+  const isFormValid = () => {
+    return formData.nombre.trim() && formData.rol;
   };
 
   return (
@@ -58,26 +67,6 @@ const UserForm = ({ user, onClose }) => {
               required
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="email">
-            <Form.Label className="required required-asterisk">Email</Form.Label>
-            <Form.Control
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="contrasena">
-            <Form.Label className="required required-asterisk">Contraseña</Form.Label>
-            <Form.Control
-              type="password"
-              name="contrasena"
-              value={formData.contrasena}
-              onChange={handleChange}
-              required={!user}
-            />
-          </Form.Group>
           <Form.Group className="mb-3" controlId="rol">
             <Form.Label className="required required-asterisk">Rol</Form.Label>
             <Form.Select
@@ -91,8 +80,13 @@ const UserForm = ({ user, onClose }) => {
               <option value="Encargado de Mantenimiento">Encargado de Mantenimiento</option>
             </Form.Select>
           </Form.Group>
-          <Button className="custom-save-button" type="submit">
-            Guardar
+          <Button
+            className="custom-save-button d-flex align-items-center justify-content-center gap-2"
+            type="submit"
+            disabled={!isFormValid()}
+          >
+            <FcGoogle size={20} />
+            {user ? 'Guardar' : 'Registrar con Google'}
           </Button>
         </Form>
       </Modal.Body>
