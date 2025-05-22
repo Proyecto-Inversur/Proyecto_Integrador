@@ -81,20 +81,28 @@ def test_verify_user_token_invalid_token(db_session, mocker):
 
 def test_create_firebase_user(db_session, mocker):
     """Test creating a user with admin permissions"""
-    # Mock Firebase create_user
-    mocker.patch("firebase_admin.auth.create_user", return_value=type("obj", (), {"uid": "test-uid"}))
+    # Mock Firebase verify_id_token
+    mocker.patch(
+        "firebase_admin.auth.verify_id_token",
+        return_value={"email": "user@test.com", "uid": "test-uid"}
+    )
+    # Mock Firebase get_user to simulate existing user
+    mocker.patch(
+        "firebase_admin.auth.get_user",
+        return_value=type("obj", (), {"email": "user@test.com", "uid": "test-uid"})
+    )
 
     user_data = UserCreate(
         nombre="Test User",
         email="user@test.com",
         rol=Role.ADMIN,
-        contrasena="password123"
+        id_token="mock-id-token"
     )
     current_entity = {
         "type": "usuario",
         "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
     }
-    user = auth_service.create_firebase_user(user_data, db_session, current_entity)
+    user = auth_service.create_firebase_user(user_data, db_session, current_entity, id_token="mock-id-token")
     assert user.nombre == "Test User"
     assert user.email == "user@test.com"
     assert user.rol == Role.ADMIN
@@ -102,19 +110,24 @@ def test_create_firebase_user(db_session, mocker):
 
 def test_create_firebase_user_unauthorized(db_session, mocker):
     """Test creating a user without admin permissions"""
-    mocker.patch("firebase_admin.auth.create_user", return_value=type("obj", (), {"uid": "test-uid"}))
+    # Mock Firebase verify_id_token
+    mocker.patch(
+        "firebase_admin.auth.verify_id_token",
+        return_value={"email": "user@test.com", "uid": "test-uid"}
+    )
+
     user_data = UserCreate(
         nombre="Test User",
         email="user@test.com",
         rol=Role.ENCARGADO,
-        contrasena="password123"
+        id_token="mock-id-token"
     )
     current_entity = {
         "type": "usuario",
         "data": {"id": 2, "nombre": "Worker", "email": "worker@test.com", "rol": Role.ENCARGADO}
     }
     with pytest.raises(HTTPException) as exc:
-        auth_service.create_firebase_user(user_data, db_session, current_entity)
+        auth_service.create_firebase_user(user_data, db_session, current_entity, id_token="mock-id-token")
     assert exc.value.status_code == 403
     assert "No tienes permisos de administrador" in exc.value.detail
 
@@ -126,12 +139,8 @@ def test_update_firebase_user(db_session, mocker):
     db_session.commit()
     user_id = db_user.id
 
-    # Mock Firebase update_user
-    mocker.patch("firebase_admin.auth.update_user", return_value=None)
-
     user_data = UserUpdate(
         nombre="Updated User",
-        email="updated@test.com",
         rol=Role.ADMIN
     )
     current_entity = {
@@ -140,7 +149,7 @@ def test_update_firebase_user(db_session, mocker):
     }
     user = auth_service.update_firebase_user(user_id, user_data, db_session, current_entity)
     assert user.nombre == "Updated User"
-    assert user.email == "updated@test.com"
+    assert user.email == "old@test.com"  # Email should not change
     assert user.rol == Role.ADMIN
 
 def test_delete_firebase_user(db_session, mocker):
@@ -168,20 +177,28 @@ def test_delete_firebase_user(db_session, mocker):
 
 def test_create_firebase_cuadrilla(db_session, mocker):
     """Test creating a cuadrilla with usuario permissions"""
-    # Mock Firebase create_user
-    mocker.patch("firebase_admin.auth.create_user", return_value=type("obj", (), {"uid": "cuadrilla-uid"}))
+    # Mock Firebase verify_id_token
+    mocker.patch(
+        "firebase_admin.auth.verify_id_token",
+        return_value={"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"}
+    )
+    # Mock Firebase get_user
+    mocker.patch(
+        "firebase_admin.auth.get_user",
+        return_value=type("obj", (), {"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"})
+    )
 
     cuadrilla_data = CuadrillaCreate(
         nombre="Test Cuadrilla",
         email="cuadrilla@test.com",
         zona="Zona Test",
-        contrasena="password123"
+        id_token="mock-id-token"
     )
     current_entity = {
         "type": "usuario",
         "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
     }
-    cuadrilla = auth_service.create_firebase_cuadrilla(cuadrilla_data, db_session, current_entity)
+    cuadrilla = auth_service.create_firebase_cuadrilla(cuadrilla_data, db_session, current_entity, id_token="mock-id-token")
     assert cuadrilla.nombre == "Test Cuadrilla"
     assert cuadrilla.email == "cuadrilla@test.com"
     assert cuadrilla.zona == "Zona Test"
@@ -189,19 +206,24 @@ def test_create_firebase_cuadrilla(db_session, mocker):
 
 def test_create_firebase_cuadrilla_unauthorized(db_session, mocker):
     """Test creating a cuadrilla with non-usuario entity"""
-    mocker.patch("firebase_admin.auth.create_user", return_value=type("obj", (), {"uid": "cuadrilla-uid"}))
+    # Mock Firebase verify_id_token
+    mocker.patch(
+        "firebase_admin.auth.verify_id_token",
+        return_value={"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"}
+    )
+
     cuadrilla_data = CuadrillaCreate(
         nombre="Test Cuadrilla",
         email="cuadrilla@test.com",
         zona="Zona Test",
-        contrasena="password123"
+        id_token="mock-id-token"
     )
     current_entity = {
         "type": "cuadrilla",
         "data": {"id": 1, "nombre": "Cuadrilla", "email": "c@test.com", "zona": "Zona"}
     }
     with pytest.raises(HTTPException) as exc:
-        auth_service.create_firebase_cuadrilla(cuadrilla_data, db_session, current_entity)
+        auth_service.create_firebase_cuadrilla(cuadrilla_data, db_session, current_entity, id_token="mock-id-token")
     assert exc.value.status_code == 403
     assert "No tienes permisos" in exc.value.detail
 
@@ -213,12 +235,8 @@ def test_update_firebase_cuadrilla(db_session, mocker):
     db_session.commit()
     cuadrilla_id = db_cuadrilla.id
 
-    # Mock Firebase update_user
-    mocker.patch("firebase_admin.auth.update_user", return_value=None)
-
     cuadrilla_data = CuadrillaUpdate(
         nombre="Updated Cuadrilla",
-        email="updatedc@test.com",
         zona="Updated Zona"
     )
     current_entity = {
@@ -227,7 +245,7 @@ def test_update_firebase_cuadrilla(db_session, mocker):
     }
     cuadrilla = auth_service.update_firebase_cuadrilla(cuadrilla_id, cuadrilla_data, db_session, current_entity)
     assert cuadrilla.nombre == "Updated Cuadrilla"
-    assert cuadrilla.email == "updatedc@test.com"
+    assert cuadrilla.email == "oldc@test.com"  # Email should not change
     assert cuadrilla.zona == "Updated Zona"
 
 def test_delete_firebase_cuadrilla(db_session, mocker):
