@@ -55,13 +55,12 @@ const Navbar = () => {
                 <>
                   <Nav.Link as={Link} to="/cuadrillas">Cuadrillas</Nav.Link>
                   <Nav.Link as={Link} to="/sucursales">Sucursales</Nav.Link>
-                  <Nav.Link /*as={Link} to="/preventivos"*/>Preventivos</Nav.Link>
                 </>
               )}
               {currentEntity && (
                 <>
-                  <Nav.Link /*as={Link} to="/mantenimientos-preventivos"*/>Mantenimientos Preventivos</Nav.Link>
-                  <Nav.Link /*as={Link} to="/mantenimientos-correctivos"*/>Mantenimientos Correctivos</Nav.Link>
+                  <Nav.Link as={Link} to="/mantenimientos-preventivos">Mantenimientos Preventivos</Nav.Link>
+                  <Nav.Link as={Link} to="/mantenimientos-correctivos">Mantenimientos Correctivos</Nav.Link>
                   <Nav.Link /*as={Link} to="/mapas"*/>Mapa</Nav.Link>
                 </>
               )}

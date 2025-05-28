@@ -35,17 +35,9 @@ const Mantenimiento = () => {
               </Link>
             </>
           )}
-          {currentEntity && currentEntity.type === 'usuario' && (
-            <>
-              <Link /*to="/preventivos"*/ className="obras-button">
-                <FaCalendarAlt />
-                Preventivos
-              </Link>
-            </>
-          )}
           {currentEntity && (
             <>
-              <Link /*to="/mantenimientos-correctivos"*/ className="obras-button">
+              <Link to="/mantenimientos-correctivos" className="obras-button">
                 <FaWrench />
                 Mantenimiento Correctivo
               </Link>
@@ -53,7 +45,7 @@ const Mantenimiento = () => {
           )}
           {currentEntity && (
             <>
-              <Link /*to="/mantenimientos-preventivos"*/ className="obras-button">
+              <Link to="/mantenimientos-preventivos" className="obras-button">
                 <FaTools />
                 Mantenimiento Preventivo
               </Link>
