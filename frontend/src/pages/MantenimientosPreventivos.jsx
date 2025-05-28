@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import MantenimientoPreventivoForm from '../components/MantenimientoPreventivoForm';
 import { getMantenimientosPreventivos, deleteMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
@@ -13,6 +14,7 @@ const MantenimientosPreventivos = () => {
   const [cuadrillas, setCuadrillas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
+  const navigate = useNavigate();
 
   const fetchMantenimientos = async () => {
     try {
@@ -60,6 +62,10 @@ const MantenimientosPreventivos = () => {
     setShowForm(true);
   };
 
+  const handleRowClick = (mantenimiento) => {
+    navigate('/preventivo', { state: { mantenimiento } });
+  };
+
   const handleFormClose = () => {
     setShowForm(false);
     setSelectedMantenimiento(null);
@@ -105,13 +111,17 @@ const MantenimientosPreventivos = () => {
         </thead>
         <tbody>
           {mantenimientos.map((mantenimiento) => (
-            <tr key={mantenimiento.id}>
+            <tr 
+              key={mantenimiento.id} 
+              onClick={() => handleRowClick(mantenimiento)}
+              style={{ cursor: 'pointer' }}
+            >
               <td>{mantenimiento.id}</td>
               <td>{mantenimiento.nombre_sucursal} - {mantenimiento.frecuencia}</td>
               <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
               <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
               <td>{mantenimiento.fecha_cierre?.split('T')[0]}</td>
-              <td>
+              <td onClick={(e) => e.stopPropagation()}>
                 <Button
                   variant="warning"
                   className="me-2"
