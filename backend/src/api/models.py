@@ -39,21 +39,21 @@ class Preventivo(Base):
     frecuencia = Column(String)
     
     sucursal = relationship("Sucursal", back_populates="preventivos")
-    mantenimiento = relationship("MantenimientoPreventivo", back_populates="preventivo", uselist=False)
 
 class MantenimientoPreventivo(Base):
     __tablename__ = "mantenimiento_preventivo"
     id = Column(Integer, primary_key=True)
-    id_preventivo = Column(Integer, ForeignKey("preventivo.id"))
+    nombre_sucursal = Column(String)
+    frecuencia = Column(String)
     id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
     fecha_apertura = Column(Date)
     fecha_cierre = Column(Date)
     planilla_1 = Column(String)
     planilla_2 = Column(String)
     planilla_3 = Column(String)
+    fotos = Column(String)
     extendido = Column(DateTime, nullable=True)
 
-    preventivo = relationship("Preventivo", back_populates="mantenimiento")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_preventivos")
 
 class MantenimientoCorrectivo(Base):
@@ -67,6 +67,7 @@ class MantenimientoCorrectivo(Base):
     incidente = Column(String)
     rubro = Column(String)
     planilla = Column(String)
+    fotos = Column(String)
     estado = Column(String)
     prioridad = Column(String)
     extendido = Column(DateTime, nullable=True)

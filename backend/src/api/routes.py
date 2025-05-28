@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from controllers import users, cuadrillas, sucursales, zonas, auth
+from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos
 from config.database import get_db
 from services.auth import verify_user_token
 from auth.firebase import initialize_firebase
@@ -10,20 +10,23 @@ from dotenv import load_dotenv
 import os
 from starlette.responses import JSONResponse
 
+load_dotenv(dotenv_path="./env.config")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+EMAIL_ADMIN = os.getenv("EMAIL_ADMIN")
+NOMBRE_ADMIN = os.getenv("NOMBRE_ADMIN")
+PASSWORD_ADMIN = os.getenv("PASSWORD_ADMIN")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_admin(
-        email="2113461@ucc.edu.ar",
-        nombre="Facundo",
-        password="Facundo2002"
+        email=EMAIL_ADMIN,
+        nombre=NOMBRE_ADMIN,
+        password=PASSWORD_ADMIN
     )
     yield
     pass
 
 app = FastAPI(lifespan=lifespan)
-
-load_dotenv(dotenv_path="./env.config")
-FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 # Configuración de CORS
 origins = [
@@ -95,3 +98,6 @@ app.include_router(cuadrillas.router)
 app.include_router(sucursales.router)
 app.include_router(zonas.router)
 app.include_router(auth.router)
+app.include_router(preventivos.router)
+app.include_router(mantenimientos_preventivos.router)
+app.include_router(mantenimientos_correctivos.router)
