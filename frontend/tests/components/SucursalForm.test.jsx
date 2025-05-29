@@ -5,9 +5,9 @@ import * as zonaService from '../../src/services/zonaService';
 import * as sucursalService from '../../src/services/sucursalService';
 
 // Mocks
-jest.mock('../../src/services/zonaService');
-jest.mock('../../src/services/sucursalService');
-jest.mock('../../src/services/api');
+vi.mock('../../src/services/zonaService');
+vi.mock('../../src/services/sucursalService');
+vi.mock('../../src/services/api');
 
 describe('SucursalForm component', () => {
   const sucursalMock = {
@@ -18,10 +18,10 @@ describe('SucursalForm component', () => {
     superficie: 300,
   };
   
-  const mockOnSave = jest.fn();
+  const mockOnSave = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('renderiza correctamente el formulario para crear', async () => {
