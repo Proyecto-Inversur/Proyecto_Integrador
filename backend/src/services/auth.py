@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from api.models import Usuario, Cuadrilla
 from fastapi import HTTPException
 from api.schemas import UserCreate, UserUpdate, CuadrillaCreate, CuadrillaUpdate, Role
+import requests
 
 def verify_user_token(token: str, db: Session):
     try:
@@ -65,21 +66,25 @@ def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dic
             raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
 
         # Verify the Google ID token
-        decoded_token = auth.verify_id_token(id_token)
+        response = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}")
+        decoded_token = response.json()
+        
+        if "error" in decoded_token:
+            raise HTTPException(status_code=401, detail=f"Token inválido: {decoded_token['error_description']}")
+
         email = decoded_token.get("email")
-        firebase_uid = decoded_token.get("uid")
+        google_uid = decoded_token.get("sub")
 
         if email != user_data.email:
             raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
-
-        # Check if user already exists in Firebase
+        
+        # Create Firebase user
         try:
-            existing_user = auth.get_user(firebase_uid)
-            if existing_user.email != user_data.email:
-                raise HTTPException(status_code=400, detail="El UID de Firebase ya está asociado a otro email")
-        except auth.UserNotFoundError:
-            # Create a new Firebase user with the provided UID
-            auth.update_user(firebase_uid, email=user_data.email)
+            firebase_user = auth.create_user(email=user_data.email)
+            firebase_uid = firebase_user.uid
+        except auth.EmailAlreadyExistsError:
+            firebase_user = auth.get_user_by_email(user_data.email)
+            firebase_uid = firebase_user.uid
 
         db_user = Usuario(
             nombre=user_data.nombre,
@@ -145,21 +150,25 @@ def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, curr
             raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
 
         # Verify the Google ID token
-        decoded_token = auth.verify_id_token(id_token)
+        response = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}")
+        decoded_token = response.json()
+
+        if "error" in decoded_token:
+            raise HTTPException(status_code=401, detail=f"Token inválido: {decoded_token['error_description']}")
+
         email = decoded_token.get("email")
-        firebase_uid = decoded_token.get("uid")
+        google_uid = decoded_token.get("sub")
 
         if email != cuadrilla_data.email:
             raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
 
-        # Check if user already exists in Firebase
+        # Create Firebase user
         try:
-            existing_user = auth.get_user(firebase_uid)
-            if existing_user.email != cuadrilla_data.email:
-                raise HTTPException(status_code=400, detail="El UID de Firebase ya está asociado a otro email")
-        except auth.UserNotFoundError:
-            # Create a new Firebase user with the provided UID
-            auth.update_user(firebase_uid, email=cuadrilla_data.email)
+            firebase_user = auth.create_user(email=cuadrilla_data.email)
+            firebase_uid = firebase_user.uid
+        except auth.EmailAlreadyExistsError:
+            firebase_user = auth.get_user_by_email(cuadrilla_data.email)
+            firebase_uid = firebase_user.uid
 
         db_cuadrilla = Cuadrilla(
             nombre=cuadrilla_data.nombre,
