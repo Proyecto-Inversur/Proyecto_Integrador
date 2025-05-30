@@ -94,7 +94,7 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
         await updateCuadrilla(cuadrilla.id, formData);
       } else {
         const { idToken, email } = await signInWithGoogleForRegistration();
-        const payload = { ...formData, email, id_token: idToken };
+        const payload = { ...formData, email: email, id_token: idToken };
         await createCuadrilla(payload);
       }
       onClose();

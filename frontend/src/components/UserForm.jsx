@@ -9,7 +9,6 @@ import '../styles/formularios.css';
 const UserForm = ({ user, onClose }) => {
   const [formData, setFormData] = useState({
     nombre: '',
-    email: '',
     rol: 'Administrador',
   });
   const [error, setError] = useState(null);
@@ -19,7 +18,6 @@ const UserForm = ({ user, onClose }) => {
     if (user) {
       setFormData({
         nombre: user.nombre,
-        email: user.email,
         rol: user.rol,
       });
     }
@@ -36,7 +34,7 @@ const UserForm = ({ user, onClose }) => {
         await updateUser(user.id, formData);
       } else {
         const { idToken, email } = await signInWithGoogleForRegistration();
-        const payload = { ...formData, email, id_token: idToken };
+        const payload = { ...formData, email: email, id_token: idToken };
         await createUser(payload);
       }
       onClose();
