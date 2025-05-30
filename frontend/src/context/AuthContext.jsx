@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useRef } from 'react';
-import { auth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from '../services/firebase';
+import { auth, onAuthStateChanged, GoogleAuthProvider, signOut } from '../services/firebase';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,59 +29,89 @@ const AuthProvider = ({ children }) => {
     setLoading(true);
     setVerifying(true);
 
-    try {
-      const response = await api.post(
-        '/auth/verify',
-        {},
-        { headers: { Authorization: `Bearer ${idToken}` } }
-      );
-      console.log('Verification succeeded:', response.data);
-      isVerifiedRef.current = true;
-      setCurrentUser(user);
-      setCurrentEntity(response.data);
-      setLoading(false);
-      setVerifying(false);
-      isVerifyingRef.current = false;
-      return { success: true, data: response.data };
-    } catch (error) {
-      const errorDetail = error.response?.data?.detail || error.message;
-      console.error('Verification failed:', errorDetail);
-      await signOut(auth);
-      localStorage.removeItem('authToken');
-      setCurrentUser(null);
-      setCurrentEntity(null);
-      setLoading(false);
-      setVerifying(false);
-      isVerifyingRef.current = false;
-      isVerifiedRef.current = false;
-      const errorMessage = error.response?.status === 403
-        ? 'Usuario no registrado. Por favor, crea una cuenta.'
-        : error.response?.status === 401
-        ? `Token de autenticación inválido: ${errorDetail}`
-        : 'Error al verificar el usuario.';
-      navigate('/login', { state: { error: errorMessage } });
-      return { success: false, data: null };
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      try {
+        const response = await api.post(
+          '/auth/verify',
+          {},
+          { headers: { Authorization: `Bearer ${idToken}` } }
+        );
+        console.log('Verification succeeded:', response.data);
+        isVerifiedRef.current = true;
+        setCurrentUser(user);
+        setCurrentEntity(response.data);
+        localStorage.setItem('activeUserId', user.uid);
+        setLoading(false);
+        setVerifying(false);
+        isVerifyingRef.current = false;
+        return { success: true, data: response.data };
+      } catch (error) {
+        attempts++;
+        const errorDetail = error.response?.data?.detail || error.message;
+        console.error(`Verification attempt ${attempts} failed:`, errorDetail);
+        if (attempts === maxAttempts) {
+          await signOut(auth);
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('activeUserId');
+          setCurrentUser(null);
+          setCurrentEntity(null);
+          setLoading(false);
+          setVerifying(false);
+          isVerifyingRef.current = false;
+          isVerifiedRef.current = false;
+          const errorMessage = error.response?.status === 403
+            ? 'Usuario no registrado. Por favor, crea una cuenta.'
+            : error.response?.status === 401
+            ? `Token de autenticación inválido: ${errorDetail}`
+            : 'Error al verificar el usuario.';
+          navigate('/login', { state: { error: errorMessage } });
+          return { success: false, data: null };
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
   };
 
   const signInWithGoogleForRegistration = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken(true);
-      return {
-        idToken,
-        email: result.user.email,
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.onload = () => {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: async (response) => {
+            try {
+              const idToken = response.credential;
+              const emailResponse = await fetch(
+                `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${idToken}`
+              );
+              const tokenInfo = await emailResponse.json();
+              if (tokenInfo.email) {
+                resolve({ idToken, email: tokenInfo.email });
+              } else {
+                reject(new Error('Failed to retrieve email from Google ID token'));
+              }
+            } catch (error) {
+              console.error('Error processing Google ID token:', error);
+              reject(error);
+            }
+          },
+        });
+        window.google.accounts.id.prompt();
       };
-    } catch (error) {
-      console.error("Error al iniciar sesión con Google:", error);
-      throw error;
-    }
+      script.onerror = () => reject(new Error('Failed to load Google Sign-In SDK'));
+      document.body.appendChild(script);
+    });
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && !isVerifyingRef.current && !isVerifiedRef.current) {
+      const activeUserId = localStorage.getItem('activeUserId');
+      if (user && user.uid === activeUserId && !isVerifyingRef.current && !isVerifiedRef.current) {
         try {
           const idToken = await user.getIdToken(true);
           localStorage.setItem('authToken', idToken);
@@ -90,6 +120,7 @@ const AuthProvider = ({ children }) => {
           console.error('Error getting ID token:', error);
           await signOut(auth);
           localStorage.removeItem('authToken');
+          localStorage.removeItem('activeUserId');
           setCurrentUser(null);
           setCurrentEntity(null);
           setLoading(false);
@@ -97,13 +128,14 @@ const AuthProvider = ({ children }) => {
           isVerifiedRef.current = false;
           navigate('/login', { state: { error: 'Error al obtener el token de autenticación.' } });
         }
-      } else if (!user) {
+      } else if (!user || user.uid !== activeUserId) {
         localStorage.removeItem('authToken');
         setCurrentUser(null);
         setCurrentEntity(null);
         setLoading(false);
         setVerifying(false);
         isVerifiedRef.current = false;
+        if (!user) localStorage.removeItem('activeUserId');
       }
     });
 
