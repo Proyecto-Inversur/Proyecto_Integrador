@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
 from api.models import MantenimientoPreventivo, Preventivo, Cuadrilla
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
+from services.gcloud_storage import upload_files_to_gcloud
+import os
 
 def get_mantenimientos_preventivos(db: Session):
     return db.query(MantenimientoPreventivo).all()
@@ -35,10 +37,28 @@ def create_mantenimiento_preventivo(db: Session, nombre_sucursal: str, frecuenci
     db.refresh(db_mantenimiento)
     return db_mantenimiento
 
-def update_mantenimiento_preventivo(db: Session, mantenimiento_id: int, nombre_sucursal: str, frecuencia: str, id_cuadrilla: int, fecha_apertura: date, fecha_cierre: Optional[date] = None, planilla_1: Optional[str] = None, planilla_2: Optional[str] = None, planilla_3: Optional[str] = None, fotos: Optional[str] = None, extendido: Optional[datetime] = None):
+async def update_mantenimiento_preventivo(
+    db: Session,
+    mantenimiento_id: int,
+    nombre_sucursal: Optional[str] = None,
+    frecuencia: Optional[str] = None,
+    id_cuadrilla: Optional[int] = None,
+    fecha_apertura: Optional[date] = None,
+    fecha_cierre: Optional[date] = None,
+    planillas: Optional[List[UploadFile]] = None,
+    fotos: Optional[List[UploadFile]] = None,
+    extendido: Optional[datetime] = None
+):
     db_mantenimiento = db.query(MantenimientoPreventivo).filter(MantenimientoPreventivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
         raise HTTPException(status_code=404, detail="Mantenimiento preventivo no encontrado")
+    
+    bucket_name = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
+    if not bucket_name:
+        raise HTTPException(status_code=500, detail="Google Cloud Bucket name not configured")
+    base_folder = f"mantenimientos_preventivos/{mantenimiento_id}"
+    planillas_url = None
+    fotos_url = None
     
     if nombre_sucursal:
         preventivo = db.query(Preventivo).filter(Preventivo.nombre_sucursal == nombre_sucursal).first()
@@ -56,14 +76,12 @@ def update_mantenimiento_preventivo(db: Session, mantenimiento_id: int, nombre_s
         db_mantenimiento.fecha_apertura = fecha_apertura
     if fecha_cierre is not None:
         db_mantenimiento.fecha_cierre = fecha_cierre
-    if planilla_1 is not None:
-        db_mantenimiento.planilla_1 = planilla_1
-    if planilla_2 is not None:
-        db_mantenimiento.planilla_2 = planilla_2
-    if planilla_3 is not None:
-        db_mantenimiento.planilla_3 = planilla_3
+    if planillas is not None:
+        planillas_url = await upload_files_to_gcloud(planillas, bucket_name, f"{base_folder}/planillas")
+        db_mantenimiento.planillas = planillas_url
     if fotos is not None:
-        db_mantenimiento.fotos = fotos
+        fotos_url = await upload_files_to_gcloud(fotos, bucket_name, f"{base_folder}/fotos")
+        db_mantenimiento.fotos = fotos_url
     if extendido is not None:
         db_mantenimiento.extendido = extendido
     db.commit()

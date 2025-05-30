@@ -48,9 +48,7 @@ class MantenimientoPreventivo(Base):
     id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
     fecha_apertura = Column(Date)
     fecha_cierre = Column(Date)
-    planilla_1 = Column(String)
-    planilla_2 = Column(String)
-    planilla_3 = Column(String)
+    planillas = Column(String)
     fotos = Column(String)
     extendido = Column(DateTime, nullable=True)
 

@@ -18,9 +18,7 @@ def mantenimientos_preventivos_get(db: Session = Depends(get_db)):
             "id_cuadrilla": m.id_cuadrilla,
             "fecha_apertura": m.fecha_apertura,
             "fecha_cierre": m.fecha_cierre,
-            "planilla_1": m.planilla_1,
-            "planilla_2": m.planilla_2,
-            "planilla_3": m.planilla_3,
+            "planillas": m.planillas,
             "fotos": m.fotos,
             "extendido": m.extendido
         }
@@ -37,9 +35,7 @@ def mantenimiento_preventivo_get(mantenimiento_id: int, db: Session = Depends(ge
         "id_cuadrilla": mantenimiento.id_cuadrilla,
         "fecha_apertura": mantenimiento.fecha_apertura,
         "fecha_cierre": mantenimiento.fecha_cierre,
-        "planilla_1": mantenimiento.planilla_1,
-        "planilla_2": mantenimiento.planilla_2,
-        "planilla_3": mantenimiento.planilla_3,
+        "planillas": mantenimiento.planillas,
         "fotos": mantenimiento.fotos,
         "extendido": mantenimiento.extendido
     }
@@ -62,7 +58,7 @@ def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivoCreate
     }
 
 @router.put("/{mantenimiento_id}", response_model=dict)
-def mantenimiento_preventivo_update(mantenimiento_id: int, mantenimiento: MantenimientoPreventivoUpdate, db: Session = Depends(get_db)):
+def mantenimiento_preventivo_update(mantenimiento_id: int, mantenimiento: MantenimientoPreventivoUpdate = Depends(), db: Session = Depends(get_db)):
     updated_mantenimiento = update_mantenimiento_preventivo(
         db,
         mantenimiento_id,
@@ -71,9 +67,7 @@ def mantenimiento_preventivo_update(mantenimiento_id: int, mantenimiento: Manten
         mantenimiento.id_cuadrilla,
         mantenimiento.fecha_apertura,
         mantenimiento.fecha_cierre,
-        mantenimiento.planilla_1,
-        mantenimiento.planilla_2,
-        mantenimiento.planilla_3,
+        mantenimiento.planillas,
         mantenimiento.fotos,
         mantenimiento.extendido
     )
@@ -84,9 +78,7 @@ def mantenimiento_preventivo_update(mantenimiento_id: int, mantenimiento: Manten
         "id_cuadrilla": updated_mantenimiento.id_cuadrilla,
         "fecha_apertura": updated_mantenimiento.fecha_apertura,
         "fecha_cierre": updated_mantenimiento.fecha_cierre,
-        "planilla_1": updated_mantenimiento.planilla_1,
-        "planilla_2": updated_mantenimiento.planilla_2,
-        "planilla_3": updated_mantenimiento.planilla_3,
+        "planillas": updated_mantenimiento.planillas,
         "fotos": updated_mantenimiento.fotos,
         "extendido": updated_mantenimiento.extendido
     }

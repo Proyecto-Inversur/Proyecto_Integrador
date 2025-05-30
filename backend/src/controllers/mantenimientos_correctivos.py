@@ -76,7 +76,7 @@ def mantenimiento_correctivo_create(mantenimiento: MantenimientoCorrectivoCreate
     }
 
 @router.put("/{mantenimiento_id}", response_model=dict)
-def mantenimiento_correctivo_update(mantenimiento_id: int, mantenimiento: MantenimientoCorrectivoUpdate, db: Session = Depends(get_db)):
+def mantenimiento_correctivo_update(mantenimiento_id: int, mantenimiento: MantenimientoCorrectivoUpdate = Depends(), db: Session = Depends(get_db)):
     updated_mantenimiento = update_mantenimiento_correctivo(
         db,
         mantenimiento_id,

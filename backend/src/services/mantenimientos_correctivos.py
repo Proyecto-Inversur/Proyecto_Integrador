@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
 from api.models import MantenimientoCorrectivo, Sucursal, Cuadrilla
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
+from services.gcloud_storage import upload_file_to_gcloud, upload_files_to_gcloud
+import os
 
 def get_mantenimientos_correctivos(db: Session):
     return db.query(MantenimientoCorrectivo).all()
@@ -45,10 +47,32 @@ def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla:
     db.refresh(db_mantenimiento)
     return db_mantenimiento
 
-def update_mantenimiento_correctivo(db: Session, mantenimiento_id: int, id_sucursal: Optional[int] = None, id_cuadrilla: Optional[int] = None, fecha_apertura: Optional[date] = None, fecha_cierre: Optional[date] = None, numero_caso: Optional[str] = None, incidente: Optional[str] = None, rubro: Optional[str] = None, planilla: Optional[str] = None, fotos: Optional[str] = None, estado: Optional[str] = None, prioridad: Optional[str] = None, extendido: Optional[datetime] = None):
+async def update_mantenimiento_correctivo(
+    db: Session, 
+    mantenimiento_id: int, 
+    id_sucursal: Optional[int] = None, 
+    id_cuadrilla: Optional[int] = None, 
+    fecha_apertura: Optional[date] = None, 
+    fecha_cierre: Optional[date] = None, 
+    numero_caso: Optional[str] = None, 
+    incidente: Optional[str] = None, 
+    rubro: Optional[str] = None, 
+    planilla: Optional[UploadFile] = None, 
+    fotos: Optional[List[UploadFile]] = None, 
+    estado: Optional[str] = None, 
+    prioridad: Optional[str] = None, 
+    extendido: Optional[datetime] = None
+):
     db_mantenimiento = db.query(MantenimientoCorrectivo).filter(MantenimientoCorrectivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
         raise HTTPException(status_code=404, detail="Mantenimiento correctivo no encontrado")
+    
+    bucket_name = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
+    if not bucket_name:
+        raise HTTPException(status_code=500, detail="Google Cloud Bucket name not configured")
+    base_folder = f"mantenimientos_correctivos/{mantenimiento_id}"
+    planilla_url = None
+    fotos_url = None
     
     if id_sucursal:
         sucursal = db.query(Sucursal).filter(Sucursal.id == id_sucursal).first()
@@ -71,9 +95,11 @@ def update_mantenimiento_correctivo(db: Session, mantenimiento_id: int, id_sucur
     if rubro is not None:
         db_mantenimiento.rubro = rubro
     if planilla is not None:
-        db_mantenimiento.planilla = planilla
+        planilla_url = await upload_file_to_gcloud(planilla, bucket_name, f"{base_folder}/planilla")
+        db_mantenimiento.planilla = planilla_url
     if fotos is not None:
-        db_mantenimiento.fotos = fotos
+        fotos_url = await upload_files_to_gcloud(fotos, bucket_name, f"{base_folder}/fotos")
+        db_mantenimiento.fotos = fotos_url
     if estado is not None:
         db_mantenimiento.estado = estado
     if prioridad is not None:

@@ -1,7 +1,8 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
+from fastapi import UploadFile
 
 # Enum para los roles
 class Role(str, Enum):
@@ -113,10 +114,8 @@ class MantenimientoPreventivoUpdate(BaseModel):
     id_cuadrilla: Optional[int] = None
     fecha_apertura: Optional[date] = None
     fecha_cierre: Optional[date] = None
-    planilla_1: Optional[str] = None
-    planilla_2: Optional[str] = None
-    planilla_3: Optional[str] = None
-    fotos: Optional[str] = None
+    planillas: Optional[List[UploadFile]] = None
+    fotos: Optional[List[UploadFile]] = None
     extendido: Optional[datetime] = None
 
 # Esquemas para Mantenimiento Correctivo
@@ -138,8 +137,8 @@ class MantenimientoCorrectivoUpdate(BaseModel):
     numero_caso: Optional[str] = None
     incidente: Optional[str] = None
     rubro: Optional[Rubro] = None
-    planilla: Optional[str] = None
-    fotos: Optional[str] = None
+    planilla: Optional[UploadFile] = None
+    fotos: Optional[List[UploadFile]] = None
     estado: Optional[Estado] = None
     prioridad: Optional[Prioridad] = None
     extendido: Optional[datetime] = None
