@@ -52,10 +52,10 @@
       flex-direction: row;
       flex-wrap: wrap;
       gap: 1rem;
-      margin-top: 1rem; /* Espacio moderado en pantallas grandes */
+      margin-top: 6rem; /* Espacio moderado en pantallas grandes */
       margin-bottom: 1rem; /* Más espacio abajo en pantallas grandes */
       padding: 0 1rem;
-      max-width: 60rem; /* Ajustado para que quepan 3 botones por fila (16rem * 3 + 1rem * 2) */
+      max-width: 70rem; /* Ajustado para que quepan 3 botones por fila (16rem * 3 + 1rem * 2) */
       margin-left: auto;
       margin-right: auto;
       justify-content: center;
