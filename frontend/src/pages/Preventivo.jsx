@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import '../styles/preventivo.css'; // Importa los estilos específicos para esta página
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import { FiSend } from "react-icons/fi";
+
 
 // Componente Preventivo para gestionar mantenimientos preventivos
 const Preventivo = () => {
@@ -85,7 +88,7 @@ const Preventivo = () => {
                 className="chat-input"
               />
               <Button variant="light" className="chat-send-btn">
-                <i className="bi bi-send">enviar</i>
+                <FiSend size={20} color="black" />
               </Button>
             </div>
           </Col>
