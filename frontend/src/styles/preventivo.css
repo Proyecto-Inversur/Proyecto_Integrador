@@ -33,37 +33,38 @@
   margin: 0;
 }
 
+
 /* Estilos para la sección de información */
 .info-section {
   background-color: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  flex: 1 1 33.33%;
-  min-width: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 2rem;
   text-align: center;
 }
 
 /* Título de la sección de información */
 .info-section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
   margin-bottom: 1rem;
-}
-
-/* Campos de información */
-.info-field {
-  margin-bottom: 1rem;
-  width: 100%;
 }
 
 /* Etiquetas de los campos de información */
 .info-label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
+
+
+/* Campos de información */
+.info-field {
+  margin-bottom: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.95rem;
+}
+
 
 /* Formulario dentro de la sección de información */
 .info-form {
@@ -86,9 +87,9 @@
 
 /* Campo de entrada del formulario */
 .info-form-control {
-  width: 100%;
-  max-width: 300px; /* Limita el ancho para mejor presentación */
-  margin: 0 auto;
+  border-radius: 12px;
+  padding: 0.6rem;
+  font-size: 1rem;
 }
 
 /* Botón para agregar a la ruta actual */
@@ -103,6 +104,16 @@ gap: 8px;
 font-size: 0.9rem;
 font-weight: bold;
 }
+
+.info-button-add,
+.info-button-finish {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.7rem;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
 
 /* Botón para marcar como finalizado */
 .info-button-finish {
@@ -292,51 +303,66 @@ margin-top: 0.5rem;
   border-radius: 0.5rem;
 }
 
-/* Ajustes para pantallas grandes (PC) */
-@media (min-width: 768px) {
-  .main-row {
-    flex-wrap: nowrap;
-  }
 
-  .info-section,
-  .chat-section,
-  .planilla-section {
-    flex: 1 1 33.33%;
-  }
 
-  .grid-item {
-    flex: 1 1 calc(25% - 0.75rem);
-    max-width: calc(25% - 0.75rem);
-  }
-}
-
-/* Ajustes para pantallas pequeñas (móviles) */
-@media (max-width: 767px) {
+/* Pantallas pequeñas: móviles (hasta 768px) */
+@media (max-width: 768px) {
   .main-row {
     flex-direction: column;
-    flex-wrap: wrap;
+    align-items: center;
   }
 
   .info-section,
   .chat-section,
   .planilla-section {
-    flex: 1 1 100%;
+    width: 90%;
+    margin-bottom: 1.5rem;
   }
 
   .grid-item {
-    flex: 1 1 calc(50% - 0.5rem);
-    max-width: calc(50% - 0.5rem);
-  }
-}
-
-/* Ajustes para pantallas muy pequeñas */
-@media (max-width: 400px) {
-  .main-row {
-    padding: 0;
+    flex: 1 1 calc(100% - 1rem);
+    max-width: 100%;
   }
 
-  .grid-item {
-    flex: 1 1 100%;
+  .chat-input {
+    max-width: 100%;
+  }
+
+  .planilla-placeholder,
+  .planilla-button {
     max-width: 100%;
   }
 }
+
+/* Pantallas grandes: monitores grandes (desde 1400px) */
+@media (min-width: 1400px) {
+  .page-content {
+    max-width: 1400px;
+  }
+
+  .info-section,
+  .chat-section,
+  .planilla-section {
+    padding: 2.5rem;
+  }
+
+  .info-section-title {
+    font-size: 2rem;
+  }
+
+  .info-form-control {
+    font-size: 1.1rem;
+    padding: 0.75rem;
+  }
+
+  .info-button-add,
+  .info-button-finish {
+    font-size: 1rem;
+    padding: 0.9rem 1.5rem;
+  }
+
+  .grid-item {
+    height: 180px;
+  }
+}
+

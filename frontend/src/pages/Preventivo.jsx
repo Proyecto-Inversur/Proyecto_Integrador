@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import '../styles/preventivo.css'; // Importa los estilos específicos para esta página
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend } from "react-icons/fi";
+import { FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 
 
 // Componente Preventivo para gestionar mantenimientos preventivos
@@ -54,14 +55,14 @@ const Preventivo = () => {
             <Form className="info-form">
               <Form.Group className="info-form-group">
                 <Form.Label className="info-form-label">Extendido</Form.Label>
-                <Form.Control type="date" placeholder="Extendido: Fecha-Hora" className="info-form-control" />
+                <Form.Control type="date" placeholder="Seleccionar fecha" className="info-form-control" />
               </Form.Group>
             </Form>
-            <Button variant="dark" className="info-button-add">
-              Agregar a la ruta actual
+            <Button variant="secondary" className="info-button-add">
+              <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
             </Button>
-            <Button variant="secondary" className="info-button-finish">
-              Marcar como finalizado
+            <Button variant="dark" className="info-button-finish">
+              <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
             </Button>
           </Col>
 
