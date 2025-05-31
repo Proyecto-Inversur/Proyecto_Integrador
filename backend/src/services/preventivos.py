@@ -32,7 +32,7 @@ def create_preventivo(db: Session, id_sucursal: int, nombre_sucursal: str, frecu
     db.refresh(db_preventivo)
     return db_preventivo
 
-def update_preventivo(db: Session, preventivo_id: int, id_sucursal: int = None, nombre_sucursal: str = None, frecuencia: str = None, current_entity: dict = None):
+def update_preventivo(db: Session, preventivo_id: int, current_entity: dict, id_sucursal: int = None, nombre_sucursal: str = None, frecuencia: str = None):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     if current_entity["type"] != "usuario":

@@ -8,8 +8,7 @@ def initialize_firebase():
         if os.getenv("TESTING") == "true":
             return None  # No inicializar Firebase en tests
         if os.getenv("FIREBASE_CREDENTIALS"):
-            firebase_creds = json.loads(os.getenv("FIREBASE_CREDENTIALS"))
-            cred = credentials.Certificate(firebase_creds)
+            cred = credentials.Certificate(os.getenv("FIREBASE_CREDENTIALS"))
         firebase_admin.initialize_app(cred)
     return firebase_admin.get_app()
 

@@ -54,7 +54,7 @@ def verify_user_token(token: str, db: Session):
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token inválido: {str(e)}")
 
-def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dict = None, id_token: str = None):
+def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dict, id_token: str):
     if current_entity is not None:
         if not current_entity:
             raise HTTPException(status_code=401, detail="Autenticación requerida")
@@ -139,7 +139,7 @@ def delete_firebase_user(user_id: int, db: Session, current_entity: dict):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al eliminar usuario: {str(e)}")
 
-def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, current_entity: dict, id_token: str = None):
+def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, current_entity: dict, id_token: str):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     if current_entity["type"] != "usuario":

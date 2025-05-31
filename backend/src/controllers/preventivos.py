@@ -26,7 +26,7 @@ def preventivo_create(preventivo: PreventivoCreate, request: Request, db: Sessio
 @router.put("/{preventivo_id}", response_model=dict)
 def preventivo_update(preventivo_id: int, preventivo: PreventivoUpdate, request: Request, db: Session = Depends(get_db)):
     current_entity = request.state.current_entity
-    updated_preventivo = update_preventivo(db, preventivo_id, preventivo.id_sucursal, preventivo.nombre_sucursal, preventivo.frecuencia, current_entity)
+    updated_preventivo = update_preventivo(db, preventivo_id, current_entity, preventivo.id_sucursal, preventivo.nombre_sucursal, preventivo.frecuencia)
     return {"id": updated_preventivo.id, "id_sucursal": updated_preventivo.id_sucursal, "nombre_sucursal": updated_preventivo.nombre_sucursal, "frecuencia": updated_preventivo.frecuencia}
 
 @router.delete("/{preventivo_id}", response_model=dict)

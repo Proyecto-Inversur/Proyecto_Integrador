@@ -18,7 +18,8 @@ class Sucursal(Base):
     superficie = Column(String)
     
     preventivos = relationship("Preventivo", back_populates="sucursal")
-    correctivos = relationship("MantenimientoCorrectivo", back_populates="sucursal")
+    mantenimientos_preventivos = relationship("MantenimientoPreventivo", back_populates="sucursal")
+    mantenimientos_correctivos = relationship("MantenimientoCorrectivo", back_populates="sucursal")
 
 class Cuadrilla(Base):
     __tablename__ = "cuadrilla"
@@ -43,16 +44,29 @@ class Preventivo(Base):
 class MantenimientoPreventivo(Base):
     __tablename__ = "mantenimiento_preventivo"
     id = Column(Integer, primary_key=True)
-    nombre_sucursal = Column(String)
+    id_sucursal = Column(Integer, ForeignKey("sucursal.id"))
     frecuencia = Column(String)
     id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
     fecha_apertura = Column(Date)
     fecha_cierre = Column(Date)
-    planillas = Column(String)
-    fotos = Column(String)
     extendido = Column(DateTime, nullable=True)
 
+    sucursal = relationship("Sucursal", back_populates="mantenimientos_preventivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_preventivos")
+    planillas = relationship("MantenimientoPreventivoPlanilla", backref="mantenimiento")
+    fotos = relationship("MantenimientoPreventivoFoto", backref="mantenimiento")
+    
+class MantenimientoPreventivoPlanilla(Base):
+    __tablename__ = "mantenimiento_preventivo_planilla"
+    id = Column(Integer, primary_key=True)
+    mantenimiento_id = Column(Integer, ForeignKey("mantenimiento_preventivo.id"))
+    url = Column(String, nullable=False)
+
+class MantenimientoPreventivoFoto(Base):
+    __tablename__ = "mantenimiento_preventivo_foto"
+    id = Column(Integer, primary_key=True)
+    mantenimiento_id = Column(Integer, ForeignKey("mantenimiento_preventivo.id"))
+    url = Column(String, nullable=False)
 
 class MantenimientoCorrectivo(Base):
     __tablename__ = "mantenimiento_correctivo"
@@ -65,13 +79,19 @@ class MantenimientoCorrectivo(Base):
     incidente = Column(String)
     rubro = Column(String)
     planilla = Column(String)
-    fotos = Column(String)
     estado = Column(String)
     prioridad = Column(String)
     extendido = Column(DateTime, nullable=True)
     
-    sucursal = relationship("Sucursal", back_populates="correctivos")
+    sucursal = relationship("Sucursal", back_populates="mantenimientos_correctivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_correctivos")
+    fotos = relationship("MantenimientoCorrectivoFoto", backref="mantenimiento")
+
+class MantenimientoCorrectivoFoto(Base):
+    __tablename__ = "mantenimiento_correctivo_foto"
+    id = Column(Integer, primary_key=True)
+    mantenimiento_id = Column(Integer, ForeignKey("mantenimiento_correctivo.id"))
+    url = Column(String, nullable=False)
 
 class Usuario(Base):
     __tablename__ = "usuario"

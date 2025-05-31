@@ -103,20 +103,10 @@ class PreventivoUpdate(BaseModel):
     
 # Esquemas para Mantenimiento Preventivo
 class MantenimientoPreventivoCreate(BaseModel):
-    nombre_sucursal: str
+    id_sucursal: int
     frecuencia: Frecuencia
     id_cuadrilla: int
     fecha_apertura: date
-
-class MantenimientoPreventivoUpdate(BaseModel):
-    nombre_sucursal: Optional[str] = None
-    frecuencia: Optional[Frecuencia] = None
-    id_cuadrilla: Optional[int] = None
-    fecha_apertura: Optional[date] = None
-    fecha_cierre: Optional[date] = None
-    planillas: Optional[List[UploadFile]] = None
-    fotos: Optional[List[UploadFile]] = None
-    extendido: Optional[datetime] = None
 
 # Esquemas para Mantenimiento Correctivo
 class MantenimientoCorrectivoCreate(BaseModel):
@@ -128,17 +118,3 @@ class MantenimientoCorrectivoCreate(BaseModel):
     rubro: Rubro
     estado: Estado
     prioridad: Prioridad
-
-class MantenimientoCorrectivoUpdate(BaseModel):
-    id_sucursal: Optional[int] = None
-    id_cuadrilla: Optional[int] = None
-    fecha_apertura: Optional[date] = None
-    fecha_cierre: Optional[date] = None
-    numero_caso: Optional[str] = None
-    incidente: Optional[str] = None
-    rubro: Optional[Rubro] = None
-    planilla: Optional[UploadFile] = None
-    fotos: Optional[List[UploadFile]] = None
-    estado: Optional[Estado] = None
-    prioridad: Optional[Prioridad] = None
-    extendido: Optional[datetime] = None

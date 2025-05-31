@@ -22,7 +22,7 @@ def create_sucursal(db: Session, nombre: str, zona: str, direccion: str, superfi
     db.refresh(db_sucursal)
     return db_sucursal
 
-def update_sucursal(db: Session, sucursal_id: int, nombre: str = None, zona: str = None, direccion: str = None, superficie: str = None, current_entity: dict = None):
+def update_sucursal(db: Session, sucursal_id: int, current_entity: dict, nombre: str = None, zona: str = None, direccion: str = None, superficie: str = None):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     if current_entity["type"] != "usuario":
