@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useRef } from 'react';
-import { auth, onAuthStateChanged, GoogleAuthProvider, signOut } from '../services/firebase';
+import { auth, onAuthStateChanged, signOut } from '../services/firebase';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 

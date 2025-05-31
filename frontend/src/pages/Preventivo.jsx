@@ -1,43 +1,156 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Button, Form } from 'react-bootstrap';
+import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import '../styles/preventivo.css'; // Importa los estilos específicos para esta página
+import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla } from '../services/mantenimientoPreventivoService';
+import { getCuadrillas } from '../services/cuadrillaService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { FiSend } from "react-icons/fi";
-import { FiPlusCircle, FiCheckCircle } from "react-icons/fi";
+import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
+import '../styles/preventivo.css';
 
-
-// Componente Preventivo para gestionar mantenimientos preventivos
 const Preventivo = () => {
-  // Obtiene el estado de autenticación del contexto
   const { currentEntity } = useContext(AuthContext);
-  // Hook para navegar entre rutas
   const navigate = useNavigate();
-  // Obtiene los datos pasados a través del estado de la ubicación
   const location = useLocation();
-  const mantenimiento = location.state?.mantenimiento || {}; // Datos del mantenimiento, por defecto un objeto vacío si no hay estado
+  const mantenimiento = location.state?.mantenimiento || {};
+  const [cuadrillas, setCuadrillas] = useState([]);
+  const [formData, setFormData] = useState({
+    planillas: [],
+    fotos: [],
+    extendido: '',
+  });
+  const [planillaPreviews, setPlanillaPreviews] = useState([]);
+  const [fotoPreviews, setFotoPreviews] = useState([]);
+  const [selectedPlanillas, setSelectedPlanillas] = useState([]);
+  const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  // Efecto para redirigir a login si no hay usuario autenticado
   useEffect(() => {
     if (!currentEntity) {
       navigate('/login');
+    } else {
+      fetchCuadrillas();
     }
   }, [currentEntity, navigate]);
 
-  // Función placeholder para obtener el nombre de una cuadrilla (debe reemplazarse con lógica real)
-  function getCuadrillaNombre(id_cuadrilla) {
-    // Nota: Esto debería usar un estado o servicio real para obtener el nombre de la cuadrilla
-    // Por ahora, retorna un valor dummy
-    return 'Cuadrilla 1'; // Reemplazar con lógica de fetching si es necesario
-  }
+  const fetchCuadrillas = async () => {
+    try {
+      const response = await getCuadrillas();
+      setCuadrillas(response.data);
+    } catch (error) {
+      console.error('Error fetching cuadrillas:', error);
+    }
+  };
+
+  const handleFileChange = (e, field) => {
+    const files = Array.from(e.target.files);
+    setFormData({ ...formData, [field]: files });
+
+    const previews = files.map(file => URL.createObjectURL(file));
+    if (field === 'planillas') {
+      setPlanillaPreviews(previews);
+    } else if (field === 'fotos') {
+      setFotoPreviews(previews);
+    }
+  };
+
+  const handleExtendidoChange = (e) => {
+    setFormData({ ...formData, extendido: e.target.value });
+  };
+
+  const handlePlanillaSelect = (planillaUrl) => {
+    setSelectedPlanillas(prev =>
+      prev.includes(planillaUrl)
+        ? prev.filter(url => url !== planillaUrl)
+        : [...prev, planillaUrl]
+    );
+  };
+
+  const handlePhotoSelect = (photoUrl) => {
+    setSelectedPhotos(prev =>
+      prev.includes(photoUrl)
+        ? prev.filter(url => url !== photoUrl)
+        : [...prev, photoUrl]
+    );
+  };
+
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedImage(null);
+  };
+
+  const handleDeleteSelectedPlanillas = async () => {
+    try {
+      for (const planillaUrl of selectedPlanillas) {
+        const fileName = planillaUrl.split('/').pop();
+        await deleteMantenimientoPlanilla(mantenimiento.id, fileName);
+      }
+      setSelectedPlanillas([]);
+      setSuccess('Planillas eliminadas correctamente.');
+      await fetchMantenimiento();
+    } catch (error) {
+      console.error('Error deleting planillas:', error);
+      setError('Error al eliminar las planillas.');
+    }
+  };
+
+  const handleDeleteSelectedPhotos = async () => {
+    try {
+      for (const photoUrl of selectedPhotos) {
+        const fileName = photoUrl.split('/').pop();
+        await deleteMantenimientoPhoto(mantenimiento.id, fileName);
+      }
+      setSelectedPhotos([]);
+      setSuccess('Fotos eliminadas correctamente.');
+      await fetchMantenimiento();
+    } catch (error) {
+      console.error('Error deleting photos:', error);
+      setError('Error al eliminar las fotos.');
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    const formDataToSend = new FormData();
+    formData.planillas.forEach(file => formDataToSend.append('planillas', file));
+    formData.fotos.forEach(file => formDataToSend.append('fotos', file));
+    if (formData.extendido) {
+      formDataToSend.append('extendido', new Date(formData.extendido).toISOString());
+    }
+
+    try {
+      await updateMantenimientoPreventivo(mantenimiento.id, formDataToSend);
+      setSuccess('Archivos y datos actualizados correctamente.');
+      setFormData({ planillas: [], fotos: [], extendido: '' });
+      setPlanillaPreviews([]);
+      setFotoPreviews([]);
+      await fetchMantenimiento();
+    } catch (error) {
+      console.error('Error updating mantenimiento:', error);
+      setError(error.response?.data?.detail || 'Error al actualizar los datos.');
+    }
+  };
+
+  const getCuadrillaNombre = (id_cuadrilla) => {
+    const cuadrilla = cuadrillas.find((c) => c.id === id_cuadrilla);
+    return cuadrilla ? cuadrilla.nombre : 'Desconocida';
+  };
 
   return (
     <Container fluid className="preventivo-container">
       <div className="page-content">
-        {/* Fila principal que contiene las secciones de información, chat y planilla */}
         <Row className="main-row">
-          {/* Sección de información del mantenimiento preventivo */}
           <Col className="info-section">
             <h4 className="info-section-title">Mantenimiento Preventivo</h4>
             <div className="info-field">
@@ -52,21 +165,31 @@ const Preventivo = () => {
               <strong className="info-label">Fecha Apertura:</strong>{' '}
               {mantenimiento.fecha_apertura?.split('T')[0] || 'N/A'}
             </div>
-            <Form className="info-form">
+            <Form className="info-form" onSubmit={handleSubmit}>
               <Form.Group className="info-form-group">
                 <Form.Label className="info-form-label">Extendido</Form.Label>
-                <Form.Control type="date" placeholder="Seleccionar fecha" className="info-form-control" />
+                <Form.Control 
+                  type="date" 
+                  name="extendido"
+                  value={formData.extendido}
+                  onChange={handleExtendidoChange}
+                  placeholder="Seleccionar fecha" 
+                  className="info-form-control" />
               </Form.Group>
+              {error && <Alert variant="danger">{error}</Alert>}
+              {success && <Alert variant="success">{success}</Alert>}
+              <Button type="submit" variant="primary" className="info-button-add">
+                Guardar Cambios
+              </Button>
             </Form>
-            <Button variant="secondary" className="info-button-add">
+            <Button variant="secondary" className="info-button-add">Add commentMore actions
               <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
             </Button>
-            <Button variant="dark" className="info-button-finish">
+            <Button variant="dark" className="info-button-finish">Add commentMore actions
               <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
             </Button>
           </Col>
 
-          {/* Sección de chat para comunicación */}
           <Col className="chat-section">
             <div className="chat-box">
               <div className="chat-message chat-message-received">
@@ -74,10 +197,6 @@ const Preventivo = () => {
                 <span className="chat-info">info/hora/visto</span>
               </div>
               <div className="chat-message chat-message-sent">
-                <p className="chat-message-text">Mensaje</p>
-                <span className="chat-info">info/hora/visto</span>
-              </div>
-              <div className="chat-message chat-message-received">
                 <p className="chat-message-text">Mensaje</p>
                 <span className="chat-info">info/hora/visto</span>
               </div>
@@ -94,31 +213,143 @@ const Preventivo = () => {
             </div>
           </Col>
 
-          {/* Sección de planilla para cargar documentos */}
           <Col className="planilla-section">
             <h4 className="planilla-section-title">Planilla</h4>
-            <div className="planilla-placeholder"></div>
-            <Button variant="secondary" className="planilla-button">
-              Cargar/Editar
-            </Button>
+            <Form.Group>
+              <Form.Label>Cargar Planillas</Form.Label>
+              <Form.Control
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'planillas')}
+              />
+            </Form.Group>
+            {planillaPreviews.length > 0 && (
+              <Row className="gallery-section mt-3">
+                {planillaPreviews.map((preview, index) => (
+                  <Col md={3} key={index} className="gallery-item">
+                    <img
+                      src={preview}
+                      alt={`Nueva planilla ${index + 1}`}
+                      className="gallery-thumbnail"
+                      onClick={() => handleImageClick(preview)}
+                    />
+                  </Col>
+                ))}
+              </Row>
+            )}
+            {mantenimiento.planillas?.length > 0 ? (
+              <>
+                <Row className="gallery-section mt-3">
+                  {mantenimiento.planillas.map((planilla, index) => (
+                    <Col md={3} key={index} className="gallery-item">
+                      <div
+                        className={`photo-container ${selectedPlanillas.includes(planilla) ? 'selected' : ''}`}
+                        onClick={() => handlePlanillaSelect(planilla)}
+                      >
+                        <img
+                          src={planilla}
+                          alt={`Planilla ${index + 1}`}
+                          className="gallery-thumbnail"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageClick(planilla);
+                          }}
+                        />
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+                {selectedPlanillas.length > 0 && (
+                  <Button
+                    variant="danger"
+                    className="mt-3"
+                    onClick={handleDeleteSelectedPlanillas}
+                  >
+                    Eliminar Planillas Seleccionadas
+                  </Button>
+                )}
+              </>
+            ) : (
+              <p className="mt-3">No hay planillas cargadas.</p>
+            )}
           </Col>
         </Row>
 
-        {/* Sección de fotos de la obra */}
         <Row className="photos-section">
           <h4 className="photos-title">Fotos de la obra</h4>
-          <Row className="grid-section">
-            <Col md={3} className="grid-item"></Col>
-            <Col md={3} className="grid-item"></Col>
-            <Col md={3} className="grid-item"></Col>
-            <Col md={3} className="grid-item"></Col>
-          </Row>
-          <div className="grid-actions">
-            <Button variant="secondary" className="grid-actions-button">
-              Cargar/Eliminar
-            </Button>
-          </div>
+          <Form.Group>
+            <Form.Label>Cargar Fotos</Form.Label>
+            <Form.Control
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, 'fotos')}
+            />
+          </Form.Group>
+          {fotoPreviews.length > 0 && (
+            <Row className="gallery-section mt-3">
+              {fotoPreviews.map((preview, index) => (
+                <Col md={3} key={index} className="gallery-item">
+                  <img
+                    src={preview}
+                    alt={`Nueva foto ${index + 1}`}
+                    className="gallery-thumbnail"
+                    onClick={() => handleImageClick(preview)}
+                  />
+                </Col>
+              ))}
+            </Row>
+          )}
+          {mantenimiento.fotos?.length > 0 ? (
+            <>
+              <Row className="gallery-section mt-3">
+                {mantenimiento.fotos.map((photo, index) => (
+                  <Col md={3} key={index} className="gallery-item">
+                    <div
+                      className={`photo-container ${selectedPhotos.includes(photo) ? 'selected' : ''}`}
+                      onClick={() => handlePhotoSelect(photo)}
+                    >
+                      <img
+                        src={photo}
+                        alt={`Foto ${index + 1}`}
+                        className="gallery-thumbnail"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleImageClick(photo);
+                        }}
+                      />
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+              {selectedPhotos.length > 0 && (
+                <Button
+                  variant="danger"
+                  className="mt-3"
+                  onClick={handleDeleteSelectedPhotos}
+                >
+                  Eliminar Fotos Seleccionadas
+                </Button>
+              )}
+            </>
+          ) : (
+            <p className="mt-3">No hay fotos cargadas.</p>
+          )}
         </Row>
+
+        <Modal show={showModal} onHide={handleCloseModal} centered>
+          <Modal.Body>
+            {selectedImage && (
+              <img src={selectedImage} alt="Full size" className="img-fluid" />
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Cerrar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </Container>
   );

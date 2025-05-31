@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import MantenimientoPreventivoForm from '../components/MantenimientoPreventivoForm';
 import { getMantenimientosPreventivos, deleteMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
+import { getPreventivos } from '../services/preventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
@@ -11,6 +12,7 @@ import { FaPlus } from 'react-icons/fa';
 const MantenimientosPreventivos = () => {
   const { currentEntity } = useContext(AuthContext);
   const [mantenimientos, setMantenimientos] = useState([]);
+  const [preventivos, setPreventivos] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
@@ -25,21 +27,33 @@ const MantenimientosPreventivos = () => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchPreventivos = async () => {
+    try {
+      const [preventivosResponse] = await Promise.all([
+        getPreventivos(),
+      ]);
+      setPreventivos(preventivosResponse.data);
+    } catch (error) {
+      console.error('Error fetching preventivos:', error);
+    }
+  };
+
+  const fetchCuadrillas = async () => {
     try {
       const [cuadrillasResponse] = await Promise.all([
         getCuadrillas(),
       ]);
       setCuadrillas(cuadrillasResponse.data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching cuadrillas:', error);
     }
   };
 
   useEffect(() => {
     if (currentEntity) {
       fetchMantenimientos();
-      fetchData();
+      fetchPreventivos();
+      fetchCuadrillas();
     }
     else {
       navigate('/login');
@@ -70,6 +84,11 @@ const MantenimientosPreventivos = () => {
     setShowForm(false);
     setSelectedMantenimiento(null);
     fetchMantenimientos();
+  };
+
+  const getSucursalNombre = (id_sucursal) => {
+    const preventivo = preventivos.find((p) => p.id_sucursal === id_sucursal);
+    return preventivo ? preventivo.nombre_sucursal : 'Desconocida';
   };
 
   const getCuadrillaNombre = (id_cuadrilla) => {
@@ -117,7 +136,7 @@ const MantenimientosPreventivos = () => {
               style={{ cursor: 'pointer' }}
             >
               <td>{mantenimiento.id}</td>
-              <td>{mantenimiento.nombre_sucursal} - {mantenimiento.frecuencia}</td>
+              <td>{getSucursalNombre(mantenimiento.id_sucursal)} - {mantenimiento.frecuencia}</td>
               <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
               <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
               <td>{mantenimiento.fecha_cierre?.split('T')[0]}</td>

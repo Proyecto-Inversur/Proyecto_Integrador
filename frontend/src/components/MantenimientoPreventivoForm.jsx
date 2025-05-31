@@ -10,7 +10,7 @@ import '../styles/formularios.css';
 
 const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
   const [formData, setFormData] = useState({
-    nombre_sucursal: null,
+    id_sucursal: null,
     frecuencia: null,
     id_cuadrilla: null,
     fecha_apertura: null,
@@ -56,7 +56,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
 
     if (mantenimiento) {
       setFormData({
-        nombre_sucursal: mantenimiento.nombre_sucursal || null,
+        id_sucursal: mantenimiento.id_sucursal || null,
         frecuencia: mantenimiento.frecuencia || null,
         id_cuadrilla: mantenimiento.id_cuadrilla || null,
         fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || null,
@@ -88,14 +88,14 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
       setShowNewPreventivoInput(true);
       setIsEditing(false);
       setNewPreventivo({ id: null, id_sucursal: null, nombre_sucursal: null, frecuencia: null });
-      setFormData({ ...formData, nombre_sucursal: null, frecuencia: null });
+      setFormData({ ...formData, id_sucursal: null, frecuencia: null });
     } else {
       setShowNewPreventivoInput(false);
       setIsEditing(false);
       const preventivo = preventivos.find(p => p.id === parseInt(preventivoId));
       setFormData({
         ...formData,
-        nombre_sucursal: preventivo ? preventivo.nombre_sucursal : null,
+        id_sucursal: preventivo ? preventivo.id_sucursal : null,
         frecuencia: preventivo ? preventivo.frecuencia : null,
       });
     }
@@ -115,7 +115,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
     });
     setFormData({
       ...formData,
-      nombre_sucursal: preventivo.nombre_sucursal,
+      id_sucursal: preventivo.id_sucursal,
       frecuencia: preventivo.frecuencia,
     });
     setDropdownOpen(false);
@@ -144,7 +144,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
       }
       setFormData({
         ...formData,
-        nombre_sucursal: response.data.nombre_sucursal,
+        id_sucursal: response.data.id_sucursal,
         frecuencia: response.data.frecuencia,
       });
       setNewPreventivo({ id: null, id_sucursal: null, nombre_sucursal: null, frecuencia: null });
@@ -163,9 +163,9 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
     try {
       await deletePreventivo(id);
       setPreventivos(preventivos.filter((preventivo) => preventivo.id !== id));
-      if (formData.nombre_sucursal === preventivos.find(p => p.id === id)?.nombre_sucursal &&
+      if (formData.id_sucursal === preventivos.find(p => p.id === id)?.id_sucursal &&
           formData.frecuencia === preventivos.find(p => p.id === id)?.frecuencia) {
-        setFormData({ ...formData, nombre_sucursal: null, frecuencia: null });
+        setFormData({ ...formData, id_sucursal: null, frecuencia: null });
       }
       setError(null);
     } catch (error) {
@@ -178,13 +178,13 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (!formData.nombre_sucursal || !formData.frecuencia || !formData.id_cuadrilla || !formData.fecha_apertura) {
+      if (!formData.id_sucursal || !formData.frecuencia || !formData.id_cuadrilla || !formData.fecha_apertura) {
         setError('Por favor, completa todos los campos obligatorios.');
         return;
       }
 
       const payload = {
-        nombre_sucursal: formData.nombre_sucursal,
+        id_sucursal: parseInt(formData.id_sucursal),
         frecuencia: formData.frecuencia,
         id_cuadrilla: parseInt(formData.id_cuadrilla),
         fecha_apertura: formData.fecha_apertura,
@@ -205,13 +205,13 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
   };
 
   const isFormValid = () => {
-    return formData.nombre_sucursal && formData.frecuencia && formData.id_cuadrilla && formData.fecha_apertura;
+    return formData.id_sucursal && formData.frecuencia && formData.id_cuadrilla && formData.fecha_apertura;
   };
 
   const getPreventivoDisplay = (id) => {
-    const preventivo = preventivos.find((p) => p.id === parseInt(id));
+    const preventivo = preventivos.find((p) => p.id_sucursal === parseInt(id));
     if (!preventivo) return 'Seleccione un preventivo';
-    return `${preventivo.nombre_sucursal || 'Desconocida'} - ${preventivo.frecuencia}`;
+    return `${preventivo.nombre_sucursal} - ${preventivo.frecuencia}`;
   };
 
   return (
@@ -231,9 +231,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
                 className="custom-dropdown-toggle w-100"
                 disabled={isLoading}
               >
-                {formData.nombre_sucursal && formData.frecuencia
-                  ? `${formData.nombre_sucursal} - ${formData.frecuencia}`
-                  : 'Seleccione un preventivo'}
+                {getPreventivoDisplay(formData.id_sucursal)}
               </Dropdown.Toggle>
               <Dropdown.Menu className="w-100">
                 {preventivos.map((preventivo) => (
@@ -244,7 +242,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
                     onClick={() => handlePreventivoSelect(preventivo.id)}
                   >
                     <span className="custom-dropdown-item-span">
-                      {getPreventivoDisplay(preventivo.id)}
+                      {getPreventivoDisplay(preventivo.id_sucursal)}
                     </span>
                     <Button
                       size="sm"
