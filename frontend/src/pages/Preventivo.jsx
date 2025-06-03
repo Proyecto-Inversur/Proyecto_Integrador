@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla } from '../services/mantenimientoPreventivoService';
+import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
@@ -13,6 +14,7 @@ const Preventivo = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mantenimiento = location.state?.mantenimiento || {};
+  const [sucursales, setSucursales] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
   const [formData, setFormData] = useState({
     planillas: [],
@@ -32,9 +34,19 @@ const Preventivo = () => {
     if (!currentEntity) {
       navigate('/login');
     } else {
+      fetchSucursales();
       fetchCuadrillas();
     }
   }, [currentEntity, navigate]);
+
+  const fetchSucursales = async () => {
+    try {
+      const response = await getSucursales();
+      setSucursales(response.data);
+    } catch (error) {
+      console.error('Error fetching sucursales:', error);
+    }
+  };
 
   const fetchCuadrillas = async () => {
     try {
@@ -141,6 +153,11 @@ const Preventivo = () => {
     }
   };
 
+  const getSucursalNombre = (id_sucursal) => {
+    const sucursal = sucursales.find((s) => s.id === id_sucursal);
+    return sucursal ? sucursal.nombre : 'Desconocida';
+  };
+
   const getCuadrillaNombre = (id_cuadrilla) => {
     const cuadrilla = cuadrillas.find((c) => c.id === id_cuadrilla);
     return cuadrilla ? cuadrilla.nombre : 'Desconocida';
@@ -154,7 +171,7 @@ const Preventivo = () => {
             <h4 className="info-section-title">Mantenimiento Preventivo</h4>
             <div className="info-field">
               <strong className="info-label">Sucursal - Frecuencia:</strong>{' '}
-              {mantenimiento.nombre_sucursal || 'N/A'} - {mantenimiento.frecuencia || 'N/A'}
+              {mantenimiento.id_sucursal ? getSucursalNombre(mantenimiento.id_sucursal) : 'N/A'} - {mantenimiento.frecuencia || 'N/A'}
             </div>
             <div className="info-field">
               <strong className="info-label">Cuadrilla:</strong>{' '}
@@ -163,6 +180,10 @@ const Preventivo = () => {
             <div className="info-field">
               <strong className="info-label">Fecha Apertura:</strong>{' '}
               {mantenimiento.fecha_apertura?.split('T')[0] || 'N/A'}
+            </div>
+            <div className="info-field">
+              <strong className="info-label">Extendido:</strong>{' '}
+              {mantenimiento.extendido?.split('T')[0] || 'N/A'}
             </div>
             <Form className="info-form" onSubmit={handleSubmit}>
               <Form.Group className="extendido-row">
