@@ -45,17 +45,15 @@
 
 /* Título de la sección de información */
 .info-section-title {
-  font-size: 1.8rem;
+    font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 1rem;
 }
 
 /* Etiquetas de los campos de información */
 .info-label {
-  display: block;
   margin-bottom: 0.3rem;
 }
-
 
 /* Campos de información */
 .info-field {
@@ -68,29 +66,31 @@
 
 /* Formulario dentro de la sección de información */
 .info-form {
-  width: 100%;
+  margin-bottom: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.extendido-row {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* <-- centrado horizontal */
+  gap: 2px;
   margin-bottom: 1rem;
 }
 
-/* Grupo de formulario */
-.info-form-group {
-  margin-bottom: 1rem;
-  width: 100%;
+.extendido-label {
+  font-weight: 700; 
+  margin-right: 8px;
+  margin-top: 7px;
 }
 
-/* Etiqueta del formulario */
-.info-form-label {
-  display: block;
-  text-align: center;
-  margin-bottom: 0.5rem;
+.extendido-input {
+  flex: 0.5; /* que ocupe el resto del espacio disponible */
+  min-width: 100px; /* o el ancho que quieras */
 }
 
-/* Campo de entrada del formulario */
-.info-form-control {
-  border-radius: 12px;
-  padding: 0.6rem;
-  font-size: 1rem;
-}
 
 /* Botón para agregar a la ruta actual */
 .info-button-add {
@@ -169,14 +169,15 @@ margin-top: 0.5rem;
 
 /* Mensajes recibidos */
 .chat-message-received {
-  background-color: #e9ecef;
+  background-color: #e4e4e4;
+  color: rgb(10, 10, 10);
   margin-right: auto;
 }
 
 /* Mensajes enviados */
 .chat-message-sent {
-  background-color: #6f42c1;
-  color: white;
+  background-color: #ffc720;
+  color: rgb(10, 10, 10);
   margin-left: auto;
 }
 
@@ -238,6 +239,15 @@ margin-top: 0.5rem;
   margin-bottom: 1rem;
 }
 
+.planilla-section img {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+
 /* Placeholder para la planilla */
 .planilla-placeholder {
   height: 200px;
@@ -258,7 +268,6 @@ margin-top: 0.5rem;
 .photos-section {
   width: 100%;
   padding: 0;
-  margin-top: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -269,6 +278,43 @@ margin-top: 0.5rem;
   margin-bottom: 1rem;
   text-align: center;
 }
+
+.gallery-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: start;
+}
+
+.gallery-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.gallery-thumbnail {
+  max-width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.gallery-thumbnail:hover {
+  transform: scale(1.05);
+}
+
+.photo-container.selected {
+  border: 2px solid #dc3545; /* rojo para seleccionadas */
+  padding: 2px;
+  border-radius: 8px;
+}
+
 
 /* Contenedor de la cuadrícula de fotos */
 .grid-section {
@@ -301,6 +347,27 @@ margin-top: 0.5rem;
 /* Botón de acciones de la cuadrícula */
 .grid-actions-button {
   border-radius: 0.5rem;
+}
+
+.floating-save-btn {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 4rem;
+  background-color: #ffc720;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+.floating-save-btn:hover {
+  background-color: #00ff15;
 }
 
 

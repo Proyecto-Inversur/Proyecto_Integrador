@@ -135,7 +135,6 @@ const Preventivo = () => {
       setFormData({ planillas: [], fotos: [], extendido: '' });
       setPlanillaPreviews([]);
       setFotoPreviews([]);
-      await fetchMantenimiento();
     } catch (error) {
       console.error('Error updating mantenimiento:', error);
       setError(error.response?.data?.detail || 'Error al actualizar los datos.');
@@ -166,26 +165,30 @@ const Preventivo = () => {
               {mantenimiento.fecha_apertura?.split('T')[0] || 'N/A'}
             </div>
             <Form className="info-form" onSubmit={handleSubmit}>
-              <Form.Group className="info-form-group">
-                <Form.Label className="info-form-label">Extendido</Form.Label>
+              <Form.Group className="extendido-row">
+                <Form.Label className="extendido-label">Extendido:</Form.Label>
                 <Form.Control 
                   type="date" 
                   name="extendido"
                   value={formData.extendido}
                   onChange={handleExtendidoChange}
                   placeholder="Seleccionar fecha" 
-                  className="info-form-control" />
+                  className="extendido-input" />
               </Form.Group>
               {error && <Alert variant="danger">{error}</Alert>}
               {success && <Alert variant="success">{success}</Alert>}
-              <Button type="submit" variant="primary" className="info-button-add">
-                Guardar Cambios
-              </Button>
+              <button 
+                type="submit" 
+                onClick={handleSubmit} 
+                className="floating-save-btn"
+              >
+                ✔
+              </button>
             </Form>
-            <Button variant="secondary" className="info-button-add">Add commentMore actions
+            <Button variant="secondary" className="info-button-add">
               <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
             </Button>
-            <Button variant="dark" className="info-button-finish">Add commentMore actions
+            <Button variant="dark" className="info-button-finish">
               <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
             </Button>
           </Col>
@@ -276,7 +279,7 @@ const Preventivo = () => {
           </Col>
         </Row>
 
-        <Row className="photos-section">
+        <Row className="photos-section mt-5"> 
           <h4 className="photos-title">Fotos de la obra</h4>
           <Form.Group>
             <Form.Label>Cargar Fotos</Form.Label>
