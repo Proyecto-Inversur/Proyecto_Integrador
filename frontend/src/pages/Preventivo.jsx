@@ -189,7 +189,7 @@ const Preventivo = () => {
               <Form.Group className="extendido-row">
                 <Form.Label className="extendido-label">Extendido:</Form.Label>
                 <Form.Control 
-                  type="date" 
+                  type="datetime-local" 
                   name="extendido"
                   value={formData.extendido}
                   onChange={handleExtendidoChange}
@@ -240,13 +240,31 @@ const Preventivo = () => {
           <Col className="planilla-section">
             <h4 className="planilla-section-title">Planilla</h4>
             <Form.Group>
-              <Form.Label>Cargar Planillas</Form.Label>
-              <Form.Control
+              <input
                 type="file"
                 multiple
                 accept="image/*"
+                id="planillaUpload"
+                style={{ display: 'none' }} // Ocultamos el input de archivo
                 onChange={(e) => handleFileChange(e, 'planillas')}
               />
+              <Button
+                variant="primary"
+                onClick={() => document.getElementById('planillaUpload').click()} // Simulamos clic en el input oculto
+              >
+                Cargar Planillas
+              </Button>
+              {/* Mostrar nombres de archivos seleccionados */}
+              {formData.planillas.length > 0 && (
+                <div className="selected-files mt-2">
+                  <strong>Archivos seleccionados:</strong>
+                  <ul>
+                    {formData.planillas.map((file, index) => (
+                      <li key={index}>{file.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </Form.Group>
             {planillaPreviews.length > 0 && (
               <Row className="gallery-section mt-3">
@@ -284,15 +302,12 @@ const Preventivo = () => {
                     </Col>
                   ))}
                 </Row>
-                {selectedPlanillas.length > 0 && (
-                  <Button
-                    variant="danger"
-                    className="mt-3"
-                    onClick={handleDeleteSelectedPlanillas}
-                  >
+                {/* Botón de eliminación siempre visible */}
+                <div className="d-flex justify-content-end mt-5">
+                  <Button variant="danger">
                     Eliminar Planillas Seleccionadas
                   </Button>
-                )}
+                </div>
               </>
             ) : (
               <p className="mt-3">No hay planillas cargadas.</p>
@@ -302,14 +317,32 @@ const Preventivo = () => {
 
         <Row className="photos-section mt-5"> 
           <h4 className="photos-title">Fotos de la obra</h4>
-          <Form.Group>
-            <Form.Label>Cargar Fotos</Form.Label>
-            <Form.Control
+          <Form.Group className="text-center"> {/* Añadido text-center para centrar */}
+            <input
               type="file"
               multiple
               accept="image/*"
+              id="fotoUpload"
+              style={{ display: 'none' }} // Ocultamos el input de archivo
               onChange={(e) => handleFileChange(e, 'fotos')}
             />
+            <Button
+              variant="primary"
+              onClick={() => document.getElementById('fotoUpload').click()} // Simulamos clic en el input oculto
+            >
+              Cargar Fotos
+            </Button>
+            {/* Mostrar nombres de archivos seleccionados */}
+            {formData.fotos.length > 0 && (
+              <div className="selected-files mt-2">
+                <strong>Archivos seleccionados:</strong>
+                <ul>
+                  {formData.fotos.map((file, index) => (
+                    <li key={index}>{file.name}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </Form.Group>
           {fotoPreviews.length > 0 && (
             <Row className="gallery-section mt-3">
@@ -347,15 +380,12 @@ const Preventivo = () => {
                   </Col>
                 ))}
               </Row>
-              {selectedPhotos.length > 0 && (
-                <Button
-                  variant="danger"
-                  className="mt-3"
-                  onClick={handleDeleteSelectedPhotos}
-                >
+              {/* Botón de eliminación siempre visible */}
+              <div className="d-flex justify-content-center mt-5">
+                <Button variant="danger">
                   Eliminar Fotos Seleccionadas
                 </Button>
-              )}
+              </div>
             </>
           ) : (
             <p className="mt-3">No hay fotos cargadas.</p>

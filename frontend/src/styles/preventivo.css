@@ -247,6 +247,44 @@ margin-top: 0.5rem;
   margin: 0 auto;
 }
 
+/* Estilo para el botón Cargar Planillas */
+.planilla-section .btn-primary {
+  background-color: #ffc720;
+  border-color: #ffc720;
+  color: #000000; /* Texto negro para contraste */
+  display: block; /* Asegura que el botón ocupe su propio espacio */
+  margin: 0 auto; /* Centra el botón horizontalmente */
+  width: fit-content; /* Ajusta el ancho al contenido */
+}
+
+.planilla-section .btn-primary:hover {
+  background-color: #e0ad1e; /* Tono más oscuro para hover */
+  border-color: #e0ad1e;
+  color: #000000;
+}
+
+.planilla-section .btn-primary:focus,
+.planilla-section .btn-primary:active {
+  background-color: #ffc720 !important; /* Mantiene el color original al presionar */
+  border-color: #ffc720 !important;
+  color: #000000 !important;
+}
+
+/*Texto de los archivos/fotos seleccionadas en Planilla y Fotos de Obra*/
+.selected-files {
+  margin-top: 0.5rem;
+  color: #555;
+}
+
+.selected-files ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.selected-files li {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
 
 /* Placeholder para la planilla */
 .planilla-placeholder {
@@ -278,6 +316,30 @@ margin-top: 0.5rem;
   margin-bottom: 1rem;
   text-align: center;
 }
+
+/* Estilo personalizado para el botón Cargar Fotos */
+.photos-section .btn-primary {
+  background-color: #ffc720;
+  border-color: #ffc720;
+  color: #000000; /* Texto negro para contraste */
+  display: block; /* Asegura que el botón ocupe su propio espacio */
+  margin: 0 auto; /* Centra el botón horizontalmente */
+  width: fit-content; /* Ajusta el ancho al contenido */
+}
+
+.photos-section .btn-primary:hover {
+  background-color: #e0ad1e; /* Tono más oscuro para hover */
+  border-color: #e0ad1e;
+  color: #000000;
+}
+
+.photos-section .btn-primary:focus,
+.photos-section .btn-primary:active {
+  background-color: #ffc720 !important; /* Mantiene el color original al presionar */
+  border-color: #ffc720 !important;
+  color: #000000 !important;
+}
+
 
 .gallery-section {
   display: flex;
