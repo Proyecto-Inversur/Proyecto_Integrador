@@ -10,20 +10,23 @@ from dotenv import load_dotenv
 import os
 from starlette.responses import JSONResponse
 
+load_dotenv(dotenv_path="./env.config")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+EMAIL_ADMIN = os.getenv("EMAIL_ADMIN")
+NOMBRE_ADMIN = os.getenv("NOMBRE_ADMIN")
+PASSWORD_ADMIN = os.getenv("PASSWORD_ADMIN")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_admin(
-        email="2113461@ucc.edu.ar",
-        nombre="Facundo",
-        password="Facundo2002"
+        email=EMAIL_ADMIN,
+        nombre=NOMBRE_ADMIN,
+        password=PASSWORD_ADMIN
     )
     yield
     pass
 
 app = FastAPI(lifespan=lifespan)
-
-load_dotenv(dotenv_path="./env.config")
-FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 # Configuración de CORS
 origins = [

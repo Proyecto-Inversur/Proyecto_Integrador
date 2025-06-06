@@ -2,10 +2,11 @@ import { useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Alert, Spinner } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { auth, GoogleAuthProvider, signInWithPopup } from '../services/firebase';
+import { auth, GoogleAuthProvider, signInWithPopup, signOut } from '../services/firebase';
 import { FcGoogle } from 'react-icons/fc';
 import '../styles/login.css';
 import logoInversur from '../assets/logo_inversur.png';
+import { NODE_ENV } from '../config';
 
 const Login = () => {
   const [error, setError] = useState(null);
@@ -17,12 +18,25 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     setError(null);
     try {
+      /*const mockResult = {
+        user: mockUser,
+        providerId: 'google.com',
+        operationType: 'signIn',
+        _tokenResponse: {
+          federatedId: 'https://accounts.google.com/115707131815223881666',
+          providerId: 'google.com',
+          email: '2105905@ucc.edu.ar',
+          emailVerified: true,
+          firstName: 'Tomas',
+        },
+      };*/
       const result = await signInWithPopup(auth, googleProvider);
+      console.log(result);
       const idToken = await result.user.getIdToken(true); // Force token refresh
       localStorage.setItem('authToken', idToken);
       const verificationResult = await verifyUser(result.user, idToken);
       if (verificationResult.success) {
-        navigate('/');
+        //navigate('/');
       } else {
         setError('Error al verificar el usuario después de múltiples intentos');
         await signOut(auth);

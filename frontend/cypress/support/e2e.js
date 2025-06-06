@@ -1,17 +1,24 @@
-// ***********************************************************
-// This example support/e2e.js is processed and
-// loaded automatically before your test files.
-//
-// This is a great place to put global configuration and
-// behavior that modifies Cypress.
-//
-// You can change the location of this file or turn off
-// automatically serving support files with the
-// 'supportFile' configuration option.
-//
-// You can read more here:
-// https://on.cypress.io/configuration
-// ***********************************************************
+import './commands.js';
 
-// Import commands.js using ES2015 syntax:
-import './commands'
+console.log('Running e2e.js support file');
+
+beforeEach(() => {
+  cy.visit('/login');
+  cy.window().then((win) => {
+    cy.log('Setting up manual mock for signInWithPopup');
+    win.__firebase_auth__ = {
+      signInWithPopup: () => {
+        cy.log('Manual mock signInWithPopup called');
+        return Promise.resolve({
+          user: {
+            email: 'admin@example.com',
+            displayName: 'Admin User',
+            uid: 'mock-uid-123',
+            getIdToken: () => Promise.resolve('mock-id-token'),
+          },
+        });
+      },
+    };
+    cy.log('Mock set on window.__firebase_auth__:', !!win.__firebase_auth__);
+  });
+});
