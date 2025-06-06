@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import MantenimientoCorrectivoForm from '../components/MantenimientoCorrectivoForm';
 import { getMantenimientosCorrectivos, deleteMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
@@ -15,6 +16,7 @@ const MantenimientosCorrectivos = () => {
   const [cuadrillas, setCuadrillas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
+  const navigate = useNavigate();
 
   const fetchMantenimientos = async () => {
     try {
@@ -64,10 +66,15 @@ const MantenimientosCorrectivos = () => {
     setShowForm(true);
   };
 
+  const handleRowClick = (mantenimiento) => {
+    navigate('/correctivo', { state: { mantenimiento } });
+  };
+
   const handleFormClose = () => {
     setShowForm(false);
     setSelectedMantenimiento(null);
     fetchMantenimientos();
+    fetchData();
   };
 
   const getSucursalNombre = (id_sucursal) => {
@@ -110,6 +117,7 @@ const MantenimientosCorrectivos = () => {
             <th>Sucursal</th>
             <th>Cuadrilla</th>
             <th>Fecha Apertura</th>
+            <th>Fecha Cierre</th>
             <th>Incidente</th>
             <th>Estado</th>
             <th>Prioridad</th>
@@ -118,31 +126,36 @@ const MantenimientosCorrectivos = () => {
         </thead>
         <tbody>
           {mantenimientos.map((mantenimiento) => (
-            <tr key={mantenimiento.id}>
+            <tr 
+              key={mantenimiento.id}
+              onClick={() => handleRowClick(mantenimiento)}
+              style={{ cursor: 'pointer' }}
+            >
               <td>{mantenimiento.id}</td>
               <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
               <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
               <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
+              <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
               <td>{mantenimiento.incidente}</td>
               <td>{mantenimiento.estado}</td>
               <td>{mantenimiento.prioridad}</td>
-              <td>
-                <Button
-                  variant="warning"
-                  className="me-2"
-                  onClick={() => handleEdit(mantenimiento)}
-                >
-                  Editar
-                </Button>
-                {currentEntity.type === 'usuario' && (
+              {currentEntity.type === 'usuario' && (
+                <td onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="warning"
+                    className="me-2"
+                    onClick={() => handleEdit(mantenimiento)}
+                  >
+                    Editar
+                  </Button>
                   <Button
                     variant="danger"
                     onClick={() => handleDelete(mantenimiento.id)}
                   >
                     Eliminar
                   </Button>
-                )}
-              </td>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

@@ -27,33 +27,23 @@ const MantenimientosPreventivos = () => {
     }
   };
 
-  const fetchPreventivos = async () => {
+  const fetchData = async () => {
     try {
-      const [preventivosResponse] = await Promise.all([
+      const [preventivosResponse, cuadrillasResponse] = await Promise.all([
         getPreventivos(),
-      ]);
-      setPreventivos(preventivosResponse.data);
-    } catch (error) {
-      console.error('Error fetching preventivos:', error);
-    }
-  };
-
-  const fetchCuadrillas = async () => {
-    try {
-      const [cuadrillasResponse] = await Promise.all([
         getCuadrillas(),
       ]);
+      setPreventivos(preventivosResponse.data);
       setCuadrillas(cuadrillasResponse.data);
     } catch (error) {
-      console.error('Error fetching cuadrillas:', error);
+      console.error('Error fetching data:', error);
     }
   };
 
   useEffect(() => {
     if (currentEntity) {
       fetchMantenimientos();
-      fetchPreventivos();
-      fetchCuadrillas();
+      fetchData();
     }
     else {
       navigate('/login');
@@ -84,8 +74,7 @@ const MantenimientosPreventivos = () => {
     setShowForm(false);
     setSelectedMantenimiento(null);
     fetchMantenimientos();
-    fetchPreventivos();
-    fetchCuadrillas();
+    fetchData();
   };
 
   const getSucursalNombre = (id_sucursal) => {
@@ -105,10 +94,12 @@ const MantenimientosPreventivos = () => {
           <h2>Gestión de Mantenimientos Preventivos</h2>
         </Col>
         <Col className="text-end">
-          <Button className="custom-button" onClick={() => setShowForm(true)}>
-            <FaPlus />
-            Agregar
-          </Button>
+          {currentEntity.type === 'usuario' && (
+            <Button className="custom-button" onClick={() => setShowForm(true)}>
+              <FaPlus />
+              Agregar
+            </Button>
+          )}
         </Col>
       </Row>
 
@@ -141,24 +132,24 @@ const MantenimientosPreventivos = () => {
               <td>{getSucursalNombre(mantenimiento.id_sucursal)} - {mantenimiento.frecuencia}</td>
               <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
               <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-              <td>{mantenimiento.fecha_cierre?.split('T')[0]}</td>
-              <td onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="warning"
-                  className="me-2"
-                  onClick={() => handleEdit(mantenimiento)}
-                >
-                  Editar
-                </Button>
-                {currentEntity.type === 'usuario' && (
+              <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+              {currentEntity.type === 'usuario' && (
+                <td onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="warning"
+                    className="me-2"
+                    onClick={() => handleEdit(mantenimiento)}
+                  >
+                    Editar
+                  </Button>
                   <Button
                     variant="danger"
                     onClick={() => handleDelete(mantenimiento.id)}
                   >
                     Eliminar
                   </Button>
-                )}
-              </td>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

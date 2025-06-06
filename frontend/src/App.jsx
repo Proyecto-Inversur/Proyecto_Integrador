@@ -11,6 +11,7 @@ import Mantenimiento from './pages/Mantenimiento';
 import MantenimientoPreventivo from './pages/MantenimientosPreventivos';
 import MantenimientoCorrectivo from './pages/MantenimientosCorrectivos';
 import Preventivo from './pages/Preventivo';
+import Correctivo from './pages/Correctivo';
 import Login from './pages/Login';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -67,6 +68,7 @@ const AppContent = () => {
           <Route path="/mantenimientos-preventivos" element={<ProtectedRoute><MantenimientoPreventivo /></ProtectedRoute>} />
           <Route path="/mantenimientos-correctivos" element={<ProtectedRoute><MantenimientoCorrectivo /></ProtectedRoute>} />
           <Route path="/preventivo" element={<ProtectedRoute><Preventivo /></ProtectedRoute>} />
+          <Route path="/correctivo" element={<ProtectedRoute><Correctivo /></ProtectedRoute>} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>

@@ -77,7 +77,7 @@ def mantenimiento_correctivo_create(mantenimiento: MantenimientoCorrectivoCreate
     }
 
 @router.put("/{mantenimiento_id}", response_model=dict)
-async def mantenimiento_preventivo_update(
+async def mantenimiento_correctivo_update(
     mantenimiento_id: int,
     request: Request,
     id_sucursal: Optional[int] = Form(None),
@@ -95,7 +95,7 @@ async def mantenimiento_preventivo_update(
     db: Session = Depends(get_db)
 ):
     current_entity = request.state.current_entity
-    updated_mantenimiento = update_mantenimiento_correctivo(
+    updated_mantenimiento = await update_mantenimiento_correctivo(
         db,
         mantenimiento_id,
         current_entity,

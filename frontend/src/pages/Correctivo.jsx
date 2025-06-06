@@ -2,39 +2,39 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
-import { getPreventivos } from '../services/preventivoService';
+import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
+import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import '../styles/mantenimientos.css';
 
-const Preventivo = () => {
+const Correctivo = () => {
   const { currentEntity } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const mantenimiento = location.state?.mantenimiento || {};
-  const [preventivos, setPreventivos] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
   const [formData, setFormData] = useState({
-    planillas: [],
+    planilla: '',
     fotos: [],
     extendido: '',
   });
-  const [planillaPreviews, setPlanillaPreviews] = useState([]);
+  const [planillaPreview, setPlanillaPreview] = useState('');
   const [fotoPreviews, setFotoPreviews] = useState([]);
-  const [selectedPlanillas, setSelectedPlanillas] = useState([]);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedPlanilla, setSelectedPlanilla] = useState('');
+  const [selectedImage, setSelectedImage] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const fetchMantenimiento = async () => {
   try {
-    const response = await getMantenimientoPreventivo(mantenimiento.id);
+    const response = await getMantenimientoCorrectivo(mantenimiento.id);
     setFormData({
-      planillas: [],
+      planilla: '',
       fotos: [],
       extendido: response.data.extendido?.split('T')[0] || '',
     });
@@ -47,11 +47,11 @@ const Preventivo = () => {
 
   const fetchData = async () => {
     try {
-      const [preventivosResponse, cuadrillasResponse] = await Promise.all([
-        getPreventivos(),
+      const [sucursalesResponse, cuadrillasResponse] = await Promise.all([
+        getSucursales(),
         getCuadrillas(),
       ]);
-      setPreventivos(preventivosResponse.data);
+      setSucursales(sucursalesResponse.data);
       setCuadrillas(cuadrillasResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -68,13 +68,16 @@ const Preventivo = () => {
   }, [currentEntity, navigate]);
 
   const handleFileChange = (e, field) => {
-    const files = Array.from(e.target.files);
-    setFormData({ ...formData, [field]: files });
-
-    const previews = files.map(file => URL.createObjectURL(file));
-    if (field === 'planillas') {
-      setPlanillaPreviews(previews);
+    if (field === 'planilla') {
+      const file = e.target.files[0];
+      if (file) {
+        setFormData({ ...formData, [field]: file });
+        setPlanillaPreview(URL.createObjectURL(file));
+      }
     } else if (field === 'fotos') {
+      const files = Array.from(e.target.files);
+      setFormData({ ...formData, [field]: files });
+      const previews = files.map(file => URL.createObjectURL(file));
       setFotoPreviews(previews);
     }
   };
@@ -84,11 +87,7 @@ const Preventivo = () => {
   };
 
   const handlePlanillaSelect = (planillaUrl) => {
-    setSelectedPlanillas(prev =>
-      prev.includes(planillaUrl)
-        ? prev.filter(url => url !== planillaUrl)
-        : [...prev, planillaUrl]
-    );
+    setSelectedPlanilla(planillaUrl);
   };
 
   const handlePhotoSelect = (photoUrl) => {
@@ -107,21 +106,6 @@ const Preventivo = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedImage(null);
-  };
-
-  const handleDeleteSelectedPlanillas = async () => {
-    try {
-      for (const planillaUrl of selectedPlanillas) {
-        const fileName = planillaUrl.split('/').pop();
-        await deleteMantenimientoPlanilla(mantenimiento.id, fileName);
-      }
-      setSelectedPlanillas([]);
-      setSuccess('Planillas eliminadas correctamente.');
-      await fetchMantenimiento();
-    } catch (error) {
-      console.error('Error deleting planillas:', error);
-      setError('Error al eliminar las planillas.');
-    }
   };
 
   const handleDeleteSelectedPhotos = async () => {
@@ -145,17 +129,19 @@ const Preventivo = () => {
     setSuccess('');
 
     const formDataToSend = new FormData();
-    formData.planillas.forEach(file => formDataToSend.append('planillas', file));
+    if (formData.planilla) {
+      formDataToSend.append('planilla', formData.planilla);
+    }
     formData.fotos.forEach(file => formDataToSend.append('fotos', file));
     if (formData.extendido) {
       formDataToSend.append('extendido', new Date(formData.extendido).toISOString());
     }
 
     try {
-      await updateMantenimientoPreventivo(mantenimiento.id, formDataToSend);
+      await updateMantenimientoCorrectivo(mantenimiento.id, formDataToSend);
       setSuccess('Archivos y datos actualizados correctamente.');
-      setFormData({ planillas: [], fotos: [], extendido: '' });
-      setPlanillaPreviews([]);
+      setFormData({ planilla: '', fotos: [], extendido: '' });
+      setPlanillaPreview('');
       setFotoPreviews([]);
       await fetchMantenimiento();
     } catch (error) {
@@ -165,8 +151,8 @@ const Preventivo = () => {
   };
 
   const getSucursalNombre = (id_sucursal) => {
-    const preventivo = preventivos.find((p) => p.id_sucursal === id_sucursal);
-    return preventivo ? preventivo.nombre_sucursal : 'Desconocida';
+    const sucursal = sucursales.find((s) => s.id === id_sucursal);
+    return sucursal ? sucursal.nombre : 'Desconocida';
   };
 
   const getCuadrillaNombre = (id_cuadrilla) => {
@@ -179,10 +165,10 @@ const Preventivo = () => {
       <div className="page-content">
         <Row className="main-row">
           <Col className="info-section">
-            <h4 className="info-section-title">Mantenimiento Preventivo</h4>
+            <h4 className="info-section-title">Mantenimiento Correctivo</h4>
             <div className="info-field">
-              <strong className="info-label">Sucursal - Frecuencia:</strong>{' '}
-              {mantenimiento.id_sucursal ? getSucursalNombre(mantenimiento.id_sucursal) : 'N/A'} - {mantenimiento.frecuencia || 'N/A'}
+              <strong className="info-label">Sucursal:</strong>{' '}
+              {mantenimiento.id_sucursal ? getSucursalNombre(mantenimiento.id_sucursal) : 'N/A'}
             </div>
             <div className="info-field">
               <strong className="info-label">Cuadrilla:</strong>{' '}
@@ -253,75 +239,66 @@ const Preventivo = () => {
             <Form.Group>
               <input
                 type="file"
-                multiple
                 accept="image/*"
                 id="planillaUpload"
                 style={{ display: 'none' }} // Ocultamos el input de archivo
-                onChange={(e) => handleFileChange(e, 'planillas')}
+                onChange={(e) => handleFileChange(e, 'planilla')}
               />
               <Button
                 variant="primary"
                 onClick={() => document.getElementById('planillaUpload').click()} // Simulamos clic en el input oculto
               >
-                Cargar Planillas
+                Cargar Planilla
               </Button>
               {/* Mostrar nombres de archivos seleccionados */}
-              {formData.planillas.length > 0 && (
+              {formData.planilla && (
                 <div className="selected-files mt-2">
-                  <strong>Archivos seleccionados:</strong>
+                  <strong>Archivo seleccionado:</strong>
                   <ul>
-                    {formData.planillas.map((file, index) => (
-                      <li key={index}>{file.name}</li>
-                    ))}
+                    <li>{formData.planilla.name}</li>
                   </ul>
                 </div>
               )}
             </Form.Group>
-            {planillaPreviews.length > 0 && (
+            {planillaPreview && (
               <Row className="gallery-section mt-3">
-                {planillaPreviews.map((preview, index) => (
-                  <Col md={3} key={index} className="gallery-item">
-                    <img
-                      src={preview}
-                      alt={`Nueva planilla ${index + 1}`}
-                      className="gallery-thumbnail"
-                      onClick={() => handleImageClick(preview)}
-                    />
-                  </Col>
-                ))}
+                <Col md={3} className="gallery-item">
+                  <img
+                    src={planillaPreview}
+                    className="gallery-thumbnail"
+                    onClick={() => handleImageClick(planillaPreview)}
+                  />
+                </Col>
               </Row>
             )}
-            {mantenimiento.planillas?.length > 0 ? (
+            {mantenimiento.planilla ? (
               <>
                 <Row className="gallery-section mt-3">
-                  {mantenimiento.planillas.map((planilla, index) => (
-                    <Col md={3} key={index} className="gallery-item">
-                      <div
-                        className={`photo-container ${selectedPlanillas.includes(planilla) ? 'selected' : ''}`}
-                        onClick={() => handlePlanillaSelect(planilla)}
-                      >
-                        <img
-                          src={planilla}
-                          alt={`Planilla ${index + 1}`}
-                          className="gallery-thumbnail"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageClick(planilla);
-                          }}
-                        />
-                      </div>
-                    </Col>
-                  ))}
+                  <Col md={3} className="gallery-item">
+                    <div
+                      className={`photo-container ${selectedPlanilla === mantenimiento.planilla ? 'selected' : ''}`}
+                      onClick={() => handlePlanillaSelect(mantenimiento.planilla)}
+                    >
+                      <img
+                        src={mantenimiento.planilla}
+                        className="gallery-thumbnail"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleImageClick(mantenimiento.planilla);
+                        }}
+                      />
+                    </div>
+                  </Col>
                 </Row>
                 {/* Botón de eliminación siempre visible */}
                 <div className="d-flex justify-content-end mt-5">
                   <Button variant="danger">
-                    Eliminar Planillas Seleccionadas
+                    Eliminar Planilla Seleccionada
                   </Button>
                 </div>
               </>
             ) : (
-              <p className="mt-3">No hay planillas cargadas.</p>
+              <p className="mt-3">No hay planilla cargada.</p>
             )}
           </Col>
         </Row>
@@ -420,4 +397,4 @@ const Preventivo = () => {
   );
 };
 
-export default Preventivo;
+export default Correctivo;
