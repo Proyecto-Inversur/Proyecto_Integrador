@@ -2,12 +2,12 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla } from '../services/mantenimientoPreventivoService';
+import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
-import '../styles/preventivo.css';
+import '../styles/mantenimientos.css';
 
 const Preventivo = () => {
   const { currentEntity } = useContext(AuthContext);
@@ -34,10 +34,26 @@ const Preventivo = () => {
     if (!currentEntity) {
       navigate('/login');
     } else {
+      fetchMantenimiento();
       fetchSucursales();
       fetchCuadrillas();
     }
   }, [currentEntity, navigate]);
+
+  const fetchMantenimiento = async () => {
+  try {
+    const response = await getMantenimientoPreventivo(mantenimiento.id);
+    setFormData({
+      planillas: [],
+      fotos: [],
+      extendido: response.data.extendido?.split('T')[0] || '',
+    });
+    navigate(location.pathname, { state: { mantenimiento: response.data } });
+  } catch (error) {
+    console.error('Error fetching mantenimiento:', error);
+    setError('Error al cargar los datos actualizados.');
+  }
+};
 
   const fetchSucursales = async () => {
     try {
@@ -147,6 +163,7 @@ const Preventivo = () => {
       setFormData({ planillas: [], fotos: [], extendido: '' });
       setPlanillaPreviews([]);
       setFotoPreviews([]);
+      await fetchMantenimiento();
     } catch (error) {
       console.error('Error updating mantenimiento:', error);
       setError(error.response?.data?.detail || 'Error al actualizar los datos.');
@@ -164,7 +181,7 @@ const Preventivo = () => {
   };
 
   return (
-    <Container fluid className="preventivo-container">
+    <Container fluid className="mantenimiento-container">
       <div className="page-content">
         <Row className="main-row">
           <Col className="info-section">
@@ -183,7 +200,7 @@ const Preventivo = () => {
             </div>
             <div className="info-field">
               <strong className="info-label">Extendido:</strong>{' '}
-              {mantenimiento.extendido?.split('T')[0] || 'N/A'}
+              {mantenimiento.extendido?.split('T')[0] || 'No hay extendido'}
             </div>
             <Form className="info-form" onSubmit={handleSubmit}>
               <Form.Group className="extendido-row">

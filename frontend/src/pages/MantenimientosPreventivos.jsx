@@ -84,6 +84,8 @@ const MantenimientosPreventivos = () => {
     setShowForm(false);
     setSelectedMantenimiento(null);
     fetchMantenimientos();
+    fetchPreventivos();
+    fetchCuadrillas();
   };
 
   const getSucursalNombre = (id_sucursal) => {
