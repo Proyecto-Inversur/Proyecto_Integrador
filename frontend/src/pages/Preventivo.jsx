@@ -29,6 +29,7 @@ const Preventivo = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchMantenimiento = async () => {
   try {
@@ -141,6 +142,7 @@ const Preventivo = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     setError('');
     setSuccess('');
 
@@ -148,7 +150,7 @@ const Preventivo = () => {
     formData.planillas.forEach(file => formDataToSend.append('planillas', file));
     formData.fotos.forEach(file => formDataToSend.append('fotos', file));
     if (formData.extendido) {
-      formDataToSend.append('extendido', new Date(formData.extendido).toISOString());
+      formDataToSend.append('extendido', formData.extendido);
     }
 
     try {
@@ -161,6 +163,8 @@ const Preventivo = () => {
     } catch (error) {
       console.error('Error updating mantenimiento:', error);
       setError(error.response?.data?.detail || 'Error al actualizar los datos.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -176,39 +180,71 @@ const Preventivo = () => {
 
   return (
     <Container fluid className="mantenimiento-container">
-      <div className="page-content">
-        <Row className="main-row">
-          <Col className="info-section">
-            <h4 className="info-section-title">Mantenimiento Preventivo</h4>
-            <div className="info-field">
-              <strong className="info-label">Sucursal - Frecuencia:</strong>{' '}
-              {mantenimiento.id_sucursal ? getSucursalNombre(mantenimiento.id_sucursal) : 'N/A'} - {mantenimiento.frecuencia || 'N/A'}
-            </div>
-            <div className="info-field">
-              <strong className="info-label">Cuadrilla:</strong>{' '}
-              {mantenimiento.id_cuadrilla ? getCuadrillaNombre(mantenimiento.id_cuadrilla) : 'N/A'}
-            </div>
-            <div className="info-field">
-              <strong className="info-label">Fecha Apertura:</strong>{' '}
-              {mantenimiento.fecha_apertura?.split('T')[0] || 'N/A'}
-            </div>
-            <div className="info-field">
-              <strong className="info-label">Extendido:</strong>{' '}
-              {mantenimiento.extendido?.split('T')[0] || 'No hay extendido'}
-            </div>
-            <Form className="info-form" onSubmit={handleSubmit}>
-              <Form.Group className="extendido-row">
-                <Form.Label className="extendido-label">Extendido:</Form.Label>
-                <Form.Control 
-                  type="datetime-local" 
-                  name="extendido"
-                  value={formData.extendido}
-                  onChange={handleExtendidoChange}
-                  placeholder="Seleccionar fecha" 
-                  className="extendido-input" />
-              </Form.Group>
-              {error && <Alert variant="danger">{error}</Alert>}
-              {success && <Alert variant="success">{success}</Alert>}
+      {isLoading ? (
+        <div className="d-flex justify-content-center align-items-center min-vh-100">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      ) : (
+        <div className="page-content">
+          <Row className="main-row">
+            <Col className="info-section">
+              <h4 className="info-section-title">Mantenimiento Preventivo</h4>
+              <div className="info-field">
+                <strong className="info-label">Sucursal - Frecuencia:</strong>{' '}
+                {mantenimiento.id_sucursal ? getSucursalNombre(mantenimiento.id_sucursal) : 'N/A'} - {mantenimiento.frecuencia || 'N/A'}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Cuadrilla:</strong>{' '}
+                {mantenimiento.id_cuadrilla ? getCuadrillaNombre(mantenimiento.id_cuadrilla) : 'N/A'}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Fecha Apertura:</strong>{' '}
+                {mantenimiento.fecha_apertura?.split('T')[0] || 'N/A'}
+              </div>
+              {currentEntity.type === 'usuario' && (
+                <div className="info-field">
+                  <strong className="info-label">Extendido:</strong>{' '}
+                  {mantenimiento.extendido
+                    ? new Date(mantenimiento.extendido).toLocaleString('es-AR', {
+                        hour12: false,
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : 'No hay extendido'}
+                  {mantenimiento.extendido ? ' hs' : ''}
+                </div>
+              )}
+              {currentEntity.type !== 'usuario' && (
+                <Form className="info-form" onSubmit={handleSubmit}>
+                  <Form.Group className="extendido-row">
+                    <Form.Label className="extendido-label">Extendido:</Form.Label>
+                    <Form.Control 
+                      type="datetime-local" 
+                      name="extendido"
+                      value={formData.extendido}
+                      onChange={handleExtendidoChange}
+                      placeholder="Seleccionar fecha" 
+                      className="extendido-input" />
+                  </Form.Group>
+                  {error && <Alert variant="danger">{error}</Alert>}
+                  {success && <Alert variant="success">{success}</Alert>}
+                </Form>
+              )}
+              {currentEntity.type !== 'usuario' && (
+                <Button variant="secondary" className="info-button-add">
+                  <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
+                </Button>
+              )}
+              {currentEntity.type !== 'usuario' && (
+                <Button variant="dark" className="info-button-finish">
+                  <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
+                </Button>
+              )}
               <button 
                 type="submit" 
                 onClick={handleSubmit} 
@@ -216,81 +252,164 @@ const Preventivo = () => {
               >
                 ✔
               </button>
-            </Form>
-            <Button variant="secondary" className="info-button-add">
-              <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
-            </Button>
-            <Button variant="dark" className="info-button-finish">
-              <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
-            </Button>
-          </Col>
+            </Col>
 
-          <Col className="chat-section">
-            <div className="chat-box">
-              <div className="chat-message chat-message-received">
-                <p className="chat-message-text">Mensaje</p>
-                <span className="chat-info">info/hora/visto</span>
+            <Col className="chat-section">
+              <div className="chat-box">
+                <div className="chat-message chat-message-received">
+                  <p className="chat-message-text">Mensaje</p>
+                  <span className="chat-info">info/hora/visto</span>
+                </div>
+                <div className="chat-message chat-message-sent">
+                  <p className="chat-message-text">Mensaje</p>
+                  <span className="chat-info">info/hora/visto</span>
+                </div>
               </div>
-              <div className="chat-message chat-message-sent">
-                <p className="chat-message-text">Mensaje</p>
-                <span className="chat-info">info/hora/visto</span>
+              <div className="chat-input-form">
+                <input
+                  type="text"
+                  placeholder="Escribe un mensaje..."
+                  className="chat-input"
+                />
+                <Button variant="light" className="chat-send-btn">
+                  <FiSend size={20} color="black" />
+                </Button>
               </div>
-            </div>
-            <div className="chat-input-form">
-              <input
-                type="text"
-                placeholder="Escribe un mensaje..."
-                className="chat-input"
-              />
-              <Button variant="light" className="chat-send-btn">
-                <FiSend size={20} color="black" />
-              </Button>
-            </div>
-          </Col>
+            </Col>
 
-          <Col className="planilla-section">
-            <h4 className="planilla-section-title">Planilla</h4>
-            <Form.Group>
+            <Col className="planilla-section">
+              <h4 className="planilla-section-title">Planilla</h4>
+              <Form.Group>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  id="planillaUpload"
+                  style={{ display: 'none' }} // Ocultamos el input de archivo
+                  onChange={(e) => handleFileChange(e, 'planillas')}
+                />
+                <Button
+                  variant="primary"
+                  onClick={() => document.getElementById('planillaUpload').click()} // Simulamos clic en el input oculto
+                >
+                  Cargar Planillas
+                </Button>
+                {/* Mostrar nombres de archivos seleccionados */}
+                {formData.planillas.length > 0 && (
+                  <div className="selected-files mt-2">
+                    <strong>Archivos seleccionados:</strong>
+                    <ul>
+                      {formData.planillas.map((file, index) => (
+                        <li key={index}>{file.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </Form.Group>
+              {planillaPreviews.length > 0 && (
+                <Row className="gallery-section mt-3">
+                  {planillaPreviews.map((preview, index) => (
+                    <Col md={3} key={index} className="gallery-item">
+                      <div className="photo-container">
+                        <input
+                          type="checkbox"
+                          checked={selectedPlanillas.includes(preview)}
+                          onChange={() => handlePlanillaSelect(preview)}
+                          className="gallery-checkbox"
+                        />
+                        <img
+                          src={preview}
+                          alt={`Nueva planilla ${index + 1}`}
+                          className="gallery-thumbnail"
+                          onClick={() => handleImageClick(preview)}
+                        />
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              )}
+              {mantenimiento.planillas?.length > 0 ? (
+                <>
+                  <Row className="gallery-section mt-3">
+                    {mantenimiento.planillas.map((planilla, index) => (
+                      <Col md={3} key={index} className="gallery-item">
+                        <div className="photo-container">
+                          <input
+                            type="checkbox"
+                            checked={selectedPlanillas.includes(planilla)}
+                            onChange={() => handlePlanillaSelect(planilla)}
+                            className="gallery-checkbox"
+                          />
+                          <img
+                            src={planilla}
+                            alt={`Planilla ${index + 1}`}
+                            className="gallery-thumbnail"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageClick(planilla);
+                            }}
+                          />
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                  {selectedPlanillas.length > 0 && (
+                    <div className="d-flex justify-content-end mt-5">
+                      <Button variant="danger" onClick={handleDeleteSelectedPlanillas}>
+                        Eliminar Planillas Seleccionadas
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="mt-3">No hay planillas cargadas.</p>
+              )}
+            </Col>
+          </Row>
+
+          <Row className="photos-section mt-5"> 
+            <h4 className="photos-title">Fotos de la obra</h4>
+            <Form.Group className="text-center"> {/* Añadido text-center para centrar */}
               <input
                 type="file"
                 multiple
                 accept="image/*"
-                id="planillaUpload"
+                id="fotoUpload"
                 style={{ display: 'none' }} // Ocultamos el input de archivo
-                onChange={(e) => handleFileChange(e, 'planillas')}
+                onChange={(e) => handleFileChange(e, 'fotos')}
               />
               <Button
                 variant="primary"
-                onClick={() => document.getElementById('planillaUpload').click()} // Simulamos clic en el input oculto
+                onClick={() => document.getElementById('fotoUpload').click()} // Simulamos clic en el input oculto
               >
-                Cargar Planillas
+                Cargar Fotos
               </Button>
               {/* Mostrar nombres de archivos seleccionados */}
-              {formData.planillas.length > 0 && (
+              {formData.fotos.length > 0 && (
                 <div className="selected-files mt-2">
                   <strong>Archivos seleccionados:</strong>
                   <ul>
-                    {formData.planillas.map((file, index) => (
+                    {formData.fotos.map((file, index) => (
                       <li key={index}>{file.name}</li>
                     ))}
                   </ul>
                 </div>
               )}
             </Form.Group>
-            {planillaPreviews.length > 0 && (
+            {fotoPreviews.length > 0 && (
               <Row className="gallery-section mt-3">
-                {planillaPreviews.map((preview, index) => (
+                {fotoPreviews.map((preview, index) => (
                   <Col md={3} key={index} className="gallery-item">
                     <div className="photo-container">
                       <input
                         type="checkbox"
-                        checked={selectedPlanillas.includes(preview)}
-                        onChange={() => handlePlanillaSelect(preview)}
+                        checked={selectedPhotos.includes(preview)}
+                        onChange={() => handlePhotoSelect(preview)}
                         className="gallery-checkbox"
                       />
                       <img
                         src={preview}
-                        alt={`Nueva planilla ${index + 1}`}
+                        alt={`Nueva foto ${index + 1}`}
                         className="gallery-thumbnail"
                         onClick={() => handleImageClick(preview)}
                       />
@@ -299,147 +418,58 @@ const Preventivo = () => {
                 ))}
               </Row>
             )}
-            {mantenimiento.planillas?.length > 0 ? (
+            {mantenimiento.fotos?.length > 0 ? (
               <>
                 <Row className="gallery-section mt-3">
-                  {mantenimiento.planillas.map((planilla, index) => (
+                  {mantenimiento.fotos.map((photo, index) => (
                     <Col md={3} key={index} className="gallery-item">
                       <div className="photo-container">
                         <input
                           type="checkbox"
-                          checked={selectedPlanillas.includes(planilla)}
-                          onChange={() => handlePlanillaSelect(planilla)}
+                          checked={selectedPhotos.includes(photo)}
+                          onChange={() => handlePhotoSelect(photo)}
                           className="gallery-checkbox"
                         />
                         <img
-                          src={planilla}
-                          alt={`Planilla ${index + 1}`}
+                          src={photo}
+                          alt={`Foto ${index + 1}`}
                           className="gallery-thumbnail"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleImageClick(planilla);
+                            handleImageClick(photo);
                           }}
                         />
                       </div>
                     </Col>
                   ))}
                 </Row>
-                {selectedPlanillas.length > 0 && (
-                  <div className="d-flex justify-content-end mt-5">
-                    <Button variant="danger" onClick={handleDeleteSelectedPlanillas}>
-                      Eliminar Planillas Seleccionadas
+                {selectedPhotos.length > 0 && (
+                  <div className="d-flex justify-content-center mt-5">
+                    <Button variant="danger" onClick={handleDeleteSelectedPhotos}>
+                      Eliminar Fotos Seleccionadas
                     </Button>
                   </div>
                 )}
               </>
             ) : (
-              <p className="mt-3">No hay planillas cargadas.</p>
+              <p className="mt-3">No hay fotos cargadas.</p>
             )}
-          </Col>
-        </Row>
+          </Row>
 
-        <Row className="photos-section mt-5"> 
-          <h4 className="photos-title">Fotos de la obra</h4>
-          <Form.Group className="text-center"> {/* Añadido text-center para centrar */}
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              id="fotoUpload"
-              style={{ display: 'none' }} // Ocultamos el input de archivo
-              onChange={(e) => handleFileChange(e, 'fotos')}
-            />
-            <Button
-              variant="primary"
-              onClick={() => document.getElementById('fotoUpload').click()} // Simulamos clic en el input oculto
-            >
-              Cargar Fotos
-            </Button>
-            {/* Mostrar nombres de archivos seleccionados */}
-            {formData.fotos.length > 0 && (
-              <div className="selected-files mt-2">
-                <strong>Archivos seleccionados:</strong>
-                <ul>
-                  {formData.fotos.map((file, index) => (
-                    <li key={index}>{file.name}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </Form.Group>
-          {fotoPreviews.length > 0 && (
-            <Row className="gallery-section mt-3">
-              {fotoPreviews.map((preview, index) => (
-                <Col md={3} key={index} className="gallery-item">
-                  <div className="photo-container">
-                    <input
-                      type="checkbox"
-                      checked={selectedPhotos.includes(preview)}
-                      onChange={() => handlePhotoSelect(preview)}
-                      className="gallery-checkbox"
-                    />
-                    <img
-                      src={preview}
-                      alt={`Nueva foto ${index + 1}`}
-                      className="gallery-thumbnail"
-                      onClick={() => handleImageClick(preview)}
-                    />
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          )}
-          {mantenimiento.fotos?.length > 0 ? (
-            <>
-              <Row className="gallery-section mt-3">
-                {mantenimiento.fotos.map((photo, index) => (
-                  <Col md={3} key={index} className="gallery-item">
-                    <div className="photo-container">
-                      <input
-                        type="checkbox"
-                        checked={selectedPhotos.includes(photo)}
-                        onChange={() => handlePhotoSelect(photo)}
-                        className="gallery-checkbox"
-                      />
-                      <img
-                        src={photo}
-                        alt={`Foto ${index + 1}`}
-                        className="gallery-thumbnail"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleImageClick(photo);
-                        }}
-                      />
-                    </div>
-                  </Col>
-                ))}
-              </Row>
-              {selectedPhotos.length > 0 && (
-                <div className="d-flex justify-content-center mt-5">
-                  <Button variant="danger" onClick={handleDeleteSelectedPhotos}>
-                    Eliminar Fotos Seleccionadas
-                  </Button>
-                </div>
+          <Modal show={showModal} onHide={handleCloseModal} centered>
+            <Modal.Body>
+              {selectedImage && (
+                <img src={selectedImage} alt="Full size" className="img-fluid" />
               )}
-            </>
-          ) : (
-            <p className="mt-3">No hay fotos cargadas.</p>
-          )}
-        </Row>
-
-        <Modal show={showModal} onHide={handleCloseModal} centered>
-          <Modal.Body>
-            {selectedImage && (
-              <img src={selectedImage} alt="Full size" className="img-fluid" />
-            )}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Cerrar
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleCloseModal}>
+                Cerrar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
     </Container>
   );
 };
