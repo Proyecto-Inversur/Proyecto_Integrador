@@ -281,12 +281,20 @@ const Preventivo = () => {
               <Row className="gallery-section mt-3">
                 {planillaPreviews.map((preview, index) => (
                   <Col md={3} key={index} className="gallery-item">
-                    <img
-                      src={preview}
-                      alt={`Nueva planilla ${index + 1}`}
-                      className="gallery-thumbnail"
-                      onClick={() => handleImageClick(preview)}
-                    />
+                    <div className="photo-container">
+                      <input
+                        type="checkbox"
+                        checked={selectedPlanillas.includes(preview)}
+                        onChange={() => handlePlanillaSelect(preview)}
+                        className="gallery-checkbox"
+                      />
+                      <img
+                        src={preview}
+                        alt={`Nueva planilla ${index + 1}`}
+                        className="gallery-thumbnail"
+                        onClick={() => handleImageClick(preview)}
+                      />
+                    </div>
                   </Col>
                 ))}
               </Row>
@@ -296,10 +304,13 @@ const Preventivo = () => {
                 <Row className="gallery-section mt-3">
                   {mantenimiento.planillas.map((planilla, index) => (
                     <Col md={3} key={index} className="gallery-item">
-                      <div
-                        className={`photo-container ${selectedPlanillas.includes(planilla) ? 'selected' : ''}`}
-                        onClick={() => handlePlanillaSelect(planilla)}
-                      >
+                      <div className="photo-container">
+                        <input
+                          type="checkbox"
+                          checked={selectedPlanillas.includes(planilla)}
+                          onChange={() => handlePlanillaSelect(planilla)}
+                          className="gallery-checkbox"
+                        />
                         <img
                           src={planilla}
                           alt={`Planilla ${index + 1}`}
@@ -313,12 +324,13 @@ const Preventivo = () => {
                     </Col>
                   ))}
                 </Row>
-                {/* Botón de eliminación siempre visible */}
-                <div className="d-flex justify-content-end mt-5">
-                  <Button variant="danger">
-                    Eliminar Planillas Seleccionadas
-                  </Button>
-                </div>
+                {selectedPlanillas.length > 0 && (
+                  <div className="d-flex justify-content-end mt-5">
+                    <Button variant="danger" onClick={handleDeleteSelectedPlanillas}>
+                      Eliminar Planillas Seleccionadas
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <p className="mt-3">No hay planillas cargadas.</p>
@@ -359,12 +371,20 @@ const Preventivo = () => {
             <Row className="gallery-section mt-3">
               {fotoPreviews.map((preview, index) => (
                 <Col md={3} key={index} className="gallery-item">
-                  <img
-                    src={preview}
-                    alt={`Nueva foto ${index + 1}`}
-                    className="gallery-thumbnail"
-                    onClick={() => handleImageClick(preview)}
-                  />
+                  <div className="photo-container">
+                    <input
+                      type="checkbox"
+                      checked={selectedPhotos.includes(preview)}
+                      onChange={() => handlePhotoSelect(preview)}
+                      className="gallery-checkbox"
+                    />
+                    <img
+                      src={preview}
+                      alt={`Nueva foto ${index + 1}`}
+                      className="gallery-thumbnail"
+                      onClick={() => handleImageClick(preview)}
+                    />
+                  </div>
                 </Col>
               ))}
             </Row>
@@ -374,10 +394,13 @@ const Preventivo = () => {
               <Row className="gallery-section mt-3">
                 {mantenimiento.fotos.map((photo, index) => (
                   <Col md={3} key={index} className="gallery-item">
-                    <div
-                      className={`photo-container ${selectedPhotos.includes(photo) ? 'selected' : ''}`}
-                      onClick={() => handlePhotoSelect(photo)}
-                    >
+                    <div className="photo-container">
+                      <input
+                        type="checkbox"
+                        checked={selectedPhotos.includes(photo)}
+                        onChange={() => handlePhotoSelect(photo)}
+                        className="gallery-checkbox"
+                      />
                       <img
                         src={photo}
                         alt={`Foto ${index + 1}`}
@@ -391,12 +414,13 @@ const Preventivo = () => {
                   </Col>
                 ))}
               </Row>
-              {/* Botón de eliminación siempre visible */}
-              <div className="d-flex justify-content-center mt-5">
-                <Button variant="danger">
-                  Eliminar Fotos Seleccionadas
-                </Button>
-              </div>
+              {selectedPhotos.length > 0 && (
+                <div className="d-flex justify-content-center mt-5">
+                  <Button variant="danger" onClick={handleDeleteSelectedPhotos}>
+                    Eliminar Fotos Seleccionadas
+                  </Button>
+                </div>
+              )}
             </>
           ) : (
             <p className="mt-3">No hay fotos cargadas.</p>
