@@ -4,6 +4,7 @@ from fastapi import HTTPException, UploadFile
 from datetime import date, datetime
 from typing import Optional, List
 from services.gcloud_storage import upload_file_to_gcloud, delete_file_in_folder
+from services.google_sheets import append_preventivo, update_preventivo, delete_preventivo
 import os
 
 GOOGLE_CLOUD_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
@@ -42,6 +43,7 @@ def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuencia: s
     db.add(db_mantenimiento)
     db.commit()
     db.refresh(db_mantenimiento)
+    append_preventivo(db, db_mantenimiento)
     return db_mantenimiento
 
 async def update_mantenimiento_preventivo(
@@ -59,8 +61,6 @@ async def update_mantenimiento_preventivo(
 ):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
-    if current_entity["type"] != "usuario":
-        raise HTTPException(status_code=403, detail="No tienes permisos")
     
     db_mantenimiento = db.query(MantenimientoPreventivo).filter(MantenimientoPreventivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
@@ -104,6 +104,7 @@ async def update_mantenimiento_preventivo(
         db_mantenimiento.extendido = extendido
     db.commit()
     db.refresh(db_mantenimiento)
+    update_preventivo(db, db_mantenimiento)
     return db_mantenimiento
 
 def delete_mantenimiento_preventivo(db: Session, mantenimiento_id: int, current_entity: dict):
@@ -116,13 +117,12 @@ def delete_mantenimiento_preventivo(db: Session, mantenimiento_id: int, current_
         raise HTTPException(status_code=404, detail="Mantenimiento preventivo no encontrado")
     db.delete(db_mantenimiento)
     db.commit()
+    delete_preventivo(db, mantenimiento_id)
     return {"message": f"Mantenimiento preventivo con id {mantenimiento_id} eliminado"}
 
 def delete_mantenimiento_planilla(db: Session, mantenimiento_id: int, file_name: str, current_entity: dict) -> bool:
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
-    if current_entity["type"] != "usuario":
-        raise HTTPException(status_code=403, detail="No tienes permisos")
     
     db_mantenimiento = db.query(MantenimientoPreventivo).filter(MantenimientoPreventivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
@@ -135,15 +135,15 @@ def delete_mantenimiento_planilla(db: Session, mantenimiento_id: int, file_name:
     if not planilla:
         raise HTTPException(status_code=404, detail="Planilla no encontrada")
     
-    delete_file_in_folder(GOOGLE_CLOUD_BUCKET_NAME, f"mantenimientos_preventivos/{mantenimiento_id}/planillas/{file_name}")
+    delete_file_in_folder(GOOGLE_CLOUD_BUCKET_NAME, f"mantenimientos_preventivos/{mantenimiento_id}/planillas/", file_name)
     db.delete(planilla)
     db.commit()
+    update_preventivo(db, db_mantenimiento)
+    return True
     
 def delete_mantenimiento_photo(db: Session, mantenimiento_id: int, file_name: str, current_entity: dict) -> bool:
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
-    if current_entity["type"] != "usuario":
-        raise HTTPException(status_code=403, detail="No tienes permisos")
     
     db_mantenimiento = db.query(MantenimientoPreventivo).filter(MantenimientoPreventivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
@@ -156,6 +156,8 @@ def delete_mantenimiento_photo(db: Session, mantenimiento_id: int, file_name: st
     if not foto:
         raise HTTPException(status_code=404, detail="Foto no encontrada")
     
-    delete_file_in_folder(GOOGLE_CLOUD_BUCKET_NAME, f"mantenimientos_preventivos/{mantenimiento_id}/fotos/{file_name}")
+    delete_file_in_folder(GOOGLE_CLOUD_BUCKET_NAME, f"mantenimientos_preventivos/{mantenimiento_id}/fotos/", file_name)
     db.delete(foto)
     db.commit()
+    update_preventivo(db, db_mantenimiento)
+    return True

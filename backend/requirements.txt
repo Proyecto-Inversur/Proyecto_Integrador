@@ -14,3 +14,5 @@ pytest-mock==3.14.0
 pytest-cov==5.0.0
 google-cloud-storage==2.18.2
 python-multipart==0.0.10
+gspread==6.2.1
+oauth2client==4.1.3
