@@ -118,7 +118,9 @@ const MantenimientosPreventivos = () => {
             <th>Cuadrilla</th>
             <th>Fecha Apertura</th>
             <th>Fecha Cierre</th>
-            <th>Acciones</th>
+            {currentEntity.type === 'usuario' && (
+              <th>Acciones</th>
+            )}
           </tr>
         </thead>
         <tbody>

@@ -168,6 +168,24 @@ const Preventivo = () => {
     }
   };
 
+  const handleFinish = async () => {
+    const hasPlanilla = mantenimiento.planillas?.length > 0;
+    const hasFoto = mantenimiento.fotos?.length > 0;
+
+    if (!hasPlanilla || !hasFoto) {
+      setError('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
+      return;
+    }
+
+    try {
+      // Falta mandar notificacion al encargado de mantenimiento
+      setSuccess('Mantenimiento marcado como finalizado correctamente.');
+    } catch (error) {
+      console.error('Error marking as finished:', error);
+      setError('Error al marcar como finalizado.');
+    }
+  };
+
   const getSucursalNombre = (id_sucursal) => {
     const preventivo = preventivos.find((p) => p.id_sucursal === id_sucursal);
     return preventivo ? preventivo.nombre_sucursal : 'Desconocida';
@@ -241,7 +259,7 @@ const Preventivo = () => {
                 </Button>
               )}
               {currentEntity.type !== 'usuario' && (
-                <Button variant="dark" className="info-button-finish">
+                <Button variant="dark" className="info-button-finish" onClick={handleFinish}>
                   <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
                 </Button>
               )}
@@ -278,7 +296,7 @@ const Preventivo = () => {
             </Col>
 
             <Col className="planilla-section">
-              <h4 className="planilla-section-title">Planilla</h4>
+              <h4 className="planilla-section-title">Planillas</h4>
               <Form.Group>
                 <input
                   type="file"

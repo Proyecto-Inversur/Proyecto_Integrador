@@ -39,6 +39,7 @@ const Correctivo = () => {
       planilla: '',
       fotos: [],
       extendido: response.data.extendido?.split('T')[0] || '',
+      estado: response.data.estado,
     });
     navigate(location.pathname, { state: { mantenimiento: response.data } });
   } catch (error) {
@@ -163,6 +164,26 @@ const Correctivo = () => {
     }
   };
 
+  const handleFinish = async () => {
+    const hasPlanilla = mantenimiento.planilla !== '';
+    const hasFoto = mantenimiento.fotos?.length > 0;
+
+    if (!hasPlanilla || !hasFoto) {
+      setError('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
+      return;
+    }
+
+    try {
+      setFormData({ ...formData, estado: 'Solucionado' });
+      await handleSubmit({ preventDefault: () => {} });
+      // Falta mandar notificacion al encargado de mantenimiento
+      setSuccess('Mantenimiento marcado como finalizado correctamente.');
+    } catch (error) {
+      console.error('Error marking as finished:', error);
+      setError('Error al marcar como finalizado.');
+    }
+  };
+
   const getSucursalNombre = (id_sucursal) => {
     const sucursal = sucursales.find((s) => s.id === id_sucursal);
     return sucursal ? sucursal.nombre : 'Desconocida';
@@ -197,6 +218,22 @@ const Correctivo = () => {
               <div className="info-field">
                 <strong className="info-label">Fecha Apertura:</strong>{' '}
                 {mantenimiento.fecha_apertura?.split('T')[0] || 'N/A'}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Numero de Caso:</strong>{' '}
+                {mantenimiento.numero_caso}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Incidente:</strong>{' '}
+                {mantenimiento.incidente}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Rubro:</strong>{' '}
+                {mantenimiento.rubro}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Prioridad:</strong>{' '}
+                {mantenimiento.prioridad}
               </div>
               {currentEntity.type === 'usuario' && (
                 <div className="info-field">
@@ -236,7 +273,7 @@ const Correctivo = () => {
                 </Button>
               )}
               {currentEntity.type !== 'usuario' && (
-                <Button variant="dark" className="info-button-finish">
+                <Button variant="dark" className="info-button-finish" onClick={handleFinish}>
                   <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
                 </Button>
               )}

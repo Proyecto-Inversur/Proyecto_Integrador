@@ -116,12 +116,15 @@ const MantenimientosCorrectivos = () => {
             <th>ID</th>
             <th>Sucursal</th>
             <th>Cuadrilla</th>
+            <th>Numnero de Caso</th>
             <th>Fecha Apertura</th>
             <th>Fecha Cierre</th>
             <th>Incidente</th>
             <th>Estado</th>
             <th>Prioridad</th>
-            <th>Acciones</th>
+            {currentEntity.type === 'usuario' && (
+              <th>Acciones</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -134,6 +137,7 @@ const MantenimientosCorrectivos = () => {
               <td>{mantenimiento.id}</td>
               <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
               <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+              <td>{mantenimiento.numero_caso}</td>
               <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
               <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
               <td>{mantenimiento.incidente}</td>
