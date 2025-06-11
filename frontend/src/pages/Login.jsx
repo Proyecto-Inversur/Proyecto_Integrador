@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Alert, Spinner } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { auth, GoogleAuthProvider, signInWithPopup } from '../services/firebase';
+import { auth, GoogleAuthProvider, signInWithPopup, signOut } from '../services/firebase';
 import { FcGoogle } from 'react-icons/fc';
 import '../styles/login.css';
 import logoInversur from '../assets/logo_inversur.png';

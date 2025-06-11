@@ -194,6 +194,11 @@ const Correctivo = () => {
     return cuadrilla ? cuadrilla.nombre : 'Desconocida';
   };
 
+  const getZonaNombre = (id_sucursal) => {
+    const sucursal = sucursales.find((s) => s.id === id_sucursal);
+    return sucursal ? sucursal.zona : 'Desconocida';
+  };
+
   return (
     <Container fluid className="mantenimiento-container">
       {isLoading ? (
@@ -214,6 +219,10 @@ const Correctivo = () => {
               <div className="info-field">
                 <strong className="info-label">Cuadrilla:</strong>{' '}
                 {mantenimiento.id_cuadrilla ? getCuadrillaNombre(mantenimiento.id_cuadrilla) : 'N/A'}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Zona:</strong>{' '}
+                {mantenimiento.id_sucursal ? getZonaNombre(mantenimiento.id_sucursal) : 'N/A'}
               </div>
               <div className="info-field">
                 <strong className="info-label">Fecha Apertura:</strong>{' '}

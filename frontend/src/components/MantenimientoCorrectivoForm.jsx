@@ -115,11 +115,12 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3" controlId="id_cuadrilla">
-            <Form.Label>Cuadrilla</Form.Label>
+            <Form.Label className="required required-asterisk">Cuadrilla</Form.Label>
             <Form.Select
               name="id_cuadrilla"
               value={formData.id_cuadrilla}
               onChange={handleChange}
+              required
               className='form-select'
             >
               <option value="">Seleccione una cuadrilla</option>

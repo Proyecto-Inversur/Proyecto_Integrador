@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
-import { getPreventivos } from '../services/preventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
+import { getSucursales } from '../services/sucursalService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import '../styles/mantenimientos.css';
@@ -14,8 +14,8 @@ const Preventivo = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mantenimiento = location.state?.mantenimiento || {};
-  const [preventivos, setPreventivos] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
   const [formData, setFormData] = useState({
     planillas: [],
     fotos: [],
@@ -48,12 +48,12 @@ const Preventivo = () => {
 
   const fetchData = async () => {
     try {
-      const [preventivosResponse, cuadrillasResponse] = await Promise.all([
-        getPreventivos(),
+      const [cuadrillasResponse, sucursalesResponse] = await Promise.all([
         getCuadrillas(),
+        getSucursales(),
       ]);
-      setPreventivos(preventivosResponse.data);
       setCuadrillas(cuadrillasResponse.data);
+      setSucursales(sucursalesResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -187,13 +187,18 @@ const Preventivo = () => {
   };
 
   const getSucursalNombre = (id_sucursal) => {
-    const preventivo = preventivos.find((p) => p.id_sucursal === id_sucursal);
-    return preventivo ? preventivo.nombre_sucursal : 'Desconocida';
+    const sucursal = sucursales.find((s) => s.id === id_sucursal);
+    return sucursal ? sucursal.nombre : 'Desconocida';
   };
 
   const getCuadrillaNombre = (id_cuadrilla) => {
     const cuadrilla = cuadrillas.find((c) => c.id === id_cuadrilla);
     return cuadrilla ? cuadrilla.nombre : 'Desconocida';
+  };
+
+  const getZonaNombre = (id_sucursal) => {
+    const sucursal = sucursales.find((s) => s.id === id_sucursal);
+    return sucursal ? sucursal.zona : 'Desconocida';
   };
 
   return (
@@ -216,6 +221,10 @@ const Preventivo = () => {
               <div className="info-field">
                 <strong className="info-label">Cuadrilla:</strong>{' '}
                 {mantenimiento.id_cuadrilla ? getCuadrillaNombre(mantenimiento.id_cuadrilla) : 'N/A'}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Zona:</strong>{' '}
+                {mantenimiento.id_sucursal ? getZonaNombre(mantenimiento.id_sucursal) : 'N/A'}
               </div>
               <div className="info-field">
                 <strong className="info-label">Fecha Apertura:</strong>{' '}

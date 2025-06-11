@@ -4,13 +4,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 from sqlalchemy.orm import Session
 from api.models import MantenimientoCorrectivo, MantenimientoPreventivo
 
-GOOGLE_SHEETS_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
+GOOGLE_CREDENTIALS = os.getenv("GOOGLE_CREDENTIALS")
 GOOGLE_CLOUD_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 
 def get_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SHEETS_CREDENTIALS, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDENTIALS, scope)
     return gspread.authorize(creds)
 
 def get_fotos_gallery_url(mantenimiento_id, tipo):

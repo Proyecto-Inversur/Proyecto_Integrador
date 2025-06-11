@@ -43,7 +43,6 @@ const AuthProvider = ({ children }) => {
         isVerifiedRef.current = true;
         setCurrentUser(user);
         setCurrentEntity(response.data);
-        localStorage.setItem('activeUserId', user.uid);
         setLoading(false);
         setVerifying(false);
         isVerifyingRef.current = false;
@@ -55,7 +54,6 @@ const AuthProvider = ({ children }) => {
         if (attempts === maxAttempts) {
           await signOut(auth);
           localStorage.removeItem('authToken');
-          localStorage.removeItem('activeUserId');
           setCurrentUser(null);
           setCurrentEntity(null);
           setLoading(false);
@@ -110,8 +108,7 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      const activeUserId = localStorage.getItem('activeUserId');
-      if (user && user.uid === activeUserId && !isVerifyingRef.current && !isVerifiedRef.current) {
+      if (user && !isVerifyingRef.current && !isVerifiedRef.current) {
         try {
           const idToken = await user.getIdToken(true);
           localStorage.setItem('authToken', idToken);
@@ -120,7 +117,6 @@ const AuthProvider = ({ children }) => {
           console.error('Error getting ID token:', error);
           await signOut(auth);
           localStorage.removeItem('authToken');
-          localStorage.removeItem('activeUserId');
           setCurrentUser(null);
           setCurrentEntity(null);
           setLoading(false);
@@ -128,14 +124,13 @@ const AuthProvider = ({ children }) => {
           isVerifiedRef.current = false;
           navigate('/login', { state: { error: 'Error al obtener el token de autenticación.' } });
         }
-      } else if (!user || user.uid !== activeUserId) {
+      } else if (!user) {
         localStorage.removeItem('authToken');
         setCurrentUser(null);
         setCurrentEntity(null);
         setLoading(false);
         setVerifying(false);
         isVerifiedRef.current = false;
-        if (!user) localStorage.removeItem('activeUserId');
       }
     });
 
