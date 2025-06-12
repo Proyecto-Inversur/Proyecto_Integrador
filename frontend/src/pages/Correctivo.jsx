@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
+import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -23,6 +23,8 @@ const Correctivo = () => {
     extendido: '',
     estado: '',
   });
+  const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
+  const [isSelectingPlanillas, setIsSelectingPlanillas] = useState(false);
   const [planillaPreview, setPlanillaPreview] = useState('');
   const [fotoPreviews, setFotoPreviews] = useState([]);
   const [selectedPhotos, setSelectedPhotos] = useState([]);

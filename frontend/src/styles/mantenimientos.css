@@ -345,7 +345,7 @@ margin-top: 0.5rem;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  justify-content: start;
+  justify-content: center;
 }
 
 .gallery-item {
@@ -355,14 +355,17 @@ margin-top: 0.5rem;
   padding: 4px;
   border-radius: 8px;
   background-color: #f8f9fa;
+  margin-left: 1.3rem;
 }
 
 .gallery-thumbnail {
   max-width: 100%;
-  max-height: 250px;
+  max-height: 200px; /* para que las grandes no se desborden */
+  min-width: 120px;  /* asegura que las chicas no se achiquen demasiado */
+  min-height: 120px;
   object-fit: contain;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
@@ -371,17 +374,17 @@ margin-top: 0.5rem;
   transform: scale(1.05);
 }
 
-.gallery-checkbox {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  z-index: 10;
-  cursor: pointer;
-}
-
 .photo-container {
   position: relative;
   display: inline-block;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.photo-container.selectable {
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
 .photo-container.selected {
