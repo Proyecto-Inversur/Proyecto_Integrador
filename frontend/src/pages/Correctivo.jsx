@@ -19,6 +19,7 @@ const Correctivo = () => {
   const [formData, setFormData] = useState({
     planilla: '',
     fotos: [],
+    fecha_cierre: null,
     extendido: '',
     estado: '',
   });
@@ -38,6 +39,7 @@ const Correctivo = () => {
     setFormData({
       planilla: '',
       fotos: [],
+      fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || null,
       extendido: response.data.extendido?.split('T')[0] || '',
       estado: response.data.estado,
     });
@@ -131,28 +133,33 @@ const Correctivo = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, overrideData = null) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     setSuccess('');
 
+    const data = overrideData || formData;
+
     const formDataToSend = new FormData();
-    if (formData.planilla) {
-      formDataToSend.append('planilla', formData.planilla);
+    if (data.planilla) {
+      formDataToSend.append('planilla', data.planilla);
     }
-    formData.fotos.forEach(file => formDataToSend.append('fotos', file));
-    if (formData.extendido) {
-      formDataToSend.append('extendido', formData.extendido);
+    data.fotos.forEach(file => formDataToSend.append('fotos', file));
+    if (data.fecha_cierre) {
+      formDataToSend.append('fecha_cierre', data.fecha_cierre);
     }
-    if (formData.estado) {
-      formDataToSend.append('estado', formData.estado);
+    if (data.extendido) {
+      formDataToSend.append('extendido', data.extendido);
+    }
+    if (data.estado) {
+      formDataToSend.append('estado', data.estado);
     }
 
     try {
       await updateMantenimientoCorrectivo(mantenimiento.id, formDataToSend);
       setSuccess('Archivos y datos actualizados correctamente.');
-      setFormData({ planilla: '', fotos: [], extendido: '', estado: '' });
+      setFormData({ planilla: '', fotos: [], fecha_cierre: '', extendido: '', estado: '' });
       setPlanillaPreview('');
       setFotoPreviews([]);
       await fetchMantenimiento();
@@ -174,8 +181,17 @@ const Correctivo = () => {
     }
 
     try {
-      setFormData({ ...formData, estado: 'Solucionado' });
-      await handleSubmit({ preventDefault: () => {} });
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      const updatedFormData = {
+        ...formData,
+        fecha_cierre: formattedDate,
+        estado: 'Solucionado',
+      };
+      await handleSubmit({ preventDefault: () => {} }, updatedFormData);
       // Falta mandar notificacion al encargado de mantenimiento
       setSuccess('Mantenimiento marcado como finalizado correctamente.');
     } catch (error) {
@@ -198,6 +214,17 @@ const Correctivo = () => {
     const sucursal = sucursales.find((s) => s.id === id_sucursal);
     return sucursal ? sucursal.zona : 'Desconocida';
   };
+
+  function formatExtendido(fechaIso) {
+    const date = new Date(fechaIso);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  }
 
   return (
     <Container fluid className="mantenimiento-container">
@@ -244,22 +271,16 @@ const Correctivo = () => {
                 <strong className="info-label">Prioridad:</strong>{' '}
                 {mantenimiento.prioridad}
               </div>
-              {currentEntity.type === 'usuario' && (
-                <div className="info-field">
-                  <strong className="info-label">Extendido:</strong>{' '}
-                  {mantenimiento.extendido
-                    ? new Date(mantenimiento.extendido).toLocaleString('es-AR', {
-                        hour12: false,
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : 'No hay extendido'}
-                  {mantenimiento.extendido ? ' hs' : ''}
-                </div>
-              )}
+              <div className="info-field">
+                <strong className="info-label">Fecha Cierre:</strong>{' '}
+                {mantenimiento.fecha_cierre?.split('T')[0] || 'N/A'}
+              </div>
+              <div className="info-field">
+                <strong className="info-label">Extendido:</strong>{' '}
+                {mantenimiento.extendido
+                  ? `${formatExtendido(mantenimiento.extendido)} hs`
+                  : 'No hay extendido'}
+              </div>
               {currentEntity.type !== 'usuario' && (
                 <Form className="info-form" onSubmit={handleSubmit}>
                   <Form.Group className="extendido-row">
