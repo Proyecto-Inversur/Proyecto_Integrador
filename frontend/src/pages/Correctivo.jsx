@@ -24,12 +24,12 @@ const Correctivo = () => {
     estado: '',
   });
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
-  const [isSelectingPlanillas, setIsSelectingPlanillas] = useState(false);
+  const [isSelectingPlanilla, setIsSelectingPlanilla] = useState(false);
   const [planillaPreview, setPlanillaPreview] = useState('');
   const [fotoPreviews, setFotoPreviews] = useState([]);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedPlanilla, setSelectedPlanilla] = useState('');
+  const [selectedPlanilla, setSelectedPlanilla] = useState(null);
   const [selectedImage, setSelectedImage] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -99,8 +99,27 @@ const Correctivo = () => {
   };
 
   const handlePlanillaSelect = (planillaUrl) => {
-    setSelectedPlanilla(planillaUrl);
-  };
+  setSelectedPlanilla(prev =>
+    prev === planillaUrl ? null : planillaUrl
+  );
+};
+
+const handleDeleteSelectedPlanilla = async () => {
+  try {
+    if (!selectedPlanilla) return;
+
+    const fileName = selectedPlanilla.split('/').pop();
+    await deleteMantenimientoPlanilla(mantenimiento.id, fileName);
+
+    setSelectedPlanilla(null);
+    setIsSelectingPlanilla(false);
+    setSuccess('Planilla eliminada correctamente.');
+    await fetchMantenimiento(); // Refresca los datos
+  } catch (error) {
+    console.error('Error al eliminar la planilla:', error);
+    setError('Error al eliminar la planilla.');
+  }
+};
 
   const handlePhotoSelect = (photoUrl) => {
     setSelectedPhotos(prev =>
@@ -369,91 +388,122 @@ const Correctivo = () => {
 
             <Col className="planilla-section">
               <h4 className="planilla-section-title">Planilla</h4>
-              <Form.Group>
-                <input
-                  type="file"
-                  accept="image/*"
-                  id="planillaUpload"
-                  style={{ display: 'none' }} // Ocultamos el input de archivo
-                  onChange={(e) => handleFileChange(e, 'planilla')}
-                />
-                <Button
-                  variant="primary"
-                  onClick={() => document.getElementById('planillaUpload').click()} // Simulamos clic en el input oculto
-                >
-                  Cargar Planilla
-                </Button>
-                {/* Mostrar nombres de archivos seleccionados */}
-                {formData.planilla && (
-                  <div className="selected-files mt-2">
-                    <strong>Archivo seleccionado:</strong>
-                    <ul>
-                      <li>{formData.planilla.name}</li>
-                    </ul>
-                  </div>
-                )}
-              </Form.Group>
-              {planillaPreview && (
-                <Row className="gallery-section mt-3">
-                  <Col md={3} className="gallery-item">
+            <Form.Group>
+              <input
+                type="file"
+                accept="image/*"
+                id="planillaUpload"
+                style={{ display: 'none' }}
+                onChange={(e) => handleFileChange(e, 'planilla')}
+              />
+              <Button
+                variant="primary"
+                onClick={() => document.getElementById('planillaUpload').click()}
+              >
+                Cargar Planilla
+              </Button>
+
+              {/* Mostrar archivo recién seleccionado */}
+              {formData.planilla && (
+                <div className="selected-files mt-2">
+                  <strong>Archivo seleccionado:</strong>
+                  <ul>
+                    <li>{formData.planilla.name}</li>
+                  </ul>
+                </div>
+              )}
+            </Form.Group>
+
+            {/* Mostrar preview si se subió una nueva planilla */}
+            {planillaPreview && (
+              <Row className="gallery-section mt-3">
+                <Col md={3} className="gallery-item">
+                  <div className="photo-container">
                     <img
                       src={planillaPreview}
+                      alt="Nueva planilla"
                       className="gallery-thumbnail"
                       onClick={() => handleImageClick(planillaPreview)}
                     />
-                  </Col>
-                </Row>
-              )}
-              {mantenimiento.planilla ? (
-                <>
-                  <Row className="gallery-section mt-3">
-                    <Col md={3} className="gallery-item">
-                      <div
-                        className={`photo-container ${selectedPlanilla === mantenimiento.planilla ? 'selected' : ''}`}
-                        onClick={() => handlePlanillaSelect(mantenimiento.planilla)}
-                      >
-                        <img
-                          src={mantenimiento.planilla}
-                          className="gallery-thumbnail"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageClick(mantenimiento.planilla);
-                          }}
-                        />
-                      </div>
-                    </Col>
-                  </Row>
-                  {/* Botón de eliminación siempre visible */}
-                  <div className="d-flex justify-content-end mt-5">
-                    <Button variant="danger">
-                      Eliminar Planilla Seleccionada
-                    </Button>
                   </div>
-                </>
-              ) : (
-                <p className="mt-3">No hay planilla cargada.</p>
-              )}
+                </Col>
+              </Row>
+            )}
+
+            {/* Mostrar botones si hay planilla persistida */}
+            {mantenimiento.planilla && (
+              <div className="d-flex justify-content-end mt-3 gap-2">
+                {!isSelectingPlanilla && (
+                  <Button variant="outline-danger" onClick={() => setIsSelectingPlanilla(true)}>
+                    Eliminar Planilla
+                  </Button>
+                )}
+                {isSelectingPlanilla && selectedPlanilla && (
+                  <Button variant="danger" onClick={handleDeleteSelectedPlanilla}>
+                    Eliminar Planilla Seleccionada
+                  </Button>
+                )}
+                {isSelectingPlanilla && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setIsSelectingPlanilla(false);
+                      setSelectedPlanilla(null);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Mostrar planilla cargada si existe */}
+            {mantenimiento.planilla ? (
+              <Row className="gallery-section mt-3">
+                <Col md={3} className="gallery-item">
+                  <div
+                    className={`photo-container ${isSelectingPlanilla ? 'selectable' : ''} ${selectedPlanilla === mantenimiento.planilla ? 'selected' : ''}`}
+                    onClick={() => {
+                      if (isSelectingPlanilla) {
+                        handlePlanillaSelect(mantenimiento.planilla);
+                      } else {
+                        handleImageClick(mantenimiento.planilla);
+                      }
+                    }}
+                  >
+                    <img
+                      src={mantenimiento.planilla}
+                      alt="Planilla existente"
+                      className="gallery-thumbnail"
+                    />
+                  </div>
+                </Col>
+              </Row>
+            ) : (
+              <p className="mt-3">No hay planilla cargada.</p>
+            )}
             </Col>
           </Row>
 
           <Row className="photos-section mt-5"> 
             <h4 className="photos-title">Fotos de la obra</h4>
-            <Form.Group className="text-center"> {/* Añadido text-center para centrar */}
+
+            <Form.Group className="text-center">
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 id="fotoUpload"
-                style={{ display: 'none' }} // Ocultamos el input de archivo
+                style={{ display: 'none' }}
                 onChange={(e) => handleFileChange(e, 'fotos')}
               />
               <Button
                 variant="primary"
-                onClick={() => document.getElementById('fotoUpload').click()} // Simulamos clic en el input oculto
+                onClick={() => document.getElementById('fotoUpload').click()}
               >
                 Cargar Fotos
               </Button>
-              {/* Mostrar nombres de archivos seleccionados */}
+
               {formData.fotos.length > 0 && (
                 <div className="selected-files mt-2">
                   <strong>Archivos seleccionados:</strong>
@@ -465,53 +515,80 @@ const Correctivo = () => {
                 </div>
               )}
             </Form.Group>
+
             {fotoPreviews.length > 0 && (
               <Row className="gallery-section mt-3">
                 {fotoPreviews.map((preview, index) => (
                   <Col md={3} key={index} className="gallery-item">
-                    <img
-                      src={preview}
-                      alt={`Nueva foto ${index + 1}`}
-                      className="gallery-thumbnail"
-                      onClick={() => handleImageClick(preview)}
-                    />
+                    <div className="photo-container">
+                      <img
+                        src={preview}
+                        alt={`Nueva foto ${index + 1}`}
+                        className="gallery-thumbnail"
+                        onClick={() => handleImageClick(preview)}
+                      />
+                    </div>
                   </Col>
                 ))}
               </Row>
             )}
-            {mantenimiento.fotos?.length > 0 ? (
+
+            {mantenimiento.fotos?.length > 0 && (
               <>
+              <div className="d-flex justify-content-center mt-3 gap-2">
+                  {!isSelectingPhotos && (
+                    <Button variant="outline-danger" onClick={() => setIsSelectingPhotos(true)}>
+                      Eliminar Fotos
+                    </Button>
+                  )}
+                  {isSelectingPhotos && selectedPhotos.length > 0 && (
+                    <Button variant="danger" onClick={handleDeleteSelectedPhotos}>
+                      Eliminar Fotos Seleccionadas
+                    </Button>
+                  )}
+                  {isSelectingPhotos && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setIsSelectingPhotos(false);
+                        setSelectedPhotos([]);
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  )}
+                </div>
+
                 <Row className="gallery-section mt-3">
                   {mantenimiento.fotos.map((photo, index) => (
                     <Col md={3} key={index} className="gallery-item">
                       <div
-                        className={`photo-container ${selectedPhotos.includes(photo) ? 'selected' : ''}`}
-                        onClick={() => handlePhotoSelect(photo)}
+                        className={`photo-container ${isSelectingPhotos ? 'selectable' : ''} ${selectedPhotos.includes(photo) ? 'selected' : ''}`}
+                        onClick={() => {
+                          if (isSelectingPhotos) {
+                            handlePhotoSelect(photo);
+                          } else {
+                            handleImageClick(photo);
+                          }
+                        }}
                       >
                         <img
                           src={photo}
                           alt={`Foto ${index + 1}`}
                           className="gallery-thumbnail"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageClick(photo);
-                          }}
                         />
                       </div>
                     </Col>
                   ))}
                 </Row>
-                {/* Botón de eliminación siempre visible */}
-                <div className="d-flex justify-content-center mt-5">
-                  <Button variant="danger">
-                    Eliminar Fotos Seleccionadas
-                  </Button>
-                </div>
               </>
-            ) : (
+            )}
+
+            {(!mantenimiento.fotos || mantenimiento.fotos.length === 0) && (
               <p className="mt-3">No hay fotos cargadas.</p>
             )}
           </Row>
+
 
           <Modal show={showModal} onHide={handleCloseModal} centered>
             <Modal.Body>
