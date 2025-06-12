@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, UploadFile, Form
 from sqlalchemy.orm import Session
 from config.database import get_db
-from services.mantenimientos_correctivos import get_mantenimientos_correctivos, get_mantenimiento_correctivo, create_mantenimiento_correctivo, update_mantenimiento_correctivo, delete_mantenimiento_correctivo, delete_mantenimiento_photo
+from services.mantenimientos_correctivos import get_mantenimientos_correctivos, get_mantenimiento_correctivo, create_mantenimiento_correctivo, update_mantenimiento_correctivo, delete_mantenimiento_correctivo, delete_mantenimiento_planilla, delete_mantenimiento_photo
 from api.schemas import MantenimientoCorrectivoCreate
 from typing import List, Optional
 from datetime import date, datetime
@@ -132,6 +132,12 @@ async def mantenimiento_correctivo_update(
 def mantenimiento_correctivo_delete(mantenimiento_id: int, request: Request, db: Session = Depends(get_db)):
     current_entity = request.state.current_entity
     return delete_mantenimiento_correctivo(db, mantenimiento_id, current_entity)
+
+@router.delete("/{mantenimiento_id}/planilla/{file_name}", response_model=dict)
+def mantenimiento_planilla_delete(mantenimiento_id: int, file_name: str, request: Request, db: Session = Depends(get_db)):
+    current_entity = request.state.current_entity
+    delete_mantenimiento_planilla(db, mantenimiento_id, file_name, current_entity)
+    return {"message": "Planilla eliminada correctamente"}
 
 @router.delete("/{mantenimiento_id}/fotos/{file_name}", response_model=dict)
 def mantenimiento_photo_delete(mantenimiento_id: int, file_name: str, request: Request, db: Session = Depends(get_db)):

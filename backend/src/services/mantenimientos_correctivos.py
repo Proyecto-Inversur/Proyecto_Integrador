@@ -134,13 +134,30 @@ def delete_mantenimiento_correctivo(db: Session, mantenimiento_id: int, current_
     delete_correctivo(db, mantenimiento_id)
     return {"message": f"Mantenimiento correctivo con id {mantenimiento_id} eliminado"}
 
+def delete_mantenimiento_planilla(db: Session, mantenimiento_id: int, file_name: str, current_entity: dict) -> bool:
+    if not current_entity:
+        raise HTTPException(status_code=401, detail="Autenticación requerida")
+    
+    db_mantenimiento = db.query(MantenimientoCorrectivo).filter(MantenimientoCorrectivo.id == mantenimiento_id).first()
+    if not db_mantenimiento:
+        raise HTTPException(status_code=404, detail="Mantenimiento correctivo no encontrado")
+    
+    delete_file_in_folder(GOOGLE_CLOUD_BUCKET_NAME, f"mantenimientos_correctivos/{mantenimiento_id}/planilla/", file_name)
+    
+    db_mantenimiento.planilla = None
+    
+    db.commit()
+    db.refresh(db_mantenimiento)
+    update_correctivo(db, db_mantenimiento)
+    return True
+
 def delete_mantenimiento_photo(db: Session, mantenimiento_id: int, file_name: str, current_entity: dict) -> bool:
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     
     db_mantenimiento = db.query(MantenimientoCorrectivo).filter(MantenimientoCorrectivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
-        raise HTTPException(status_code=404, detail="Mantenimiento preventive no encontrado")
+        raise HTTPException(status_code=404, detail="Mantenimiento correctivo no encontrado")
     
     foto = db.query(MantenimientoCorrectivoFoto).filter(
         MantenimientoCorrectivoFoto.mantenimiento_id == mantenimiento_id,

@@ -11,4 +11,5 @@ export const updateMantenimientoCorrectivo = (id, mantenimiento) => {
   });
 };
 export const deleteMantenimientoCorrectivo = (id) => api.delete(`/mantenimientos-correctivos/${id}`);
+export const deleteMantenimientoPlanilla = (id, fileName) => api.delete(`/mantenimientos-correctivos/${id}/planilla/${fileName}`);
 export const deleteMantenimientoPhoto = (id, fileName) => api.delete(`/mantenimientos-correctivos/${id}/fotos/${fileName}`);

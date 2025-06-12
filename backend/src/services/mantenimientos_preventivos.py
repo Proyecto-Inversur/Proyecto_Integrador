@@ -126,7 +126,7 @@ def delete_mantenimiento_planilla(db: Session, mantenimiento_id: int, file_name:
     
     db_mantenimiento = db.query(MantenimientoPreventivo).filter(MantenimientoPreventivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
-        raise HTTPException(status_code=404, detail="Mantenimiento preventive no encontrado")
+        raise HTTPException(status_code=404, detail="Mantenimiento preventivo no encontrado")
     
     planilla = db.query(MantenimientoPreventivoPlanilla).filter(
         MantenimientoPreventivoPlanilla.mantenimiento_id == mantenimiento_id,
@@ -147,7 +147,7 @@ def delete_mantenimiento_photo(db: Session, mantenimiento_id: int, file_name: st
     
     db_mantenimiento = db.query(MantenimientoPreventivo).filter(MantenimientoPreventivo.id == mantenimiento_id).first()
     if not db_mantenimiento:
-        raise HTTPException(status_code=404, detail="Mantenimiento preventive no encontrado")
+        raise HTTPException(status_code=404, detail="Mantenimiento preventivo no encontrado")
     
     foto = db.query(MantenimientoPreventivoFoto).filter(
         MantenimientoPreventivoFoto.mantenimiento_id == mantenimiento_id,
