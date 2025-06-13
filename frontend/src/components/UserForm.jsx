@@ -13,6 +13,7 @@ const UserForm = ({ user, onClose }) => {
   });
   const [error, setError] = useState(null);
   const { signInWithGoogleForRegistration } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -28,6 +29,7 @@ const UserForm = ({ user, onClose }) => {
   };
 
   const handleSubmit = async (e) => {
+    setIsLoading(true);
     e.preventDefault();
     try {
       if (user) {
@@ -41,6 +43,8 @@ const UserForm = ({ user, onClose }) => {
     } catch (error) {
       console.error('Error saving user:', error);
       setError(error.message || 'Error al guardar el usuario.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -54,40 +58,55 @@ const UserForm = ({ user, onClose }) => {
         <Modal.Title>{user ? 'Editar Usuario' : 'Crear Usuario'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3" controlId="nombre">
-            <Form.Label className="required required-asterisk">Nombre</Form.Label>
-            <Form.Control
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="rol">
-            <Form.Label className="required required-asterisk">Rol</Form.Label>
-            <Form.Select
-              name="rol"
-              value={formData.rol}
-              onChange={handleChange}
-              required
-              className='form-select'
-            >
-              <option value="Administrador">Administrador</option>
-              <option value="Encargado de Mantenimiento">Encargado de Mantenimiento</option>
-            </Form.Select>
-          </Form.Group>
-          <Button
-            className="custom-save-button d-flex align-items-center justify-content-center gap-2"
-            type="submit"
-            disabled={!isFormValid()}
-          >
-            <FcGoogle size={20} />
-            {user ? 'Guardar' : 'Registrar con Google'}
-          </Button>
-        </Form>
-      </Modal.Body>
+        {isLoading ? (
+            <div className="custom-div">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {error && (
+                <div className="alert alert-danger" role="alert">
+                  {error}
+                </div>
+              )}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="nombre">
+                  <Form.Label className="required required-asterisk">Nombre</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="rol">
+                  <Form.Label className="required required-asterisk">Rol</Form.Label>
+                  <Form.Select
+                    name="rol"
+                    value={formData.rol}
+                    onChange={handleChange}
+                    required
+                    className='form-select'
+                  >
+                    <option value="Administrador">Administrador</option>
+                    <option value="Encargado de Mantenimiento">Encargado de Mantenimiento</option>
+                  </Form.Select>
+                </Form.Group>
+                <Button
+                  className="custom-save-button d-flex align-items-center justify-content-center gap-2"
+                  type="submit"
+                  disabled={!isFormValid()}
+                >
+                  <FcGoogle size={20} />
+                  {user ? 'Guardar' : 'Registrar con Google'}
+                </Button>
+              </Form>
+            </div>
+          )}
+        </Modal.Body>
     </Modal>
   );
 };

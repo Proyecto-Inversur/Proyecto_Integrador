@@ -20,7 +20,7 @@ const Correctivo = () => {
     planilla: '',
     fotos: [],
     fecha_cierre: null,
-    extendido: '',
+    extendido: null,
     estado: '',
   });
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
@@ -36,23 +36,27 @@ const Correctivo = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchMantenimiento = async () => {
-  try {
+    setIsLoading(true);
+    try {
     const response = await getMantenimientoCorrectivo(mantenimiento.id);
     setFormData({
       planilla: '',
       fotos: [],
       fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || null,
-      extendido: response.data.extendido?.split('T')[0] || '',
+      extendido: response.data.extendido || null,
       estado: response.data.estado,
     });
     navigate(location.pathname, { state: { mantenimiento: response.data } });
   } catch (error) {
     console.error('Error fetching mantenimiento:', error);
     setError('Error al cargar los datos actualizados.');
+  } finally {
+    setIsLoading(false);
   }
 };
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const [sucursalesResponse, cuadrillasResponse] = await Promise.all([
         getSucursales(),
@@ -62,6 +66,8 @@ const Correctivo = () => {
       setCuadrillas(cuadrillasResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,6 +111,7 @@ const Correctivo = () => {
 };
 
 const handleDeleteSelectedPlanilla = async () => {
+  setIsLoading(true);
   try {
     if (!selectedPlanilla) return;
 
@@ -118,6 +125,8 @@ const handleDeleteSelectedPlanilla = async () => {
   } catch (error) {
     console.error('Error al eliminar la planilla:', error);
     setError('Error al eliminar la planilla.');
+  } finally {
+    setIsLoading(false);
   }
 };
 
@@ -140,6 +149,7 @@ const handleDeleteSelectedPlanilla = async () => {
   };
 
   const handleDeleteSelectedPhotos = async () => {
+    setIsLoading(true);
     try {
       for (const photoUrl of selectedPhotos) {
         const fileName = photoUrl.split('/').pop();
@@ -151,6 +161,8 @@ const handleDeleteSelectedPlanilla = async () => {
     } catch (error) {
       console.error('Error deleting photos:', error);
       setError('Error al eliminar las fotos.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -250,7 +262,7 @@ const handleDeleteSelectedPlanilla = async () => {
   return (
     <Container fluid className="mantenimiento-container">
       {isLoading ? (
-        <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <div className="custom-div">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Cargando...</span>
           </div>
@@ -293,8 +305,12 @@ const handleDeleteSelectedPlanilla = async () => {
                 {mantenimiento.prioridad}
               </div>
               <div className="info-field">
+                <strong className="info-label">Estado:</strong>{' '}
+                {mantenimiento.estado}
+              </div>
+              <div className="info-field">
                 <strong className="info-label">Fecha Cierre:</strong>{' '}
-                {mantenimiento.fecha_cierre?.split('T')[0] || 'N/A'}
+                {mantenimiento.fecha_cierre?.split('T')[0] || 'Mantenimiento no finalizado'}
               </div>
               <div className="info-field">
                 <strong className="info-label">Extendido:</strong>{' '}

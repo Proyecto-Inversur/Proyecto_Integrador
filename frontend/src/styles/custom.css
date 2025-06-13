@@ -59,3 +59,9 @@ body {
   padding-top: 6rem;
   padding-bottom: 6rem;
 }
+
+.custom-div {
+  display: grid;
+  place-items: center;
+  min-height: 50vh;
+}

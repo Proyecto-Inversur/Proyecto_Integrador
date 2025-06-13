@@ -4,11 +4,10 @@ import { Navbar as BootstrapNavbar, Nav, Container, Image, Modal, Button } from 
 import logoInversur from '../assets/logo_inversur.png';
 import { FaRegBell, FaUser } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
-import { auth, signOut } from '../services/firebase';
 import '../styles/navbar.css';
 
 const Navbar = () => {
-  const { currentUser, currentEntity } = useContext(AuthContext);
+  const { currentEntity, logOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -17,11 +16,10 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      localStorage.removeItem('authToken');
-      navigate('/login');
+      await logOut();
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
+      navigate('/login', { state: { error: 'Error al cerrar sesión.' } });
     }
   };
 

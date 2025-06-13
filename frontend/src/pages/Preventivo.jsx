@@ -20,7 +20,7 @@ const Preventivo = () => {
     planillas: [],
     fotos: [],
     fecha_cierre: null,
-    extendido: '',
+    extendido: null,
   });
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
   const [isSelectingPlanillas, setIsSelectingPlanillas] = useState(false);
@@ -35,22 +35,26 @@ const Preventivo = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchMantenimiento = async () => {
-  try {
-    const response = await getMantenimientoPreventivo(mantenimiento.id);
-    setFormData({
-      planillas: [],
-      fotos: [],
-      fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || null,
-      extendido: response.data.extendido?.split('T')[0] || '',
-    });
-    navigate(location.pathname, { state: { mantenimiento: response.data } });
-  } catch (error) {
-    console.error('Error fetching mantenimiento:', error);
-    setError('Error al cargar los datos actualizados.');
-  }
-};
+    setIsLoading(true);
+    try {
+      const response = await getMantenimientoPreventivo(mantenimiento.id);
+      setFormData({
+        planillas: [],
+        fotos: [],
+        fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || null,
+        extendido: response.data.extendido || null,
+      });
+      navigate(location.pathname, { state: { mantenimiento: response.data } });
+    } catch (error) {
+      console.error('Error fetching mantenimiento:', error);
+      setError('Error al cargar los datos actualizados.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const [cuadrillasResponse, sucursalesResponse] = await Promise.all([
         getCuadrillas(),
@@ -60,6 +64,8 @@ const Preventivo = () => {
       setSucursales(sucursalesResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -116,6 +122,7 @@ const Preventivo = () => {
   };
 
   const handleDeleteSelectedPlanillas = async () => {
+    setIsLoading(true);
     try {
       for (const planillaUrl of selectedPlanillas) {
         const fileName = planillaUrl.split('/').pop();
@@ -127,10 +134,13 @@ const Preventivo = () => {
     } catch (error) {
       console.error('Error deleting planillas:', error);
       setError('Error al eliminar las planillas.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteSelectedPhotos = async () => {
+    setIsLoading(true);
     try {
       for (const photoUrl of selectedPhotos) {
         const fileName = photoUrl.split('/').pop();
@@ -142,6 +152,8 @@ const Preventivo = () => {
     } catch (error) {
       console.error('Error deleting photos:', error);
       setError('Error al eliminar las fotos.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -235,7 +247,7 @@ const Preventivo = () => {
   return (
     <Container fluid className="mantenimiento-container">
       {isLoading ? (
-        <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <div className="custom-div">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Cargando...</span>
           </div>
@@ -263,7 +275,7 @@ const Preventivo = () => {
               </div>
               <div className="info-field">
                 <strong className="info-label">Fecha Cierre:</strong>{' '}
-                {mantenimiento.fecha_cierre?.split('T')[0] || 'N/A'}
+                {mantenimiento.fecha_cierre?.split('T')[0] || 'Mantenimiento no finalizado'}
               </div>
               <div className="info-field">
                 <strong className="info-label">Extendido:</strong>{' '}

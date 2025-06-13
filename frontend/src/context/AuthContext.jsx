@@ -39,6 +39,7 @@ const AuthProvider = ({ children }) => {
           {},
           { headers: { Authorization: `Bearer ${idToken}` } }
         );
+        await new Promise(resolve => setTimeout(resolve, 1000));
         console.log('Verification succeeded:', response.data);
         isVerifiedRef.current = true;
         setCurrentUser(user);
@@ -68,10 +69,21 @@ const AuthProvider = ({ children }) => {
           navigate('/login', { state: { error: errorMessage } });
           return { success: false, data: null };
         }
-        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
   };
+
+  const logOut = async () => {
+    await signOut(auth);
+    localStorage.removeItem('authToken');
+    setCurrentUser(null);
+    setCurrentEntity(null);
+    setLoading(false);
+    setVerifying(false);
+    isVerifyingRef.current = false;
+    isVerifiedRef.current = false;
+    navigate('/login');
+  }
 
   const signInWithGoogleForRegistration = async () => {
     return new Promise((resolve, reject) => {
@@ -138,7 +150,7 @@ const AuthProvider = ({ children }) => {
   }, [navigate]);
 
   return (
-    <AuthContext.Provider value={{ currentUser, currentEntity, loading, verifying, verifyUser, signInWithGoogleForRegistration }}>
+    <AuthContext.Provider value={{ currentUser, currentEntity, loading, verifying, verifyUser, signInWithGoogleForRegistration, logOut }}>
       {children}
     </AuthContext.Provider>
   );

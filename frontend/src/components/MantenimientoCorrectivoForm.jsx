@@ -20,9 +20,11 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
   const [sucursales, setSucursales] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const [sucursalesResponse, cuadrillasResponse] = await Promise.all([
           getSucursales(),
@@ -33,6 +35,8 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Error al cargar los datos. Por favor, intenta de nuevo.');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -57,6 +61,7 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
   };
 
   const handleSubmit = async (e) => {
+    setIsLoading(true);
     e.preventDefault();
     try {
       // Validar que los campos obligatorios no estén vacíos
@@ -82,6 +87,8 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
     } catch (error) {
       console.error('Error saving mantenimiento correctivo:', error);
       setError('Error al guardar el mantenimiento correctivo. Por favor, intenta de nuevo.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,135 +102,145 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
         <Modal.Title>{mantenimiento ? 'Editar Mantenimiento Correctivo' : 'Crear Mantenimiento Correctivo'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3" controlId="id_sucursal">
-            <Form.Label className="required required-asterisk">Sucursal</Form.Label>
-            <Form.Select
-              name="id_sucursal"
-              value={formData.id_sucursal}
-              onChange={handleChange}
-              required
-              className='form-select'
-            >
-              <option value="">Seleccione una sucursal</option>
-              {sucursales.map((sucursal) => (
-                <option key={sucursal.id} value={sucursal.id}>
-                  {sucursal.nombre}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="id_cuadrilla">
-            <Form.Label className="required required-asterisk">Cuadrilla</Form.Label>
-            <Form.Select
-              name="id_cuadrilla"
-              value={formData.id_cuadrilla}
-              onChange={handleChange}
-              required
-              className='form-select'
-            >
-              <option value="">Seleccione una cuadrilla</option>
-              {cuadrillas.map((cuadrilla) => (
-                <option key={cuadrilla.id} value={cuadrilla.id}>
-                  {cuadrilla.nombre}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="fecha_apertura">
-            <Form.Label className="required required-asterisk">Fecha Apertura</Form.Label>
-            <Form.Control
-              type="date"
-              name="fecha_apertura"
-              value={formData.fecha_apertura || ''}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="numero_caso">
-            <Form.Label className="required required-asterisk">Número de Caso</Form.Label>
-            <Form.Control
-              type="text"
-              name="numero_caso"
-              value={formData.numero_caso || ''}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="incidente">
-            <Form.Label className="required required-asterisk">Incidente</Form.Label>
-            <Form.Control
-              type="text"
-              name="incidente"
-              value={formData.incidente || ''}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="rubro">
-            <Form.Label className="required required-asterisk">Rubro</Form.Label>
-            <Form.Select
-              name="rubro"
-              value={formData.rubro || ''}
-              onChange={handleChange}
-              required
-              className='form-select'
-            >
-              <option value="">Seleccione un rubro</option>
-              <option value="Iluminación/Electricidad">Iluminación/Electricidad</option>
-              <option value="Refrigeración">Refrigeración</option>
-              <option value="Aberturas/Vidrios">Aberturas/Vidrios</option>
-              <option value="Pintura/Impermeabilizaciones">Pintura/Impermeabilizaciones</option>
-              <option value="Pisos">Pisos</option>
-              <option value="Techos">Techos</option>
-              <option value="Sanitarios">Sanitarios</option>
-              <option value="Cerrajeria">Cerrajeria</option>
-              <option value="Mobiliario">Mobiliario</option>
-              <option value="Senalectica">Senalectica</option>
-              <option value="Otros">Otros</option>
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="estado">
-            <Form.Label className="required required-asterisk">Estado</Form.Label>
-            <Form.Select
-              name="estado"
-              value={formData.estado || ''}
-              onChange={handleChange}
-              required
-              className='form-select'
-            >
-              <option value="Pendiente">Pendiente</option>
-              <option value="En Progreso">En Progreso</option>
-              <option value="Finalizado">Finalizado</option>
-              <option value="A Presupuestar">A Presupuestar</option>
-              <option value="Presupuestado">Presupuestado</option>
-              <option value="Presupuesto Aprobado">Presupuesto Aprobado</option>
-              <option value="Esperando Respuesta Bancor">Esperando Respuesta Bancor</option>
-              <option value="Aplazado">Aplazado</option>
-              <option value="Desestimado">Desestimado</option>
-              <option value="Solucionado">Solucionado</option>
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="prioridad">
-            <Form.Label className="required required-asterisk">Prioridad</Form.Label>
-            <Form.Select
-              name="prioridad"
-              value={formData.prioridad || ''}
-              onChange={handleChange}
-              required
-              className='form-select'
-            >
-              <option value="Alta">Alta</option>
-              <option value="Media">Media</option>
-              <option value="Baja">Baja</option>
-            </Form.Select>
-          </Form.Group>
-          <Button className="custom-save-button" type="submit" disabled={!isFormValid()}>
-            Guardar
-          </Button>
-        </Form>
-      </Modal.Body>
+        {isLoading ? (
+            <div className="custom-div">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {error && <div className="alert alert-danger">{error}</div>}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="id_sucursal">
+                  <Form.Label className="required required-asterisk">Sucursal</Form.Label>
+                  <Form.Select
+                    name="id_sucursal"
+                    value={formData.id_sucursal}
+                    onChange={handleChange}
+                    required
+                    className='form-select'
+                  >
+                    <option value="">Seleccione una sucursal</option>
+                    {sucursales.map((sucursal) => (
+                      <option key={sucursal.id} value={sucursal.id}>
+                        {sucursal.nombre}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="id_cuadrilla">
+                  <Form.Label className="required required-asterisk">Cuadrilla</Form.Label>
+                  <Form.Select
+                    name="id_cuadrilla"
+                    value={formData.id_cuadrilla}
+                    onChange={handleChange}
+                    required
+                    className='form-select'
+                  >
+                    <option value="">Seleccione una cuadrilla</option>
+                    {cuadrillas.map((cuadrilla) => (
+                      <option key={cuadrilla.id} value={cuadrilla.id}>
+                        {cuadrilla.nombre}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="fecha_apertura">
+                  <Form.Label className="required required-asterisk">Fecha Apertura</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="fecha_apertura"
+                    value={formData.fecha_apertura || ''}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="numero_caso">
+                  <Form.Label className="required required-asterisk">Número de Caso</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="numero_caso"
+                    value={formData.numero_caso || ''}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="incidente">
+                  <Form.Label className="required required-asterisk">Incidente</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="incidente"
+                    value={formData.incidente || ''}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="rubro">
+                  <Form.Label className="required required-asterisk">Rubro</Form.Label>
+                  <Form.Select
+                    name="rubro"
+                    value={formData.rubro || ''}
+                    onChange={handleChange}
+                    required
+                    className='form-select'
+                  >
+                    <option value="">Seleccione un rubro</option>
+                    <option value="Iluminación/Electricidad">Iluminación/Electricidad</option>
+                    <option value="Refrigeración">Refrigeración</option>
+                    <option value="Aberturas/Vidrios">Aberturas/Vidrios</option>
+                    <option value="Pintura/Impermeabilizaciones">Pintura/Impermeabilizaciones</option>
+                    <option value="Pisos">Pisos</option>
+                    <option value="Techos">Techos</option>
+                    <option value="Sanitarios">Sanitarios</option>
+                    <option value="Cerrajeria">Cerrajeria</option>
+                    <option value="Mobiliario">Mobiliario</option>
+                    <option value="Senalectica">Senalectica</option>
+                    <option value="Otros">Otros</option>
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="estado">
+                  <Form.Label className="required required-asterisk">Estado</Form.Label>
+                  <Form.Select
+                    name="estado"
+                    value={formData.estado || ''}
+                    onChange={handleChange}
+                    required
+                    className='form-select'
+                  >
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En Progreso">En Progreso</option>
+                    <option value="Finalizado">Finalizado</option>
+                    <option value="A Presupuestar">A Presupuestar</option>
+                    <option value="Presupuestado">Presupuestado</option>
+                    <option value="Presupuesto Aprobado">Presupuesto Aprobado</option>
+                    <option value="Esperando Respuesta Bancor">Esperando Respuesta Bancor</option>
+                    <option value="Aplazado">Aplazado</option>
+                    <option value="Desestimado">Desestimado</option>
+                    <option value="Solucionado">Solucionado</option>
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="prioridad">
+                  <Form.Label className="required required-asterisk">Prioridad</Form.Label>
+                  <Form.Select
+                    name="prioridad"
+                    value={formData.prioridad || ''}
+                    onChange={handleChange}
+                    required
+                    className='form-select'
+                  >
+                    <option value="Alta">Alta</option>
+                    <option value="Media">Media</option>
+                    <option value="Baja">Baja</option>
+                  </Form.Select>
+                </Form.Group>
+                <Button className="custom-save-button" type="submit" disabled={!isFormValid()}>
+                  Guardar
+                </Button>
+              </Form>
+            </div>
+          )}
+        </Modal.Body>
     </Modal>
   );
 };

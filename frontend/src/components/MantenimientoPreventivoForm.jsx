@@ -122,6 +122,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
   };
 
   const handleNewPreventivoSubmit = async () => {
+    setIsLoading(true);
     if (!newPreventivo.id_sucursal || !newPreventivo.frecuencia || !newPreventivo.nombre_sucursal) {
       setError('Por favor, selecciona una sucursal y frecuencia.');
       return;
@@ -155,10 +156,13 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
       console.error(`Error ${isEditing ? 'updating' : 'creating'} preventivo:`, error);
       console.error('Error response:', error.response?.data);
       setError(error.response?.data?.detail || `Error al ${isEditing ? 'actualizar' : 'crear'} el preventivo.`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeletePreventivo = async (id, e) => {
+    setIsLoading(true);
     e.stopPropagation();
     try {
       await deletePreventivo(id);
@@ -172,10 +176,13 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
       console.error('Error deleting preventivo:', error);
       const errorMessage = error.response?.data?.detail || 'No se pudo eliminar el preventivo. Puede estar en uso.';
       setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
+    setIsLoading(true);
     e.preventDefault();
     try {
       if (!formData.id_sucursal || !formData.frecuencia || !formData.id_cuadrilla || !formData.fecha_apertura) {
@@ -201,6 +208,8 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
       console.error('Error saving mantenimiento preventivo:', error);
       console.error('Error response:', error.response?.data);
       setError(error.response?.data?.detail || 'Error al guardar el mantenimiento preventivo.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -220,137 +229,147 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
         <Modal.Title>{mantenimiento ? 'Editar Mantenimiento Preventivo' : 'Crear Mantenimiento Preventivo'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {error && <div className="alert alert-danger">{error}</div>}
-        {isLoading && <div className="alert alert-info">Cargando datos...</div>}
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3" controlId="id_preventivo">
-            <Form.Label className="required required-asterisk">Preventivo</Form.Label>
-            <Dropdown show={dropdownOpen} onToggle={() => setDropdownOpen(!dropdownOpen)} ref={dropdownRef}>
-              <Dropdown.Toggle
-                id="dropdown-preventivo"
-                className="custom-dropdown-toggle w-100"
-                disabled={isLoading}
-              >
-                {getPreventivoDisplay(formData.id_sucursal)}
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="w-100">
-                {preventivos.map((preventivo) => (
-                  <Dropdown.Item
-                    key={preventivo.id}
-                    as="div"
-                    className="custom-dropdown-item"
-                    onClick={() => handlePreventivoSelect(preventivo.id)}
-                  >
-                    <span className="custom-dropdown-item-span">
-                      {getPreventivoDisplay(preventivo.id_sucursal)}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="warning"
-                      className="custom-edit-button me-1"
-                      onClick={(e) => handleEditPreventivo(preventivo, e)}
-                      title="Editar"
+        {isLoading ? (
+            <div className="custom-div">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {error && <div className="alert alert-danger">{error}</div>}
+              {isLoading && <div className="alert alert-info">Cargando datos...</div>}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="id_preventivo">
+                  <Form.Label className="required required-asterisk">Preventivo</Form.Label>
+                  <Dropdown show={dropdownOpen} onToggle={() => setDropdownOpen(!dropdownOpen)} ref={dropdownRef}>
+                    <Dropdown.Toggle
+                      id="dropdown-preventivo"
+                      className="custom-dropdown-toggle w-100"
+                      disabled={isLoading}
                     >
-                      <FaPencilAlt />
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="custom-delete-button"
-                      onClick={(e) => handleDeletePreventivo(preventivo.id, e)}
-                      title="Eliminar"
-                    >
-                      ×
-                    </Button>
-                  </Dropdown.Item>
-                ))}
-                <Dropdown.Item
-                  onClick={() => handlePreventivoSelect('new')}
-                  className="custom-dropdown-item-add"
-                >
-                  <span className="custom-dropdown-item-add-span"><FaPlus /></span> Agregar nuevo preventivo...
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-            {showNewPreventivoInput && (
-              <InputGroup className="mt-2">
-                <Form.Select
-                  name="id_sucursal"
-                  value={newPreventivo.id_sucursal ?? ''}
-                  onChange={handleNewPreventivoChange}
-                  className="me-2"
-                  disabled={isLoading || sucursales.length === 0}
-                >
-                  <option value="">Seleccione una sucursal</option>
-                  {sucursales.length > 0 ? (
-                    sucursales.map((sucursal) => (
-                      <option key={sucursal.id} value={sucursal.id}>
-                        {sucursal.nombre}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>No hay sucursales disponibles</option>
+                      {getPreventivoDisplay(formData.id_sucursal)}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="w-100">
+                      {preventivos.map((preventivo) => (
+                        <Dropdown.Item
+                          key={preventivo.id}
+                          as="div"
+                          className="custom-dropdown-item"
+                          onClick={() => handlePreventivoSelect(preventivo.id)}
+                        >
+                          <span className="custom-dropdown-item-span">
+                            {getPreventivoDisplay(preventivo.id_sucursal)}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="warning"
+                            className="custom-edit-button me-1"
+                            onClick={(e) => handleEditPreventivo(preventivo, e)}
+                            title="Editar"
+                          >
+                            <FaPencilAlt />
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="custom-delete-button"
+                            onClick={(e) => handleDeletePreventivo(preventivo.id, e)}
+                            title="Eliminar"
+                          >
+                            ×
+                          </Button>
+                        </Dropdown.Item>
+                      ))}
+                      <Dropdown.Item
+                        onClick={() => handlePreventivoSelect('new')}
+                        className="custom-dropdown-item-add"
+                      >
+                        <span className="custom-dropdown-item-add-span"><FaPlus /></span> Agregar nuevo preventivo...
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                  {showNewPreventivoInput && (
+                    <InputGroup className="mt-2">
+                      <Form.Select
+                        name="id_sucursal"
+                        value={newPreventivo.id_sucursal ?? ''}
+                        onChange={handleNewPreventivoChange}
+                        className="me-2"
+                        disabled={isLoading || sucursales.length === 0}
+                      >
+                        <option value="">Seleccione una sucursal</option>
+                        {sucursales.length > 0 ? (
+                          sucursales.map((sucursal) => (
+                            <option key={sucursal.id} value={sucursal.id}>
+                              {sucursal.nombre}
+                            </option>
+                          ))
+                        ) : (
+                          <option value="" disabled>No hay sucursales disponibles</option>
+                        )}
+                      </Form.Select>
+                      <Form.Select
+                        name="frecuencia"
+                        value={newPreventivo.frecuencia || ''}
+                        onChange={handleNewPreventivoChange}
+                        className="me-2"
+                      >
+                        <option value="">Seleccione una frecuencia</option>
+                        <option value="Mensual">Mensual</option>
+                        <option value="Trimestral">Trimestral</option>
+                        <option value="Cuatrimestral">Cuatrimestral</option>
+                        <option value="Semestral">Semestral</option>
+                      </Form.Select>
+                      <Button
+                        className="custom-add-button"
+                        onClick={handleNewPreventivoSubmit}
+                        disabled={!newPreventivo.id_sucursal || !newPreventivo.frecuencia || isLoading}
+                      >
+                        {isEditing ? 'Actualizar' : 'Agregar'}
+                      </Button>
+                    </InputGroup>
                   )}
-                </Form.Select>
-                <Form.Select
-                  name="frecuencia"
-                  value={newPreventivo.frecuencia || ''}
-                  onChange={handleNewPreventivoChange}
-                  className="me-2"
-                >
-                  <option value="">Seleccione una frecuencia</option>
-                  <option value="Mensual">Mensual</option>
-                  <option value="Trimestral">Trimestral</option>
-                  <option value="Cuatrimestral">Cuatrimestral</option>
-                  <option value="Semestral">Semestral</option>
-                </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="id_cuadrilla">
+                  <Form.Label className="required required-asterisk">Cuadrilla</Form.Label>
+                  <Form.Select
+                    name="id_cuadrilla"
+                    value={formData.id_cuadrilla || ''}
+                    onChange={handleChange}
+                    required
+                    className="form-select"
+                    disabled={isLoading}
+                  >
+                    <option value="">Seleccione una cuadrilla</option>
+                    {cuadrillas.map((cuadrilla) => (
+                      <option key={cuadrilla.id} value={cuadrilla.id}>
+                        {cuadrilla.nombre}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="fecha_apertura">
+                  <Form.Label className="required required-asterisk">Fecha Apertura</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="fecha_apertura"
+                    value={formData.fecha_apertura || ''}
+                    onChange={handleChange}
+                    required
+                    disabled={isLoading}
+                  />
+                </Form.Group>
                 <Button
-                  className="custom-add-button"
-                  onClick={handleNewPreventivoSubmit}
-                  disabled={!newPreventivo.id_sucursal || !newPreventivo.frecuencia || isLoading}
+                  className="custom-save-button"
+                  type="submit"
+                  disabled={!isFormValid() || isLoading}
                 >
-                  {isEditing ? 'Actualizar' : 'Agregar'}
+                  Guardar
                 </Button>
-              </InputGroup>
-            )}
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="id_cuadrilla">
-            <Form.Label className="required required-asterisk">Cuadrilla</Form.Label>
-            <Form.Select
-              name="id_cuadrilla"
-              value={formData.id_cuadrilla || ''}
-              onChange={handleChange}
-              required
-              className="form-select"
-              disabled={isLoading}
-            >
-              <option value="">Seleccione una cuadrilla</option>
-              {cuadrillas.map((cuadrilla) => (
-                <option key={cuadrilla.id} value={cuadrilla.id}>
-                  {cuadrilla.nombre}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="fecha_apertura">
-            <Form.Label className="required required-asterisk">Fecha Apertura</Form.Label>
-            <Form.Control
-              type="date"
-              name="fecha_apertura"
-              value={formData.fecha_apertura || ''}
-              onChange={handleChange}
-              required
-              disabled={isLoading}
-            />
-          </Form.Group>
-          <Button
-            className="custom-save-button"
-            type="submit"
-            disabled={!isFormValid() || isLoading}
-          >
-            Guardar
-          </Button>
-        </Form>
-      </Modal.Body>
+              </Form>
+            </div>
+          )}
+        </Modal.Body>
     </Modal>
   );
 };
