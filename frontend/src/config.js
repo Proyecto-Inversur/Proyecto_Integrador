@@ -1,16 +1,39 @@
 const getApiUrl = () => {
-    const host = window.location.host;
-    const isProd = host.includes('nice-rock'); // Ajusta según tus URLs
-  
-    const apiUrlQa = import.meta.env.VITE_API_URL_QA;
-    const apiUrlProd = import.meta.env.VITE_API_URL_PROD;
-  
-    if (!apiUrlQa || !apiUrlProd) {
-      console.error('Missing API URL configuration in .env');
-      return null;
-    }
-  
-    return isProd ? apiUrlProd : apiUrlQa;
-  };
-  
-  export const API_URL = getApiUrl();
+  const isProd = window.location.host.includes('nice-rock');
+  const apiUrl = import.meta.env[`VITE_API_URL_${isProd ? 'PROD' : 'QA'}`];
+
+  if (!apiUrl) {
+    console.error('Missing API URL configuration in .env');
+    return null;
+  }
+
+  return apiUrl;
+};
+
+const getFirebaseConfig = () => {
+  const isProd = window.location.host.includes('nice-rock');
+  const config = import.meta.env[`VITE_FIREBASE_CONFIG_${isProd ? 'PROD' : 'QA'}`];
+
+  if (!config) {
+    console.error('Missing Firebase configuration in .env');
+    return null;
+  }
+
+  return JSON.parse(config);
+};
+
+const getGoogleClient = () => {
+  const isProd = window.location.host.includes('nice-rock');
+  const clientId = import.meta.env[`VITE_GOOGLE_CLIENT_ID_${isProd ? 'PROD' : 'QA'}`];
+
+  if (!clientId) {
+    console.error('Missing Google Client ID configuration in .env');
+    return null;
+  }
+
+  return clientId;
+};
+
+export const API_URL = getApiUrl();
+export const firebaseConfig = getFirebaseConfig();
+export const googleClientId = getGoogleClient();

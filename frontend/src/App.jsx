@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import LocationProvider from './context/LocationContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -13,6 +14,7 @@ import MantenimientoCorrectivo from './pages/MantenimientosCorrectivos';
 import Preventivo from './pages/Preventivo';
 import Correctivo from './pages/Correctivo';
 import Login from './pages/Login';
+import Mapa from './pages/Mapa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
@@ -70,6 +72,7 @@ const AppContent = () => {
           <Route path="/preventivo" element={<ProtectedRoute><Preventivo /></ProtectedRoute>} />
           <Route path="/correctivo" element={<ProtectedRoute><Correctivo /></ProtectedRoute>} />
           <Route path="/login" element={<Login />} />
+          <Route path="/mapa" element={<ProtectedRoute><Mapa /></ProtectedRoute>} />
         </Routes>
       </main>
       {!isLoginPage && <Footer />}
@@ -81,7 +84,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <LocationProvider>
+          <AppContent />
+        </LocationProvider>
       </AuthProvider>
     </Router>
   );

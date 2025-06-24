@@ -37,7 +37,7 @@ const Home = () => {
           )}
           {currentEntity && (
             <>
-              <Link /*to="/mapa"*/ className="home-button">
+              <Link to="/mapa" className="home-button">
                 <FaMapMarkerAlt />
                 Mapa
               </Link>

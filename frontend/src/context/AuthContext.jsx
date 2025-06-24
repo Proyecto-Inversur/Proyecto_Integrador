@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useRef } from 'react';
 import { auth, onAuthStateChanged, signOut } from '../services/firebase';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { googleClientId } from '../config';
 
 const AuthContext = createContext();
 
@@ -15,45 +16,31 @@ const AuthProvider = ({ children }) => {
   const isVerifiedRef = useRef(false);
 
   const verifyUser = async (user, idToken) => {
-    /*if (isVerifyingRef.current) {
-      console.log('Verification already in progress, skipping.');
-      return { success: false, data: null };
-    }
-    if (isVerifiedRef.current) {
-      console.log('User already verified, skipping.');
-      return { success: true, data: currentEntity };
-    }*/
-
     isVerifyingRef.current = true;
     try {
       setLoading(true);
       setVerifying(true);
 
-      let attempts = 0;
-      const maxAttempts = 3;
-
-      while (attempts < maxAttempts) {
-        try {
-          const response = await api.post(
-            '/auth/verify',
-            {},
-            { headers: { Authorization: `Bearer ${idToken}` } }
-          );
-          
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          console.log('Verification succeeded:', response.data);
-          isVerifiedRef.current = true;
-          setCurrentUser(user);
-          setCurrentEntity(response.data);
-          return { success: true, data: response.data };
-        } catch (error) {
-          attempts++;
-          const errorDetail = error.response?.data?.detail || error.message;
-          console.error(`Verification attempt ${attempts} failed:`, errorDetail);
-          if (attempts === maxAttempts) {
-            throw error;
-          }
+      try {
+        const response = await api.post(
+          '/auth/verify',
+          {},
+          { headers: { Authorization: `Bearer ${idToken}` } }
+        );
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('Verification succeeded:', response.data);
+        isVerifiedRef.current = true;
+        setCurrentUser(user);
+        setCurrentEntity(response.data);
+        return { success: true, data: response.data };
+      } catch (error) {
+        attempts++;
+        const errorDetail = error.response?.data?.detail || error.message;
+        console.error(`Verification attempt ${attempts} failed:`, errorDetail);
+        if (attempts === maxAttempts) {
+          throw error;
         }
       }
     } catch (error) {
@@ -102,7 +89,7 @@ const AuthProvider = ({ children }) => {
       script.async = true;
       script.onload = () => {
         window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          client_id: googleClientId,
           callback: async (response) => {
             try {
               const idToken = response.credential;

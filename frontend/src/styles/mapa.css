@@ -1,0 +1,9 @@
+.map-container {
+  max-width: 1200px;
+  margin: 6rem auto;
+}
+
+.map-container h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
