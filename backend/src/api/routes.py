@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos
+from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos, maps
 from config.database import get_db
 from services.auth import verify_user_token
 from auth.firebase import initialize_firebase
@@ -16,15 +16,12 @@ EMAIL_ADMIN = os.getenv("EMAIL_ADMIN")
 NOMBRE_ADMIN = os.getenv("NOMBRE_ADMIN")
 PASSWORD_ADMIN = os.getenv("PASSWORD_ADMIN")
 
+initialize_firebase()
+init_admin(email=EMAIL_ADMIN, nombre=NOMBRE_ADMIN, password=PASSWORD_ADMIN)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_admin(
-        email=EMAIL_ADMIN,
-        nombre=NOMBRE_ADMIN,
-        password=PASSWORD_ADMIN
-    )
     yield
-    pass
 
 app = FastAPI(lifespan=lifespan)
 
@@ -101,3 +98,4 @@ app.include_router(auth.router)
 app.include_router(preventivos.router)
 app.include_router(mantenimientos_preventivos.router)
 app.include_router(mantenimientos_correctivos.router)
+app.include_router(maps.router)

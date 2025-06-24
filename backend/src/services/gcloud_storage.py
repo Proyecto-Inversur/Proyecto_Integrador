@@ -3,14 +3,16 @@ from google.api_core.exceptions import GoogleAPIError
 from fastapi import HTTPException, UploadFile
 import uuid
 import os
+import json
+
+GOOGLE_CREDENTIALS = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 
 def create_folder_if_not_exists(bucket_name: str, folder_path: str):
     try:
-        credentials_path = os.getenv("GOOGLE_CREDENTIALS")
-        if not credentials_path or not os.path.exists(credentials_path):
+        if not GOOGLE_CREDENTIALS:
             raise HTTPException(status_code=500, detail="Google Cloud credentials not configured")
         
-        storage_client = storage.Client.from_service_account_json(credentials_path)
+        storage_client = storage.Client.from_service_account_info(GOOGLE_CREDENTIALS)
         bucket = storage_client.bucket(bucket_name)
         if not folder_path.endswith('/'):
             folder_path += '/'
@@ -23,11 +25,10 @@ def create_folder_if_not_exists(bucket_name: str, folder_path: str):
 def generate_gallery_html(bucket_name: str, folder: str):
     """Generate an HTML gallery for photos in the specified GCS folder."""
     try:
-        credentials_path = os.getenv("GOOGLE_CREDENTIALS")
-        if not isinstance(credentials_path, str) or not os.path.exists(credentials_path):
+        if not GOOGLE_CREDENTIALS:
             raise HTTPException(status_code=500, detail="Google Cloud credentials not configured")
         
-        storage_client = storage.Client.from_service_account_json(credentials_path)
+        storage_client = storage.Client.from_service_account_info(GOOGLE_CREDENTIALS)
         bucket = storage_client.bucket(bucket_name)
         prefix = folder.rstrip("/") + "/"
         blobs = bucket.list_blobs(prefix=prefix)
@@ -66,11 +67,10 @@ def generate_gallery_html(bucket_name: str, folder: str):
 
 async def upload_file_to_gcloud(file: UploadFile, bucket_name: str, folder: str = "") -> str:
     try:
-        credentials_path = os.getenv("GOOGLE_CREDENTIALS")
-        if not credentials_path or not os.path.exists(credentials_path):
+        if not GOOGLE_CREDENTIALS:
             raise HTTPException(status_code=500, detail="Google Cloud credentials not configured")
         
-        storage_client = storage.Client.from_service_account_json(credentials_path)
+        storage_client = storage.Client.from_service_account_info(GOOGLE_CREDENTIALS)
         bucket = storage_client.bucket(bucket_name)
         
         create_folder_if_not_exists(bucket_name, folder)
@@ -91,11 +91,10 @@ async def upload_file_to_gcloud(file: UploadFile, bucket_name: str, folder: str 
 
 def delete_file_in_folder(bucket_name: str, folder: str, file_path: str) -> bool:
     try:
-        credentials_path = os.getenv("GOOGLE_CREDENTIALS")
-        if not credentials_path or not os.path.exists(credentials_path):
+        if not GOOGLE_CREDENTIALS:
             raise HTTPException(status_code=500, detail="Google Cloud credentials not configured")
         
-        storage_client = storage.Client.from_service_account_json(credentials_path)
+        storage_client = storage.Client.from_service_account_info(GOOGLE_CREDENTIALS)
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(f"{folder.rstrip('/')}{file_path}")
         if blob.exists():
