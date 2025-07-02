@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import SucursalForm from '../components/SucursalForm';
+import BackButton from '../components/BackButton';
 import { getSucursales, deleteSucursal } from '../services/sucursalService';
 import { getZonas } from '../services/zonaService';
 import { AuthContext } from '../context/AuthContext';
@@ -84,6 +85,7 @@ const Sucursales = () => {
         </div>
       ) : (
         <div>
+          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Sucursales</h2>

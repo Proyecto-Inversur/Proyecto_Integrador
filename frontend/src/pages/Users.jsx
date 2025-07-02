@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import UserForm from '../components/UserForm';
+import BackButton from '../components/BackButton';
 import { getUsers, deleteUser } from '../services/userService';
 import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
@@ -72,6 +73,7 @@ const Users = () => {
         </div>
       ) : (
         <div>
+          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Usuarios</h2>

@@ -3,6 +3,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col, Form } from 'react-bootstrap';
 import MantenimientoCorrectivoForm from '../components/MantenimientoCorrectivoForm';
+import BackButton from '../components/BackButton';
 import { getMantenimientosCorrectivos, deleteMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
@@ -167,6 +168,7 @@ const MantenimientosCorrectivos = () => {
         </div>
       ) : (
         <div>
+          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Mantenimientos Correctivos</h2>
@@ -281,64 +283,66 @@ const MantenimientosCorrectivos = () => {
             />
           )}
 
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Sucursal</th>
-                <th>Cuadrilla</th>
-                <th>Zona</th>
-                <th>Rubro</th>
-                <th>Número de Caso</th>
-                <th>Fecha Apertura</th>
-                <th>Fecha Cierre</th>
-                <th>Incidente</th>
-                <th>Estado</th>
-                <th>Prioridad</th>
-                {currentEntity.type === 'usuario' && (
-                  <th>Acciones</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMantenimientos.map((mantenimiento) => (
-                <tr 
-                  key={mantenimiento.id}
-                  onClick={() => handleRowClick(mantenimiento)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <td>{mantenimiento.id}</td>
-                  <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
-                  <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
-                  <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
-                  <td>{mantenimiento.rubro}</td>
-                  <td>{mantenimiento.numero_caso}</td>
-                  <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-                  <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
-                  <td>{mantenimiento.incidente}</td>
-                  <td>{mantenimiento.estado}</td>
-                  <td>{mantenimiento.prioridad}</td>
+          <div className="table-responsive">
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Sucursal</th>
+                  <th>Cuadrilla</th>
+                  <th>Zona</th>
+                  <th>Rubro</th>
+                  <th>Número de Caso</th>
+                  <th>Fecha Apertura</th>
+                  <th>Fecha Cierre</th>
+                  <th>Incidente</th>
+                  <th>Estado</th>
+                  <th>Prioridad</th>
                   {currentEntity.type === 'usuario' && (
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="warning"
-                        className="me-2"
-                        onClick={() => handleEdit(mantenimiento)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => handleDelete(mantenimiento.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </td>
+                    <th>Acciones</th>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {filteredMantenimientos.map((mantenimiento) => (
+                  <tr 
+                    key={mantenimiento.id}
+                    onClick={() => handleRowClick(mantenimiento)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>{mantenimiento.id}</td>
+                    <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
+                    <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+                    <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                    <td>{mantenimiento.rubro}</td>
+                    <td>{mantenimiento.numero_caso}</td>
+                    <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
+                    <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+                    <td>{mantenimiento.incidente}</td>
+                    <td>{mantenimiento.estado}</td>
+                    <td>{mantenimiento.prioridad}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="warning"
+                          className="me-2"
+                          onClick={() => handleEdit(mantenimiento)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => handleDelete(mantenimiento.id)}
+                        >
+                          Eliminar
+                        </Button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
         </div>
       )}
     </Container>

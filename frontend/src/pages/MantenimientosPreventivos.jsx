@@ -3,6 +3,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col, Form } from 'react-bootstrap';
 import MantenimientoPreventivoForm from '../components/MantenimientoPreventivoForm';
+import BackButton from '../components/BackButton';
 import { getMantenimientosPreventivos, deleteMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getSucursales } from '../services/sucursalService';
@@ -155,6 +156,7 @@ const MantenimientosPreventivos = () => {
         </div>
       ) : (
         <div>
+          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Mantenimientos Preventivos</h2>
@@ -220,55 +222,56 @@ const MantenimientosPreventivos = () => {
               onClose={handleFormClose}
             />
           )}
-
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Preventivo</th>
-                <th>Cuadrilla</th>
-                <th>Zona</th>
-                <th>Fecha Apertura</th>
-                <th>Fecha Cierre</th>
-                {currentEntity.type === 'usuario' && (
-                  <th>Acciones</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMantenimientos.map((mantenimiento) => (
-                <tr 
-                  key={mantenimiento.id} 
-                  onClick={() => handleRowClick(mantenimiento)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <td>{mantenimiento.id}</td>
-                  <td>{getSucursalNombre(mantenimiento.id_sucursal)} - {mantenimiento.frecuencia}</td>
-                  <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
-                  <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
-                  <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-                  <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+          <div className="table-responsive">
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Preventivo</th>
+                  <th>Cuadrilla</th>
+                  <th>Zona</th>
+                  <th>Fecha Apertura</th>
+                  <th>Fecha Cierre</th>
                   {currentEntity.type === 'usuario' && (
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="warning"
-                        className="me-2"
-                        onClick={() => handleEdit(mantenimiento)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => handleDelete(mantenimiento.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </td>
+                    <th>Acciones</th>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {filteredMantenimientos.map((mantenimiento) => (
+                  <tr 
+                    key={mantenimiento.id} 
+                    onClick={() => handleRowClick(mantenimiento)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>{mantenimiento.id}</td>
+                    <td>{getSucursalNombre(mantenimiento.id_sucursal)} - {mantenimiento.frecuencia}</td>
+                    <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+                    <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                    <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
+                    <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="warning"
+                          className="me-2"
+                          onClick={() => handleEdit(mantenimiento)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => handleDelete(mantenimiento.id)}
+                        >
+                          Eliminar
+                        </Button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
         </div>
       )}
     </Container>
