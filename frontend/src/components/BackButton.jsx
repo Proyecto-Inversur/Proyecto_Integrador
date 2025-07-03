@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { ArrowLeft } from 'react-bootstrap-icons'; // Asegurate de tener esto instalado
 
-const BackButton = ({ label = "Volver" }) => {
+const BackButton = ({ label = "" }) => {
   const navigate = useNavigate();
 
   return (
