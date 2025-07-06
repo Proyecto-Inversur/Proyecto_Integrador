@@ -11,3 +11,4 @@ dist
 *.xml
 coverage
 credentials
+osrm-data

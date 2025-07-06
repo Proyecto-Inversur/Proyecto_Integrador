@@ -38,7 +38,7 @@ const Cuadrillas = () => {
     else {
       navigate('/login');
     }
-  }, [currentEntity]);
+  }, [currentEntity, navigate]);
 
   const handleDelete = async (id) => {
     setIsLoading(true);

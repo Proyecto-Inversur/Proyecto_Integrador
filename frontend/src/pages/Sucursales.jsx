@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import SucursalForm from '../components/SucursalForm';
 import { getSucursales, deleteSucursal } from '../services/sucursalService';
-import { getZonas } from '../services/zonaService';
-import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
 
 const Sucursales = () => {
-  const { currentEntity } = useContext(AuthContext);
   const [sucursales, setSucursales] = useState([]);
-  const [zonas, setZonas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedSucursal, setSelectedSucursal] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { currentEntity } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const fetchSucursales = async () => {
     setIsLoading(true);
@@ -26,22 +26,9 @@ const Sucursales = () => {
     }
   };
 
-  const fetchZonas = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getZonas();
-      setZonas(response.data);
-    } catch (error) {
-      console.error('Error fetching zonas:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (currentEntity.type === 'usuario') {
       fetchSucursales();
-      fetchZonas();
     }
     else if (currentEntity) {
       navigate('/');
@@ -49,7 +36,7 @@ const Sucursales = () => {
     else {
       navigate('/login');
     }
-  }, [currentEntity]);
+  }, [currentEntity, navigate]);
 
   const handleDelete = async (id) => {
     setIsLoading(true);

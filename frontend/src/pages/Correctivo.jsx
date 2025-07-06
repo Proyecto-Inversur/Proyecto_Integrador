@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
+import { RouteContext } from '../context/RouteContext';
 import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
@@ -11,6 +12,7 @@ import '../styles/mantenimientos.css';
 
 const Correctivo = () => {
   const { currentEntity } = useContext(AuthContext);
+  const { addSucursal } = useContext(RouteContext);
   const navigate = useNavigate();
   const location = useLocation();
   const mantenimiento = location.state?.mantenimiento || {};
@@ -19,8 +21,8 @@ const Correctivo = () => {
   const [formData, setFormData] = useState({
     planilla: '',
     fotos: [],
-    fecha_cierre: null,
-    extendido: null,
+    fecha_cierre: '',
+    extendido: '',
     estado: '',
   });
   const [isSelectingPhotos, setIsSelectingPhotos] = useState(false);
@@ -29,7 +31,7 @@ const Correctivo = () => {
   const [fotoPreviews, setFotoPreviews] = useState([]);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedPlanilla, setSelectedPlanilla] = useState(null);
+  const [selectedPlanilla, setSelectedPlanilla] = useState('');
   const [selectedImage, setSelectedImage] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -42,8 +44,8 @@ const Correctivo = () => {
     setFormData({
       planilla: '',
       fotos: [],
-      fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || null,
-      extendido: response.data.extendido || null,
+      fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || '',
+      extendido: response.data.extendido || '',
       estado: response.data.estado,
     });
     navigate(location.pathname, { state: { mantenimiento: response.data } });
@@ -233,6 +235,11 @@ const handleDeleteSelectedPlanilla = async () => {
     }
   };
 
+  const handleAddToRoute = () => {
+    addSucursal(mantenimiento);
+    setSuccess('Mantenimiento agregado a la ruta.');
+  };
+
   const getSucursalNombre = (id_sucursal) => {
     const sucursal = sucursales.find((s) => s.id === id_sucursal);
     return sucursal ? sucursal.nombre : 'Desconocida';
@@ -335,7 +342,7 @@ const handleDeleteSelectedPlanilla = async () => {
                 </Form>
               )}
               {currentEntity.type !== 'usuario' && (
-                <Button variant="secondary" className="info-button-add">
+                <Button variant="secondary" className="info-button-add" onClick={handleAddToRoute}>
                   <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
                 </Button>
               )}

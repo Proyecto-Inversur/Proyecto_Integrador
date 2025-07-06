@@ -4,55 +4,60 @@ from api.models import Usuario, Cuadrilla
 from fastapi import HTTPException
 from api.schemas import UserCreate, UserUpdate, CuadrillaCreate, CuadrillaUpdate, Role
 import requests
+import time
 
-def verify_user_token(token: str, db: Session):
-    try:
-        decoded_token = auth.verify_id_token(token)
-        email = decoded_token.get("email")
-        firebase_uid = decoded_token.get("uid")
+def verify_user_token(token: str, db: Session, retries: int = 3):
+    for attempt in range(retries):
+        try:
+            decoded_token = auth.verify_id_token(token)
+            email = decoded_token.get("email")
+            firebase_uid = decoded_token.get("uid")
 
-        if not email:
-            raise HTTPException(status_code=400, detail="No se proporcionó un email en el token")
+            if not email:
+                raise HTTPException(status_code=400, detail="No se proporcionó un email en el token")
 
-        user = db.query(Usuario).filter(Usuario.email == email).first()
-        if user:
-            if user.firebase_uid and user.firebase_uid != firebase_uid:
-                raise HTTPException(status_code=403, detail="El UID de Firebase no coincide con el registrado para este usuario")
-            if not user.firebase_uid:
-                user.firebase_uid = firebase_uid
-                db.commit()
-                db.refresh(user)
-            return {
-                "type": "usuario",
-                "data": {
-                    "id": user.id,
-                    "nombre": user.nombre,
-                    "email": user.email,
-                    "rol": user.rol
+            user = db.query(Usuario).filter(Usuario.email == email).first()
+            if user:
+                if user.firebase_uid and user.firebase_uid != firebase_uid:
+                    raise HTTPException(status_code=403, detail="El UID de Firebase no coincide con el registrado para este usuario")
+                if not user.firebase_uid:
+                    user.firebase_uid = firebase_uid
+                    db.commit()
+                    db.refresh(user)
+                return {
+                    "type": "usuario",
+                    "data": {
+                        "id": user.id,
+                        "nombre": user.nombre,
+                        "email": user.email,
+                        "rol": user.rol
+                    }
                 }
-            }
 
-        cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.email == email).first()
-        if cuadrilla:
-            if cuadrilla.firebase_uid and cuadrilla.firebase_uid != firebase_uid:
-                raise HTTPException(status_code=403, detail="El UID de Firebase no coincide con el registrado para esta cuadrilla")
-            if not cuadrilla.firebase_uid:
-                cuadrilla.firebase_uid = firebase_uid
-                db.commit()
-                db.refresh(cuadrilla)
-            return {
-                "type": "cuadrilla",
-                "data": {
-                    "id": cuadrilla.id,
-                    "nombre": cuadrilla.nombre,
-                    "email": cuadrilla.email,
-                    "zona": cuadrilla.zona
+            cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.email == email).first()
+            if cuadrilla:
+                if cuadrilla.firebase_uid and cuadrilla.firebase_uid != firebase_uid:
+                    raise HTTPException(status_code=403, detail="El UID de Firebase no coincide con el registrado para esta cuadrilla")
+                if not cuadrilla.firebase_uid:
+                    cuadrilla.firebase_uid = firebase_uid
+                    db.commit()
+                    db.refresh(cuadrilla)
+                return {
+                    "type": "cuadrilla",
+                    "data": {
+                        "id": cuadrilla.id,
+                        "nombre": cuadrilla.nombre,
+                        "email": cuadrilla.email,
+                        "zona": cuadrilla.zona
+                    }
                 }
-            }
 
-        raise HTTPException(status_code=403, detail="Entidad no registrada en el sistema")
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Token inválido: {str(e)}")
+            raise HTTPException(status_code=403, detail="Entidad no registrada en el sistema")
+        except Exception as e:
+            if "Token used too early" in str(e) and attempt < retries - 1:
+                time.sleep(1)  # Wait before retry
+                continue
+            raise HTTPException(status_code=401, detail=f"Token inválido: {str(e)}")
 
 def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dict, id_token: str):
     if current_entity is not None:

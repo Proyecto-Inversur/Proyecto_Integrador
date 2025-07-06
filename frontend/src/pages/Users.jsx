@@ -1,17 +1,19 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import UserForm from '../components/UserForm';
 import { getUsers, deleteUser } from '../services/userService';
-import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
 
 const Users = () => {
-  const { currentEntity } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { currentEntity } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -36,7 +38,7 @@ const Users = () => {
     else {
       navigate('/login');
     }
-  }, [currentEntity]);
+  }, [currentEntity, navigate]);
 
   const handleDelete = async (id) => {
     setIsLoading(true);

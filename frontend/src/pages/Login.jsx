@@ -26,7 +26,7 @@ const Login = () => {
       if (verificationResult.success) {
         navigate('/');
       } else {
-        setError('Error al verificar el usuario después de múltiples intentos');
+        setError('Error al verificar el usuario');
         await logOut();
       }
     } catch (err) {

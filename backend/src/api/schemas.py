@@ -1,8 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
-from datetime import date, datetime
-from typing import Optional, List
-from fastapi import UploadFile
+from datetime import date
+from typing import Optional, Dict, Any
 
 # Enum para los roles
 class Role(str, Enum):
@@ -81,13 +80,13 @@ class Zona(BaseModel):
 class SucursalCreate(BaseModel):
     nombre: str
     zona: str
-    direccion: str
+    direccion: Dict[str, Any]
     superficie: str
 
 class SucursalUpdate(BaseModel):
     nombre: Optional[str] = None
     zona: Optional[str] = None
-    direccion: Optional[str] = None
+    direccion: Optional[Dict[str, Any]] = None
     superficie: Optional[str] = None
 
 # Esquemas para Preventivo

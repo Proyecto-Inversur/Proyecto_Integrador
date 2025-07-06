@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import LocationProvider from './context/LocationContext';
+import { RouteProvider } from './context/RouteContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -15,7 +16,13 @@ import Preventivo from './pages/Preventivo';
 import Correctivo from './pages/Correctivo';
 import Login from './pages/Login';
 import Mapa from './pages/Mapa';
+import Ruta from './pages/Ruta';
+import { LoadScript } from '@react-google-maps/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+
+const googleMapsLibraries = ['places'];
 
 const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
   const { currentEntity, loading, verifying } = useContext(AuthContext);
@@ -58,25 +65,28 @@ const AppContent = () => {
   }, [currentEntity, loading, verifying, isLoginPage, navigate]);
 
   return (
-    <div className="d-flex flex-column min-vh-100">
-      {!isLoginPage && <Navbar />}
-      <main className="flex-grow-1">
-        <Routes>
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/mantenimiento" element={<ProtectedRoute><Mantenimiento /></ProtectedRoute>} />
-          <Route path="/users" element={<ProtectedRoute adminOnly><Users /></ProtectedRoute>} />
-          <Route path="/sucursales" element={<ProtectedRoute usersOnly><Sucursales /></ProtectedRoute>} />
-          <Route path="/cuadrillas" element={<ProtectedRoute usersOnly><Cuadrillas /></ProtectedRoute>} />
-          <Route path="/mantenimientos-preventivos" element={<ProtectedRoute><MantenimientoPreventivo /></ProtectedRoute>} />
-          <Route path="/mantenimientos-correctivos" element={<ProtectedRoute><MantenimientoCorrectivo /></ProtectedRoute>} />
-          <Route path="/preventivo" element={<ProtectedRoute><Preventivo /></ProtectedRoute>} />
-          <Route path="/correctivo" element={<ProtectedRoute><Correctivo /></ProtectedRoute>} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/mapa" element={<ProtectedRoute><Mapa /></ProtectedRoute>} />
-        </Routes>
-      </main>
-      {!isLoginPage && <Footer />}
-    </div>
+    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={googleMapsLibraries}>
+      <div className="d-flex flex-column min-vh-100">
+        {!isLoginPage && <Navbar />}
+        <main className="flex-grow-1">
+          <Routes>
+            <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/mantenimiento" element={<ProtectedRoute><Mantenimiento /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute adminOnly><Users /></ProtectedRoute>} />
+            <Route path="/sucursales" element={<ProtectedRoute usersOnly><Sucursales /></ProtectedRoute>} />
+            <Route path="/cuadrillas" element={<ProtectedRoute usersOnly><Cuadrillas /></ProtectedRoute>} />
+            <Route path="/mantenimientos-preventivos" element={<ProtectedRoute><MantenimientoPreventivo /></ProtectedRoute>} />
+            <Route path="/mantenimientos-correctivos" element={<ProtectedRoute><MantenimientoCorrectivo /></ProtectedRoute>} />
+            <Route path="/preventivo" element={<ProtectedRoute><Preventivo /></ProtectedRoute>} />
+            <Route path="/correctivo" element={<ProtectedRoute><Correctivo /></ProtectedRoute>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/mapa" element={<ProtectedRoute usersOnly><Mapa /></ProtectedRoute>} />
+            <Route path="/ruta" element={<ProtectedRoute><Ruta /></ProtectedRoute>} />
+          </Routes>
+        </main>
+        {!isLoginPage && <Footer />}
+      </div>
+    </LoadScript>
   );
 };
 
@@ -84,9 +94,11 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <LocationProvider>
-          <AppContent />
-        </LocationProvider>
+          <LocationProvider>
+            <RouteProvider>
+              <AppContent />
+            </RouteProvider>
+          </LocationProvider>
       </AuthProvider>
     </Router>
   );

@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col, Form } from 'react-bootstrap';
 import MantenimientoPreventivoForm from '../components/MantenimientoPreventivoForm';
@@ -70,7 +69,7 @@ const MantenimientosPreventivos = () => {
     else {
       navigate('/login');
     }
-  }, [currentEntity]);
+  }, [currentEntity, navigate]);
 
   const handleFilterChange = (e) => {
     const newFilters = { ...filters, [e.target.name]: e.target.value };
