@@ -53,7 +53,7 @@ export const RouteProvider = ({ children }) => {
 
   useEffect(() => {
     fetchSelectedSucursales();
-  }, [selectedMantenimientos, userLocation]);
+  }, [selectedMantenimientos]);
 
   useEffect(() => {
     if (currentEntity && selectedSucursales.length) {
@@ -64,7 +64,7 @@ export const RouteProvider = ({ children }) => {
     } else if (currentEntity && !selectedSucursales.length) {
       localStorage.removeItem(`selectedSucursales_${currentEntity.id}`);
     }
-  }, [selectedSucursales, currentEntity]);
+  }, [selectedSucursales]);
 
   const addSucursal = (mantenimiento) => {
     setSelectedMantenimientos((prev) => [...prev, mantenimiento]);

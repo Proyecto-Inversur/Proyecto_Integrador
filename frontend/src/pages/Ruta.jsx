@@ -31,13 +31,14 @@ const Ruta = () => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const userMarkerRef = useRef(null);
+  const routeMarkerRef = useRef(null);
   const prevLatLngRef = useRef(null);
   const animationFrameRef = useRef(null);
   const sucursalMarkersRef = useRef([]);
 
   const centerOnUser = () => {
-    if (mapInstanceRef.current && prevLatLngRef.current) {
-      mapInstanceRef.current.flyTo(prevLatLngRef.current, 18, { duration: 1 });
+    if (mapInstanceRef.current && (prevLatLngRef.current || userLocation)) {
+      mapInstanceRef.current.flyTo(prevLatLngRef.current || userLocation, 18, { duration: 1 });
     } else {
       console.log('Cannot center: map or user location not available');
     }
@@ -65,8 +66,8 @@ const Ruta = () => {
       instructions: route.getPlan().instructions?.find(inst => inst.waypointIndex === i + 1)?.text || `Waypoint ${i + 1}`,
     }));
 
-    setIsNavigating(true);
     centerOnUser();
+    setIsNavigating(true);
   };
 
   const smoothPanTo = (targetLatLng, zoom, targetBearing) => {
@@ -117,30 +118,30 @@ const Ruta = () => {
   };
 
   const generarRuta = () => {
-    if (!selectedSucursales.length || !mapInstanceRef.current) {
+    if (!selectedSucursales.length || !mapInstanceRef.current || (!prevLatLngRef.current && !userLocation)) {
       console.log('Route generation skipped: missing data', {
         selectedSucursalesLength: selectedSucursales.length,
         mapInstanceExists: !!mapInstanceRef.current,
       });
+      sucursalMarkersRef.current.forEach(marker => marker.remove());
+      routeMarkerRef.current?.remove();
+      if (routingControl) {
+        routingControl.remove();
+        setRoutingControl(null);
+      }
       return;
     }
 
-    const waypoints = selectedSucursales.map((s) => L.latLng(s.lat, s.lng)).filter(Boolean);
-    const layersToRemove = [];
-
-    // Collect existing route layers
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.eachLayer(layer => {
-        if (layer instanceof L.Polyline || layer instanceof L.Routing.Control) {
-          layersToRemove.push(layer);
-        }
-      });
+    // Remove existing routing control if it exists
+    if (routingControl) {
+      routingControl.remove();
+      setRoutingControl(null);
     }
 
+    const waypoints = selectedSucursales.map((s) => L.latLng(s.lat, s.lng)).filter(Boolean);
+
     // Add markers for sucursales
-    sucursalMarkersRef.current?.forEach(marker => {
-      if (mapInstanceRef.current) mapInstanceRef.current.removeLayer(marker);
-    });
+    sucursalMarkersRef.current.forEach(marker => marker.remove());
     sucursalMarkersRef.current = selectedSucursales.map(sucursal => {
       const marker = L.marker([sucursal.lat, sucursal.lng], {
         icon: L.divIcon({
@@ -169,9 +170,8 @@ const Ruta = () => {
       const route = e.routes[0];
       const poly = L.polyline(route.coordinates, { color: '#3399FF', weight: 5 });
       poly.addTo(mapInstanceRef.current);
-      layersToRemove.forEach(layer => {
-        mapInstanceRef.current.removeLayer(layer);
-      });
+      routeMarkerRef.current?.remove();
+      routeMarkerRef.current = poly;
       if (!isNavigating) mapInstanceRef.current.fitBounds(poly.getBounds());
       setRoutingControl(control);
     });
@@ -184,12 +184,11 @@ const Ruta = () => {
 
   const borrarRuta = () => {
     clearSucursales();
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.eachLayer(layer => {
-        if (layer instanceof L.Polyline || layer instanceof L.Routing.Control) {
-          mapInstanceRef.current.removeLayer(layer);
-        }
-      });
+    sucursalMarkersRef.current.forEach(marker => marker.remove());
+    routeMarkerRef.current?.remove();
+    if (routingControl) {
+      routingControl.remove();
+      setRoutingControl(null);
     }
   };
 
@@ -206,6 +205,21 @@ const Ruta = () => {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'OpenStreetMap'
     }).addTo(map);
+
+    if (userLocation) {
+      const currentLatLng = L.latLng(userLocation.lat, userLocation.lng);
+
+      // Actualizar marcador de usuario
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = L.marker(currentLatLng, {
+        icon: L.divIcon({
+          html: `<div style="width: 15px; height: 20px; background:rgb(22, 109, 196); clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
+          className: '',
+          iconSize: [20, 20],
+          iconAnchor: [10, 20],
+        }),
+      }).addTo(map);
+    }
 
     return () => {
       map.remove();
@@ -231,28 +245,15 @@ const Ruta = () => {
         const { latitude, longitude } = coords;
         const currentLatLng = L.latLng(latitude, longitude);
 
-        // Actualizar marcador de usuario
-        userMarkerRef.current?.remove();
-        userMarkerRef.current = L.marker(currentLatLng, {
-          icon: L.divIcon({
-            html: `<div style="width: 15px; height: 20px; background:rgb(22, 109, 196); clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
-            className: '',
-            iconSize: [20, 20],
-            iconAnchor: [10, 20],
-          }),
-        }).addTo(mapInstanceRef.current);
-
         // Check if user reached any sucursal
-        if (selectedSucursales.length && currentLatLng) {
+        if (isNavigating && selectedSucursales.length && currentLatLng) {
           const reachedSucursalIds = selectedSucursales
             .filter(sucursal => currentLatLng.distanceTo(L.latLng(sucursal.lat, sucursal.lng)) <= ARRIVAL_RADIUS)
             .map(sucursal => Number(sucursal.id));
           
-          if (reachedSucursalIds.length > 0) {
-            for (let i = 0; i < reachedSucursalIds.length; i++) {
-              removeSucursal(reachedSucursalIds[i]);
-            }
-          }
+          reachedSucursalIds.forEach(id => {
+            removeSucursal(id);
+          });
         }
 
         // Rotar mapa si está navegando
