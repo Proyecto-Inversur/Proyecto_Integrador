@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col, Form } from 'react-bootstrap';
 import MantenimientoPreventivoForm from '../components/MantenimientoPreventivoForm';
 import BackButton from '../components/BackButton';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getMantenimientosPreventivos, deleteMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getSucursales } from '../services/sucursalService';
 import { getZonas } from '../services/zonaService';
 import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
+import '../styles/botones_forms.css';
 
 const MantenimientosPreventivos = () => {
   const { currentEntity } = useContext(AuthContext);
@@ -233,7 +235,7 @@ const MantenimientosPreventivos = () => {
                   <th>Fecha Apertura</th>
                   <th>Fecha Cierre</th>
                   {currentEntity.type === 'usuario' && (
-                    <th>Acciones</th>
+                    <th className="acciones-col">Acciones</th>
                   )}
                 </tr>
               </thead>
@@ -251,20 +253,19 @@ const MantenimientosPreventivos = () => {
                     <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
                     <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
                     {currentEntity.type === 'usuario' && (
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="warning"
-                          className="me-2"
+                      <td className="action-cell" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="action-btn edit me-2"
                           onClick={() => handleEdit(mantenimiento)}
                         >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="danger"
+                          <FiEdit />
+                        </button>
+                        <button
+                          className="action-btn delete"
                           onClick={() => handleDelete(mantenimiento.id)}
                         >
-                          Eliminar
-                        </Button>
+                          <FiTrash2 />
+                        </button>
                       </td>
                     )}
                   </tr>
