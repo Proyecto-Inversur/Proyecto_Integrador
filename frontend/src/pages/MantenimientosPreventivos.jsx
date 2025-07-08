@@ -158,7 +158,7 @@ const MantenimientosPreventivos = () => {
         </div>
       ) : (
         <div>
-          <BackButton />
+          <BackButton to="/mantenimiento" />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Mantenimientos Preventivos</h2>

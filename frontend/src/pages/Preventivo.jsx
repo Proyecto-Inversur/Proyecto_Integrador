@@ -562,7 +562,7 @@ const Preventivo = () => {
       )}
       <button
         type="button"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/mantenimientos-preventivos')}
         className="floating-back-btn"
       >
         <FiArrowLeft size={28} color="white" />

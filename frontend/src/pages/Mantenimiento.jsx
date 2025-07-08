@@ -19,7 +19,7 @@ const Mantenimiento = () => {
   return (
     <Container className="home-container">
     <div className="back-button-wrapper">
-      <BackButton />
+      <BackButton to="/" />
     </div>
       <div className="page-content">
         <div className="button-obras-container">

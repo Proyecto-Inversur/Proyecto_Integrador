@@ -623,7 +623,7 @@ const handleDeleteSelectedPlanilla = async () => {
       )}
       <button
       type="button"
-      onClick={() => navigate(-1)}
+      onClick={() => navigate('/mantenimientos-correctivos')}
       className="floating-back-btn"
     >
       <FiArrowLeft size={28} color="white" />
