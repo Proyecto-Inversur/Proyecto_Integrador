@@ -1,13 +1,15 @@
 /* Contenedor principal */
 .home-container {
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    padding-top: 7%;
-    padding-bottom: 6rem;
-  }
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* centrado vertical */
+  min-height: calc(100vh - 100px); /* alto total visible menos navbar/footer */
+  width: 100%;
+  padding-top: 2rem;
+  padding-bottom: 6rem;
+}
+
   
   /* Contenedor del contenido */
   .page-content {
