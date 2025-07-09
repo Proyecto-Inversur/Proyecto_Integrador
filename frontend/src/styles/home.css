@@ -29,6 +29,7 @@
     padding: 0 0.5rem;
   }
   
+  
   /* Estilo de los botones */
   .home-button {
     width: 100%;
@@ -56,6 +57,7 @@
   .home-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    background-color: #e1a900;
   }
   
   /* Estilo de los íconos */

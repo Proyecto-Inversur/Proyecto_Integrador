@@ -157,7 +157,7 @@ const MantenimientosPreventivos = () => {
           </div>
         </div>
       ) : (
-        <div>
+        <div className="contenido-wrapper">
           <BackButton to="/mantenimiento" />
           <Row className="align-items-center mb-2">
             <Col>
