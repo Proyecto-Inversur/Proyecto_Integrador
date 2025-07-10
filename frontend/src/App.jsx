@@ -2,7 +2,6 @@ import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import LocationProvider from './context/LocationContext';
-import { RouteProvider } from './context/RouteContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -95,9 +94,7 @@ function App() {
     <Router>
       <AuthProvider>
           <LocationProvider>
-            <RouteProvider>
-              <AppContent />
-            </RouteProvider>
+            <AppContent />
           </LocationProvider>
       </AuthProvider>
     </Router>

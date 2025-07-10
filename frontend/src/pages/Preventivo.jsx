@@ -2,17 +2,16 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { RouteContext } from '../context/RouteContext';
 import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getSucursales } from '../services/sucursalService';
+import { selectPreventivo, deletePreventivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import '../styles/mantenimientos.css';
 
 const Preventivo = () => {
   const { currentEntity } = useContext(AuthContext);
-  const { addSucursal } = useContext(RouteContext);
   const navigate = useNavigate();
   const location = useLocation();
   const mantenimiento = location.state?.mantenimiento || {};
@@ -35,6 +34,7 @@ const Preventivo = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
 
   const fetchMantenimiento = async () => {
     setIsLoading(true);
@@ -220,9 +220,25 @@ const Preventivo = () => {
     }
   };
 
+  const toggleRoute = () => {
+    if (isSelected) {
+      setIsSelected(false);
+      handleRemoveFromRoute();
+    } else {
+      setIsSelected(true);
+      handleAddToRoute();
+    }
+  };
+
   const handleAddToRoute = () => {
-    addSucursal(mantenimiento);
+    const seleccion = {"id_mantenimiento": mantenimiento.id, "id_sucursal": mantenimiento.id_sucursal};
+    selectPreventivo(seleccion);
     setSuccess('Mantenimiento agregado a la ruta.');
+  };
+
+  const handleRemoveFromRoute = () => {
+    deletePreventivo(mantenimiento.id);
+    setSuccess('Mantenimiento eliminado de la ruta.');
   };
 
   const getSucursalNombre = (id_sucursal) => {
@@ -307,8 +323,8 @@ const Preventivo = () => {
                 </Form>
               )}
               {currentEntity.type !== 'usuario' && (
-                <Button variant="secondary" className="info-button-add" onClick={handleAddToRoute}>
-                  <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
+                <Button variant={isSelected ? 'danger' : 'success'} className="info-button-add" onClick={toggleRoute}>
+                  <FiPlusCircle className="me-2" size={18} />{isSelected ? 'Borrar de la ruta' : 'Agregar a la ruta actual'}
                 </Button>
               )}
               {currentEntity.type !== 'usuario' && (

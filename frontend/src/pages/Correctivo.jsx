@@ -2,17 +2,16 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { RouteContext } from '../context/RouteContext';
 import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
+import { selectCorrectivo, deleteCorrectivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import '../styles/mantenimientos.css';
 
 const Correctivo = () => {
   const { currentEntity } = useContext(AuthContext);
-  const { addSucursal } = useContext(RouteContext);
   const navigate = useNavigate();
   const location = useLocation();
   const mantenimiento = location.state?.mantenimiento || {};
@@ -36,6 +35,7 @@ const Correctivo = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
 
   const fetchMantenimiento = async () => {
     setIsLoading(true);
@@ -235,9 +235,25 @@ const handleDeleteSelectedPlanilla = async () => {
     }
   };
 
+  const toggleRoute = () => {
+    if (isSelected) {
+      setIsSelected(false);
+      handleRemoveFromRoute();
+    } else {
+      setIsSelected(true);
+      handleAddToRoute();
+    }
+  };
+
   const handleAddToRoute = () => {
-    addSucursal(mantenimiento);
+    const seleccion = {"id_mantenimiento": mantenimiento.id, "id_sucursal": mantenimiento.id_sucursal};
+    selectCorrectivo(seleccion);
     setSuccess('Mantenimiento agregado a la ruta.');
+  };
+
+  const handleRemoveFromRoute = () => {
+    deleteCorrectivo(mantenimiento.id);
+    setSuccess('Mantenimiento eliminado de la ruta.');
   };
 
   const getSucursalNombre = (id_sucursal) => {
@@ -342,8 +358,8 @@ const handleDeleteSelectedPlanilla = async () => {
                 </Form>
               )}
               {currentEntity.type !== 'usuario' && (
-                <Button variant="secondary" className="info-button-add" onClick={handleAddToRoute}>
-                  <FiPlusCircle className="me-2" size={18} />Agregar a la ruta actual
+                <Button variant={isSelected ? 'danger' : 'success'} className="info-button-add" onClick={toggleRoute}>
+                  <FiPlusCircle className="me-2" size={18} />{isSelected ? 'Borrar de la ruta' : 'Agregar a la ruta actual'}
                 </Button>
               )}
               {currentEntity.type !== 'usuario' && (
