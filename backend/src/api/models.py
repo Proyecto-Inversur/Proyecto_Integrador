@@ -20,6 +20,8 @@ class Sucursal(Base):
     preventivos = relationship("Preventivo", back_populates="sucursal")
     mantenimientos_preventivos = relationship("MantenimientoPreventivo", back_populates="sucursal")
     mantenimientos_correctivos = relationship("MantenimientoCorrectivo", back_populates="sucursal")
+    correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="sucursal")
+    preventivo_seleccionado = relationship("PreventivoSeleccionado", back_populates="sucursal")
 
 class Cuadrilla(Base):
     __tablename__ = "cuadrilla"
@@ -31,6 +33,8 @@ class Cuadrilla(Base):
     
     mantenimientos_preventivos = relationship("MantenimientoPreventivo", back_populates="cuadrilla")
     mantenimientos_correctivos = relationship("MantenimientoCorrectivo", back_populates="cuadrilla")
+    correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="cuadrilla")
+    preventivo_seleccionado = relationship("PreventivoSeleccionado", back_populates="cuadrilla")
 
 class Preventivo(Base):
     __tablename__ = "preventivo"
@@ -53,6 +57,7 @@ class MantenimientoPreventivo(Base):
 
     sucursal = relationship("Sucursal", back_populates="mantenimientos_preventivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_preventivos")
+    preventivo_seleccionado = relationship("PreventivoSeleccionado", back_populates="mantenimiento_preventivo")
     planillas = relationship("MantenimientoPreventivoPlanilla", backref="mantenimiento")
     fotos = relationship("MantenimientoPreventivoFoto", backref="mantenimiento")
     
@@ -85,6 +90,7 @@ class MantenimientoCorrectivo(Base):
     
     sucursal = relationship("Sucursal", back_populates="mantenimientos_correctivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_correctivos")
+    correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="mantenimiento_correctivo")
     fotos = relationship("MantenimientoCorrectivoFoto", backref="mantenimiento")
 
 class MantenimientoCorrectivoFoto(Base):
@@ -112,3 +118,25 @@ class Reporte(Base):
     fecha = Column(Date)
 
     usuario = relationship("Usuario", back_populates="reportes")
+
+class CorrectivoSeleccionado(Base):
+    __tablename__ = "correctivo_seleccionado"
+    id = Column(Integer, primary_key=True)
+    id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
+    id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_correctivo.id"))
+    id_sucursal = Column(Integer, ForeignKey("sucursal.id"))
+    
+    mantenimiento_correctivo = relationship("MantenimientoCorrectivo", back_populates="correctivo_seleccionado")
+    cuadrilla = relationship("Cuadrilla", back_populates="correctivo_seleccionado")
+    sucursal = relationship("Sucursal", back_populates="correctivo_seleccionado")
+    
+class PreventivoSeleccionado(Base):
+    __tablename__ = "preventivo_seleccionado"
+    id = Column(Integer, primary_key=True)
+    id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
+    id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_preventivo.id"))
+    id_sucursal = Column(Integer, ForeignKey("sucursal.id"))
+    
+    mantenimiento_preventivo = relationship("MantenimientoPreventivo", back_populates="preventivo_seleccionado")
+    cuadrilla = relationship("Cuadrilla", back_populates="preventivo_seleccionado")
+    sucursal = relationship("Sucursal", back_populates="preventivo_seleccionado")
