@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, Dict, Any
 
 # Enum para los roles
@@ -117,3 +117,11 @@ class MantenimientoCorrectivoCreate(BaseModel):
     rubro: Rubro
     estado: Estado
     prioridad: Prioridad
+    
+# Esquema para Mensaje
+class Message(BaseModel):
+    id_usuario = int
+    nombre_usuario = str
+    texto = Optional[str] = None
+    archivo = Optional[str] = None
+    fecha = datetime

@@ -88,6 +88,28 @@ async def upload_file_to_gcloud(file: UploadFile, bucket_name: str, folder: str 
         raise HTTPException(status_code=500, detail=f"Failed to upload file to GCS: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    
+async def upload_chat_file_to_gcloud(file: UploadFile, bucket_name: str, folder: str = "") -> str:
+    try:
+        if not GOOGLE_CREDENTIALS:
+            raise HTTPException(status_code=500, detail="Google Cloud credentials not configured")
+        
+        storage_client = storage.Client.from_service_account_info(GOOGLE_CREDENTIALS)
+        bucket = storage_client.bucket(bucket_name)
+        
+        create_folder_if_not_exists(bucket_name, folder)
+        
+        file_extension = file.filename.split(".")[-1]
+        destination_blob_name = f"{folder.rstrip('/')}/{uuid.uuid4()}.{file_extension}"
+        
+        blob = bucket.blob(destination_blob_name)
+        blob.upload_from_file(file.file, content_type=file.content_type)
+        
+        return blob.public_url
+    except GoogleAPIError as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload file to GCS: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 def delete_file_in_folder(bucket_name: str, folder: str, file_path: str) -> bool:
     try:
