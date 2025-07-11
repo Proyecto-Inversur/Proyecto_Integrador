@@ -3,8 +3,11 @@ import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import SucursalForm from '../components/SucursalForm';
+import BackButton from '../components/BackButton';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getSucursales, deleteSucursal } from '../services/sucursalService';
 import { FaPlus } from 'react-icons/fa';
+import '../styles/botones_forms.css';
 
 const Sucursales = () => {
   const [sucursales, setSucursales] = useState([]);
@@ -71,6 +74,7 @@ const Sucursales = () => {
         </div>
       ) : (
         <div>
+          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Sucursales</h2>
@@ -99,7 +103,7 @@ const Sucursales = () => {
                   <th>Zona</th>
                   <th>Dirección</th>
                   <th>Superficie</th>
-                  <th>Acciones</th>
+                  <th className="acciones-col">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,21 +114,20 @@ const Sucursales = () => {
                     <td>{sucursal.zona}</td>
                     <td>{sucursal.direccion}</td>
                     <td>{sucursal.superficie}</td>
-                    <td>
-                      <Button
-                        variant="warning"
-                        className="me-2"
-                        onClick={() => handleEdit(sucursal)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => handleDelete(sucursal.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </td>
+                  <td className="action-cell">
+                    <button
+                      className="action-btn edit me-2"
+                      onClick={() => handleEdit(sucursal)}
+                    >
+                      <FiEdit />
+                    </button>
+                    <button
+                      className="action-btn delete"
+                      onClick={() => handleDelete(sucursal.id)}
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </td>
                   </tr>
                 ))}
               </tbody>

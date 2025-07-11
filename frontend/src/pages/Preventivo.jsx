@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
+import { FiArrowLeft } from 'react-icons/fi';
 import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getSucursales } from '../services/sucursalService';
@@ -582,6 +583,13 @@ const Preventivo = () => {
           </Modal>
         </div>
       )}
+      <button
+        type="button"
+        onClick={() => navigate('/mantenimientos-preventivos')}
+        className="floating-back-btn"
+      >
+        <FiArrowLeft size={28} color="white" />
+      </button>
     </Container>
   );
 };

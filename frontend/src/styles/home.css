@@ -1,13 +1,15 @@
 /* Contenedor principal */
 .home-container {
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    padding-top: 7%;
-    padding-bottom: 6rem;
-  }
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* centrado vertical */
+  min-height: calc(100vh - 100px); /* alto total visible menos navbar/footer */
+  width: 100%;
+  padding-top: 2rem;
+  padding-bottom: 6rem;
+}
+
   
   /* Contenedor del contenido */
   .page-content {
@@ -26,6 +28,7 @@
     width: 100%;
     padding: 0 0.5rem;
   }
+  
   
   /* Estilo de los botones */
   .home-button {
@@ -54,6 +57,7 @@
   .home-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    background-color: #e1a900;
   }
   
   /* Estilo de los íconos */

@@ -3,8 +3,11 @@ import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import UserForm from '../components/UserForm';
+import BackButton from '../components/BackButton';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getUsers, deleteUser } from '../services/userService';
 import { FaPlus } from 'react-icons/fa';
+import '../styles/botones_forms.css'; 
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -74,6 +77,7 @@ const Users = () => {
         </div>
       ) : (
         <div>
+          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Usuarios</h2>
@@ -102,7 +106,8 @@ const Users = () => {
                   <th>Nombre</th>
                   <th>Email</th>
                   <th>Rol</th>
-                  <th>Acciones</th>
+                  <th className="acciones-col">Acciones</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -112,21 +117,20 @@ const Users = () => {
                     <td>{user.nombre}</td>
                     <td>{user.email}</td>
                     <td>{user.rol}</td>
-                    <td>
-                      <Button
-                        variant="warning"
-                        className="me-2"
-                        onClick={() => handleEdit(user)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => handleDelete(user.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </td>
+                    <td className="action-cell">
+                    <button
+                      className="action-btn edit me-2"
+                      onClick={() => handleEdit(user)}
+                    >
+                      <FiEdit />
+                    </button>
+                    <button
+                      className="action-btn delete"
+                      onClick={() => handleDelete(user.id)}
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </td>
                   </tr>
                 ))}
               </tbody>

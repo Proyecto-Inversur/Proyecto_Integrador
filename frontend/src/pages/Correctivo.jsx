@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
+import { FiArrowLeft } from 'react-icons/fi';
 import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
@@ -643,6 +644,13 @@ const handleDeleteSelectedPlanilla = async () => {
           </Modal>
         </div>
       )}
+      <button
+      type="button"
+      onClick={() => navigate('/mantenimientos-correctivos')}
+      className="floating-back-btn"
+    >
+      <FiArrowLeft size={28} color="white" />
+    </button>
     </Container>
   );
 };

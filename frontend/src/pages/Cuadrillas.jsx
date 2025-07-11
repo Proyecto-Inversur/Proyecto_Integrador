@@ -2,9 +2,12 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import CuadrillaForm from '../components/CuadrillaForm';
+import BackButton from '../components/BackButton';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getCuadrillas, deleteCuadrilla } from '../services/cuadrillaService';
 import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
+import '../styles/botones_forms.css';
 
 const Cuadrillas = () => {
   const { currentEntity } = useContext(AuthContext);
@@ -74,6 +77,7 @@ const Cuadrillas = () => {
         </div>
       ) : (
         <div>
+          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Cuadrillas</h2>
@@ -102,7 +106,7 @@ const Cuadrillas = () => {
                   <th>Nombre</th>
                   <th>Zona</th>
                   <th>Email</th>
-                  <th>Acciones</th>
+                  <th className="acciones-col">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,21 +116,20 @@ const Cuadrillas = () => {
                     <td>{cuadrilla.nombre}</td>
                     <td>{cuadrilla.zona}</td>
                     <td>{cuadrilla.email}</td>
-                    <td>
-                      <Button
-                        variant="warning"
-                        className="me-2"
-                        onClick={() => handleEdit(cuadrilla)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => handleDelete(cuadrilla.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </td>
+                  <td className="action-cell">
+                    <button
+                      className="action-btn edit me-2"
+                      onClick={() => handleEdit(cuadrilla)}
+                    >
+                      <FiEdit />
+                    </button>
+                    <button
+                      className="action-btn delete"
+                      onClick={() => handleDelete(cuadrilla.id)}
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </td>
                   </tr>
                 ))}
               </tbody>
