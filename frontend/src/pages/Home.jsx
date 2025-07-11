@@ -44,7 +44,7 @@ const Home = () => {
             </Link>
           )}
           {currentEntity && currentEntity.type === 'usuario' && currentEntity.data.rol === 'Administrador' && (
-            <Link /*to="/reportes"*/ className="home-button">
+            <Link to="/reportes" className="home-button">
               <FaFileAlt />
               Reportes
             </Link>
