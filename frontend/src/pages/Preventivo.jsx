@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import { FiArrowLeft } from 'react-icons/fi';
+import { BsUpload, BsTrashFill, BsPencilFill, BsX } from 'react-icons/bs';
 import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getSucursales } from '../services/sucursalService';
@@ -376,17 +377,20 @@ const Preventivo = () => {
                   style={{ display: 'none' }} // Ocultamos el input de archivo
                   onChange={(e) => handleFileChange(e, 'planillas')}
                 />
-                <Button
-                  variant="primary"
-                  onClick={() => document.getElementById('planillaUpload').click()} // Simulamos clic en el input oculto
-                >
-                  Cargar Planillas
-                </Button>
-                {/* Mostrar nombres de archivos seleccionados */}
+                <div className="d-flex justify-content-center mb-2">
+                  <Button
+                    variant="warning"
+                    className="d-flex align-items-center gap-2"
+                    onClick={() => document.getElementById('planillaUpload').click()}
+                  >
+                    <BsUpload />
+                    Cargar
+                  </Button>
+                </div>
                 {formData.planillas.length > 0 && (
-                  <div className="selected-files justify-content-center align-items-center mt-2">
+                  <div className="text-center mb-2">
                     <strong>Archivos seleccionados:</strong>
-                    <ul>
+                    <ul className="list-unstyled mb-0">
                       {formData.planillas.map((file, index) => (
                         <li key={index}>{file.name}</li>
                       ))}
@@ -411,26 +415,22 @@ const Preventivo = () => {
                 </Row>
               )}
               {mantenimiento.planillas?.length > 0 && (
-              <div className="d-flex justify-content-end mt-3 gap-2">
-                {!isSelectingPlanillas && (
-                  <Button variant="outline-danger" onClick={() => setIsSelectingPlanillas(true)}>
-                    Eliminar Planillas
-                  </Button>
-                )}
-                {isSelectingPlanillas && selectedPlanillas.length > 0 && (
-                  <Button variant="danger" onClick={handleDeleteSelectedPlanillas}>
-                    Eliminar Planillas Seleccionadas
-                  </Button>
-                )}
-                {isSelectingPlanillas && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
+              <div className="d-flex justify-content-center gap-2 mt-2">
+                {isSelectingPlanillas ? (
+                  <>
+                    <Button className="icon-button" variant="danger" onClick={handleDeleteSelectedPlanillas}>
+                      <BsTrashFill />
+                    </Button>
+                    <Button className="icon-button" variant="secondary" onClick={() => {
                       setIsSelectingPlanillas(false);
                       setSelectedPlanillas([]);
-                    }}
-                  >
-                    Cancelar
+                    }}>
+                      <BsX />
+                    </Button>
+                  </>
+                ) : (
+                  <Button className="icon-button" variant="light" onClick={() => setIsSelectingPlanillas(true)}>
+                    <BsPencilFill />
                   </Button>
                 )}
               </div>
@@ -442,7 +442,9 @@ const Preventivo = () => {
                   {mantenimiento.planillas.map((planilla, index) => (
                     <Col md={3} key={index} className="gallery-item">
                       <div
-                        className={`photo-container ${isSelectingPlanillas ? 'selectable' : ''}`}
+                        className={`photo-container ${isSelectingPlanillas ? 'selectable' : ''} ${
+                          selectedPlanillas.includes(planilla) ? 'selected' : ''
+                        }`}
                         onClick={() => {
                           if (isSelectingPlanillas) {
                             handlePlanillaSelect(planilla);
@@ -478,17 +480,21 @@ const Preventivo = () => {
                 style={{ display: 'none' }} // Ocultamos el input de archivo
                 onChange={(e) => handleFileChange(e, 'fotos')}
               />
-              <Button
-                variant="primary"
-                onClick={() => document.getElementById('fotoUpload').click()} // Simulamos clic en el input oculto
-              >
-                Cargar Fotos
-              </Button>
+              <div className="d-flex justify-content-center mb-2">
+                <Button
+                  variant="warning"
+                  className="d-flex align-items-center gap-2"
+                  onClick={() => document.getElementById('fotoUpload').click()} // Simulamos clic en el input oculto
+                >
+                  <BsUpload />
+                  Cargar
+                </Button>
+              </div>
               {/* Mostrar nombres de archivos seleccionados */}
               {formData.fotos.length > 0 && (
-                <div className="selected-files justify-content-center align-items-center mt-2">
+                <div className="text-center mb-2">
                   <strong>Archivos seleccionados:</strong>
-                  <ul>
+                  <ul className="list-unstyled mb-0">
                     {formData.fotos.map((file, index) => (
                       <li key={index}>{file.name}</li>
                     ))}
@@ -513,23 +519,22 @@ const Preventivo = () => {
               </Row>
             )}
             {mantenimiento.fotos?.length > 0 && (
-              <div className="d-flex justify-content-center mt-3 gap-2">
-                {!isSelectingPhotos && (
-                  <Button variant="outline-danger" onClick={() => setIsSelectingPhotos(true)}>
-                    Eliminar Fotos
+              <div className="d-flex justify-content-center mt-2 gap-2">
+                {isSelectingPhotos ? (
+                <>
+                  <Button className="icon-button" variant="danger" onClick={handleDeleteSelectedPhotos}>
+                    <BsTrashFill />
                   </Button>
-                )}
-                {isSelectingPhotos && selectedPhotos.length > 0 && (
-                  <Button variant="danger" onClick={handleDeleteSelectedPhotos}>
-                    Eliminar Fotos Seleccionadas
+                  <Button className="icon-button" variant="secondary" onClick={() => {
+                      setIsSelectingPhotos(false);
+                      setSelectedPhotos([]);
+                    }}>
+                      <BsX />
                   </Button>
-                )}
-                {isSelectingPhotos && (
-                  <Button variant="secondary" onClick={() => {
-                    setIsSelectingPhotos(false);
-                    setSelectedPhotos([]);
-                  }}>
-                    Cancelar
+                 </> 
+                ) : (
+                  <Button className="icon-button" variant="light" onClick={() => setIsSelectingPhotos(true)}>
+                    <BsPencilFill />
                   </Button>
                 )}
               </div>
@@ -565,7 +570,7 @@ const Preventivo = () => {
 
               </>
             ) : (
-              <p className="mt-3">No hay fotos cargadas.</p>
+              <p className="mt-3 text-center">No hay fotos cargadas.</p>
             )}
           </Row>
 
