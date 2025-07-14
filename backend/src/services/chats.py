@@ -27,7 +27,7 @@ def get_chat_preventivo(db_session: Session, mantenimiento_id: int, current_enti
 async def send_message_correctivo(
     db_session: Session,
     id_mantenimiento: int,
-    id_usuario: int,
+    firebase_uid: str,
     nombre_usuario: str,
     fecha: datetime,
     current_entity: dict,
@@ -44,9 +44,9 @@ async def send_message_correctivo(
     
     db_message = MensajeCorrectivo
     
-    if id_mantenimiento and id_usuario and nombre_usuario and fecha:
+    if id_mantenimiento and firebase_uid and nombre_usuario and fecha:
         db_message.id_mantenimiento = id_mantenimiento
-        db_message.id_usuario = id_usuario
+        db_message.firebase_uid = firebase_uid
         db_message.nombre_usuario = nombre_usuario
         db_message.fecha = fecha
     if texto is not None:
@@ -63,7 +63,7 @@ async def send_message_correctivo(
 async def send_message_preventivo(
     db_session: Session,
     id_mantenimiento: int,
-    id_usuario: int,
+    firebase_uid: str,
     nombre_usuario: str,
     fecha: datetime,
     current_entity: dict,
@@ -80,9 +80,9 @@ async def send_message_preventivo(
     
     db_message = MensajePreventivo
     
-    if id_mantenimiento and id_usuario and nombre_usuario and fecha:
+    if id_mantenimiento and firebase_uid and nombre_usuario and fecha:
         db_message.id_mantenimiento = id_mantenimiento
-        db_message.id_usuario = id_usuario
+        db_message.firebase_uid = firebase_uid
         db_message.nombre_usuario = nombre_usuario
         db_message.fecha = fecha
     if texto is not None:

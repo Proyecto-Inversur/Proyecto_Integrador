@@ -120,8 +120,8 @@ class MantenimientoCorrectivoCreate(BaseModel):
     
 # Esquema para Mensaje
 class Message(BaseModel):
-    id_usuario = int
-    nombre_usuario = str
-    texto = Optional[str] = None
-    archivo = Optional[str] = None
-    fecha = datetime
+    firebase_uid: str
+    nombre_usuario: str
+    texto: Optional[str] = None
+    archivo: Optional[str] = None
+    fecha: datetime

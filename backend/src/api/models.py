@@ -146,7 +146,7 @@ class PreventivoSeleccionado(Base):
 class MensajeCorrectivo(Base):
     __tablename__ = "mensaje_correctivo"
     id = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer)
+    firebase_uid = Column(String, unique=True)
     nombre_usuario = Column(String)
     id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_correctivo.id"))
     texto = Column(String, nullable=True)
@@ -158,7 +158,7 @@ class MensajeCorrectivo(Base):
 class MensajePreventivo(Base):
     __tablename__ = "mensaje_preventivo"
     id = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer)
+    firebase_uid = Column(String, unique=True)
     nombre_usuario = Column(String)
     id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_preventivo.id"))
     texto = Column(String, nullable=True)

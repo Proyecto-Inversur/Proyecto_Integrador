@@ -14,7 +14,7 @@ def chat_correctivo_get(mantenimiento_id: int, request: Request, db_session: Ses
     return [
         {
             "id": message.id,
-            "id_usuario": message.id_usuario,
+            "firebase_uid": message.firebase_uid,
             "nombre_usuario": message.nombre_usuario,
             "id_mantenimiento": message.id_mantenimiento,
             "texto": message.texto,
@@ -31,7 +31,7 @@ def chat_preventivo_get(mantenimiento_id: int, request: Request, db_session: Ses
     return [
         {
             "id": message.id,
-            "id_usuario": message.id_usuario,
+            "firebase_uid": message.firebase_uid,
             "nombre_usuario": message.nombre_usuario,
             "id_mantenimiento": message.id_mantenimiento,
             "texto": message.texto,
@@ -47,7 +47,7 @@ def correctivo_message_send(mantenimiento_id: int, message: Message, request: Re
     new_message = send_message_correctivo(
         db_session,
         mantenimiento_id,
-        message.id_usuario,
+        message.firebase_uid,
         message.nombre_usuario,
         message.fecha,
         current_entity,
@@ -56,7 +56,7 @@ def correctivo_message_send(mantenimiento_id: int, message: Message, request: Re
     )
     return {
         "id": new_message.id,
-        "id_usuario": new_message.id_usuario,
+        "firebase_uid": new_message.firebase_uid,
         "nombre_usuario": new_message.nombre_usuario,
         "id_mantenimiento": new_message.id_mantenimiento,
         "texto": new_message.texto,
@@ -70,7 +70,7 @@ def preventivo_message_send(mantenimiento_id: int, message: Message, request: Re
     new_message = send_message_preventivo(
         db_session,
         mantenimiento_id,
-        message.id_usuario,
+        message.firebase_uid,
         message.nombre_usuario,
         message.fecha,
         current_entity,
@@ -79,7 +79,7 @@ def preventivo_message_send(mantenimiento_id: int, message: Message, request: Re
     )
     return {
         "id": new_message.id,
-        "id_usuario": new_message.id_usuario,
+        "firebase_uid": new_message.firebase_uid,
         "nombre_usuario": new_message.nombre_usuario,
         "id_mantenimiento": new_message.id_mantenimiento,
         "texto": new_message.texto,
