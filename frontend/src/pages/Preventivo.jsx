@@ -9,6 +9,7 @@ import { getSucursales } from '../services/sucursalService';
 import { selectPreventivo, deletePreventivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
+import { BsSave } from 'react-icons/bs';
 import '../styles/mantenimientos.css';
 
 const Preventivo = () => {
@@ -333,12 +334,12 @@ const Preventivo = () => {
                   <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
                 </Button>
               )}
-              <button 
-                type="submit" 
-                onClick={handleSubmit} 
-                className="floating-save-btn"
+              <button
+                className="floating-save-btn d-flex align-items-center justify-content-center"
+                onClick={handleSubmit}
+                title="Guardar cambios"
               >
-                ✔
+                <BsSave size={28} />
               </button>
             </Col>
 

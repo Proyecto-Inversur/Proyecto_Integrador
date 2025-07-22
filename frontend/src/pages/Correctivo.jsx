@@ -9,6 +9,7 @@ import { getCuadrillas } from '../services/cuadrillaService';
 import { selectCorrectivo, deleteCorrectivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
+import { BsSave } from 'react-icons/bs';
 import '../styles/mantenimientos.css';
 
 const Correctivo = () => {
@@ -394,12 +395,12 @@ const handleDeleteSelectedPlanilla = async () => {
                   {success && <Alert variant="success">{success}</Alert>}
                 </Form>
               )}
-              <button 
-                type="submit" 
-                onClick={handleSubmit} 
-                className="floating-save-btn"
+              <button
+                className="floating-save-btn d-flex align-items-center justify-content-center"
+                onClick={handleSubmit}
+                title="Guardar cambios"
               >
-                ✔
+                <BsSave size={28} />
               </button>
             </Col>
 
