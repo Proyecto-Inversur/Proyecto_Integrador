@@ -7,7 +7,7 @@ from typing import List
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
-@router.get("correctivo/{mantenimiento_id}", response_model=List[dict])
+@router.get("/correctivo/{mantenimiento_id}", response_model=List[dict])
 def chat_correctivo_get(mantenimiento_id: int, request: Request, db_session: Session = Depends(get_db)):
     current_entity = request.state.current_entity
     chat = get_chat_correctivo(db_session, mantenimiento_id, current_entity)
@@ -24,7 +24,7 @@ def chat_correctivo_get(mantenimiento_id: int, request: Request, db_session: Ses
         for message in chat
     ]
 
-@router.get("preventivo/{mantenimiento_id}", response_model=List[dict])
+@router.get("/preventivo/{mantenimiento_id}", response_model=List[dict])
 def chat_preventivo_get(mantenimiento_id: int, request: Request, db_session: Session = Depends(get_db)):
     current_entity = request.state.current_entity
     chat = get_chat_preventivo(db_session, mantenimiento_id, current_entity)
@@ -41,7 +41,7 @@ def chat_preventivo_get(mantenimiento_id: int, request: Request, db_session: Ses
         for message in chat
     ]
 
-@router.post("correctivo/{mantenimiento_id}", response_model=dict)
+@router.post("/correctivo/{mantenimiento_id}", response_model=dict)
 def correctivo_message_send(mantenimiento_id: int, message: Message, request: Request, db_session: Session = Depends(get_db)):
     current_entity = request.state.current_entity
     new_message = send_message_correctivo(
@@ -64,7 +64,7 @@ def correctivo_message_send(mantenimiento_id: int, message: Message, request: Re
         "fecha": new_message.fecha
     }
 
-@router.post("preventivo/{mantenimiento_id}", response_model=dict)
+@router.post("/preventivo/{mantenimiento_id}", response_model=dict)
 def preventivo_message_send(mantenimiento_id: int, message: Message, request: Request, db_session: Session = Depends(get_db)):
     current_entity = request.state.current_entity
     new_message = send_message_preventivo(
