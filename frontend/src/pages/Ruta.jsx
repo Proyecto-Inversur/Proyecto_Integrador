@@ -389,7 +389,7 @@ import 'leaflet-routing-machine';
 import 'leaflet-geometryutil';
 import '../styles/mapa.css';
 
-const mapContainerStyle = { width: '100%', height: '100vh' };
+const mapContainerStyle = { width: '100%', height: '100%' };
 const defaultCenter = { lat: -31.4167, lng: -64.1833 };
 const ARRIVAL_RADIUS = 50;
 const ANIMATION_DURATION = 1000;
@@ -710,21 +710,53 @@ const Ruta = () => {
     }
   }, [sucursales, isNavigating]);
 
-  return (
-    <div className="map-container">
+return (
+    <div className="ruta-container">
       {error && <div className="alert alert-danger">{error}</div>}
-      <Button variant="primary" onClick={centerOnUser} className="mb-2">
-        Centrar en mi ubicación
-      </Button>
-      <Button variant={isNavigating ? 'danger' : 'success'} onClick={toggleNavegacion} className="mb-3 ms-2">
-        {isNavigating ? 'Detener navegación' : 'Iniciar navegación'}
-      </Button>
-      <Button variant="primary" onClick={borrarRuta} className="mb-2">
-        Borrar ruta
-      </Button>
-      <div ref={mapRef} style={mapContainerStyle}></div>
+      
+      <div className="ruta-controls">
+        <button className="ruta-btn primary" onClick={centerOnUser}>
+          📍 Centrar en mi ubicación
+        </button>
+        <button
+          className={`ruta-btn ${isNavigating ? 'danger' : 'success'}`}
+          onClick={toggleNavegacion}
+        >
+          {isNavigating ? '🛑 Detener navegación' : '🚗 Iniciar navegación'}
+        </button>
+        <button className="ruta-btn danger" onClick={borrarRuta}>
+          ❌ Borrar ruta
+        </button>
+      </div>
+
+      <div className="ruta-main">
+        <div className="ruta-sidebar">
+          <h5>Obras Seleccionadas</h5>
+          {sucursales.length === 0 && <p>No hay obras seleccionadas.</p>}
+          {sucursales.map((sucursal, idx) => (
+            <div
+              key={idx}
+              className="obra-item"
+              onClick={() => {
+                if (mapInstanceRef.current) {
+                  mapInstanceRef.current.flyTo([sucursal.lat, sucursal.lng], 18, { duration: 1 });
+                }
+              }}
+            >
+              <strong>{sucursal.name}</strong>
+              <div>Lat: {sucursal.lat.toFixed(4)}</div>
+              <div>Lng: {sucursal.lng.toFixed(4)}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="ruta-map-container">
+          <div ref={mapRef} className="ruta-map"></div>
+        </div>
+      </div>
     </div>
   );
+
 };
 
 export default Ruta;

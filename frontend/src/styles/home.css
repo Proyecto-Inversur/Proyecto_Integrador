@@ -1,13 +1,13 @@
 /* Contenedor principal */
 .home-container {
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    padding-top: 7%;
-    padding-bottom: 6rem;
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px); /* Resta el header y footer */
+  padding: 6rem 1rem;
+  text-align: center;
+}
+
   
   /* Contenedor del contenido */
   .page-content {
