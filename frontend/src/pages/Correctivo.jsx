@@ -507,7 +507,7 @@ const handleDeleteSelectedPlanilla = async () => {
               </div>
             </Col>
 
-            <Col className="planilla-section">
+            <Col xs={12} md={4} className="planilla-section">
               <h4 className="planilla-section-title">Planilla</h4>
             <Form.Group>
               <input
