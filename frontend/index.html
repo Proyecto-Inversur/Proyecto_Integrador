@@ -4,9 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inversur</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#2c2c2c">
+    <script src="https://accounts.google.com/gsi/client" async></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+        // Global error handler
+        window.addEventListener('error', (event) => {
+          alert(`Global error: ${event.message} at ${event.filename}:${event.lineno}`);
+        });
+
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', (event) => {
+          alert(`Unhandled promise rejection: ${event.reason.message || event.reason}`);
+        });
+
+        // Registrar Service Worker para notificaciones web
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            let hasPushSW = false;
+            registrations.forEach(registration => {
+              const swUrl = registration.active?.scriptURL || registration.waiting?.scriptURL || registration.installing?.scriptURL;
+              if (swUrl && !swUrl.includes('/push-sw.js')) {
+                registration.unregister();
+                console.log('Service worker obsoleto eliminado:', swUrl);
+              } else if (swUrl && swUrl.includes('/push-sw.js')) {
+                hasPushSW = true;
+              }
+              });
+            if (!hasPushSW) {
+              navigator.serviceWorker.register('/push-sw.js').then(reg => {
+                console.log('Nuevo service worker registrado:', reg);
+              }).catch(err => console.error('Error registrando service worker:', err));
+            }
+          });
+        }
+    </script>
   </body>
 </html>

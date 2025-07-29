@@ -15,7 +15,8 @@ const Correctivo = () => {
   const { currentEntity } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const mantenimiento = location.state?.mantenimiento || {};
+  const mantenimientoId = location.state?.mantenimientoId;
+  const [mantenimiento, setMantenimiento] = useState({});
   const [sucursales, setSucursales] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
   const [formData, setFormData] = useState({
@@ -41,15 +42,15 @@ const Correctivo = () => {
   const fetchMantenimiento = async () => {
     setIsLoading(true);
     try {
-    const response = await getMantenimientoCorrectivo(mantenimiento.id);
+    const response = await getMantenimientoCorrectivo(mantenimientoId);
+    setMantenimiento(response.data);
     setFormData({
       planilla: '',
       fotos: [],
-      fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || '',
+      fecha_cierre: response.data.fecha_cierre?.split('T')[0] || '',
       extendido: response.data.extendido || '',
       estado: response.data.estado,
     });
-    navigate(location.pathname, { state: { mantenimiento: response.data } });
   } catch (error) {
     console.error('Error fetching mantenimiento:', error);
     setError('Error al cargar los datos actualizados.');
@@ -75,13 +76,9 @@ const Correctivo = () => {
   };
 
   useEffect(() => {
-    if (!currentEntity) {
-      navigate('/login');
-    } else {
-      fetchMantenimiento();
-      fetchData();
-    }
-  }, [currentEntity, navigate]);
+    fetchMantenimiento();
+    fetchData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

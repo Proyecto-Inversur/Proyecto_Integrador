@@ -19,7 +19,7 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [error, setError] = useState(null);
   const dropdownRef = useRef(null);
-  const { signInWithGoogleForRegistration } = useContext(AuthContext);
+  const { signInWithGoogle } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -104,7 +104,7 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
       if (cuadrilla) {
         await updateCuadrilla(cuadrilla.id, formData);
       } else {
-        const { idToken, email } = await signInWithGoogleForRegistration();
+        const { idToken, email } = await signInWithGoogle();
         const payload = { ...formData, email: email, id_token: idToken };
         await createCuadrilla(payload);
       }

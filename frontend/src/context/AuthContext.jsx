@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useRef } from 'react';
-import { auth, onAuthStateChanged, signOut } from '../services/firebase';
+import { auth, signOut, getPushSubscription, signInWithCredential, GoogleAuthProvider } from '../services/firebase';
+import { saveSubscription, deleteSubscription } from '../services/notificaciones';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { googleClientId } from '../config';
@@ -9,8 +10,9 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentEntity, setCurrentEntity] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [verifying, setVerifying] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [singingIn, setSingingIn] = useState(false);
   const navigate = useNavigate();
   const isVerifyingRef = useRef(false);
   const isVerifiedRef = useRef(false);
@@ -21,47 +23,35 @@ const AuthProvider = ({ children }) => {
       setLoading(true);
       setVerifying(true);
 
-      try {
-        const response = await api.post(
-          '/auth/verify',
-          {},
-          { headers: { Authorization: `Bearer ${idToken}` } }
-        );
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        console.log('Verification succeeded:', response.data);
-        isVerifiedRef.current = true;
-        setCurrentUser(user);
-        setCurrentEntity(response.data);
-        return { success: true, data: response.data };
-      } catch (error) {
-        attempts++;
-        const errorDetail = error.response?.data?.detail || error.message;
-        console.error(`Verification attempt ${attempts} failed:`, errorDetail);
-        if (attempts === maxAttempts) {
-          throw error;
-        }
+      const response = await api.post(
+        '/auth/verify',
+        {},
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      isVerifiedRef.current = true;
+      setCurrentUser(user);
+      setCurrentEntity(response.data);
+
+      const subscription = await getPushSubscription();
+      if (subscription) {
+        await saveSubscription({
+          ...subscription.toJSON(),
+          firebase_uid: response.data.data.uid,
+          device_info: navigator.userAgent
+        });
       }
     } catch (error) {
       const errorDetail = error.response?.data?.detail || error.message;
       console.error('Final verification error:', errorDetail);
-      try {
-        await signOut(auth);
-        localStorage.removeItem('authToken');
-      } catch (signOutError) {
-        console.error('Sign-out failed:', signOutError);
-      }
-      setCurrentUser(null);
-      setCurrentEntity(null);
-      isVerifiedRef.current = false;
       const errorMessage =
         error.response?.status === 403
           ? 'Usuario no registrado. Por favor, crea una cuenta.'
           : error.response?.status === 401
           ? `Token de autenticación inválido: ${errorDetail}`
           : 'Error al verificar el usuario.';
-      navigate('/login', { state: { error: errorMessage } });
+      await logOut(errorMessage);
       return { success: false, data: null };
     } finally {
       isVerifyingRef.current = false;
@@ -70,19 +60,33 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const logOut = async () => {
-    await signOut(auth);
+  const logOut = async (error) => {
     localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
+    localStorage.removeItem('googleIdToken');
+    sessionStorage.removeItem('googleIdToken');
     setCurrentUser(null);
     setCurrentEntity(null);
     setLoading(false);
     setVerifying(false);
     isVerifyingRef.current = false;
     isVerifiedRef.current = false;
-    navigate('/login');
-  }
+    const subscription = await getPushSubscription();
+    if (subscription) {
+      await deleteSubscription({
+        firebase_uid: response.data.data.uid,
+        device_info: navigator.userAgent
+      });
+    }
+    await signOut(auth);
+    if (error) {
+      navigate('/login', { state: { error: error } });
+    } else {
+      navigate('/login');
+    }
+  };
 
-  const signInWithGoogleForRegistration = async () => {
+  const signInWithGoogle = async () => {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
@@ -93,20 +97,16 @@ const AuthProvider = ({ children }) => {
           callback: async (response) => {
             try {
               const idToken = response.credential;
-              const emailResponse = await fetch(
-                `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${idToken}`
-              );
-              const tokenInfo = await emailResponse.json();
-              if (tokenInfo.email) {
-                resolve({ idToken, email: tokenInfo.email });
-              } else {
-                reject(new Error('Failed to retrieve email from Google ID token'));
-              }
+              localStorage.setItem('googleIdToken', idToken);
+              sessionStorage.setItem('googleIdToken', idToken);
+              setSingingIn(true);
+              resolve(idToken);
             } catch (error) {
               console.error('Error processing Google ID token:', error);
               reject(error);
             }
           },
+          ux_mode: 'popup',
         });
         window.google.accounts.id.prompt();
       };
@@ -115,39 +115,59 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && !isVerifyingRef.current && !isVerifiedRef.current) {
-        try {
-          const idToken = await user.getIdToken(true);
-          localStorage.setItem('authToken', idToken);
-          await verifyUser(user, idToken);
-        } catch (error) {
-          console.error('Error getting ID token:', error);
-          await signOut(auth);
-          localStorage.removeItem('authToken');
-          setCurrentUser(null);
-          setCurrentEntity(null);
-          setLoading(false);
-          setVerifying(false);
-          isVerifiedRef.current = false;
-          navigate('/login', { state: { error: 'Error al obtener el token de autenticación.' } });
+  const retrySignIn = async (credential, retries = 3, delay = 1000) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const result = await signInWithCredential(auth, credential);
+        return result;
+      } catch (error) {
+        if (error.code === 'auth/network-request-failed' && i < retries - 1) {
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
         }
-      } else if (!user) {
-        localStorage.removeItem('authToken');
-        setCurrentUser(null);
-        setCurrentEntity(null);
-        setLoading(false);
-        setVerifying(false);
-        isVerifiedRef.current = false;
+        throw error;
       }
-    });
+    }
+  };
 
-    return () => unsubscribe();
-  }, [navigate]);
+  const handleGoogleSignIn = async () => {
+    try {
+      const idToken = sessionStorage.getItem('googleIdToken') || localStorage.getItem('googleIdToken');
+      if (!idToken) {
+        return; // No token, no action
+      }
+      const credential = GoogleAuthProvider.credential(idToken);
+      const result = await retrySignIn(credential);
+      const user = result.user;
+      if (user) {
+        const firebaseToken = await user.getIdToken();
+        localStorage.setItem('authToken', firebaseToken);
+        sessionStorage.setItem('authToken', firebaseToken);
+        await verifyUser(user, firebaseToken);
+      } else {
+        await logOut('No se pudo obtener el usuario');
+      }
+    } catch (error) {
+      console.error('Error en Google Sign-In:', error);
+      await logOut(error.message);
+    }
+  };
+
+  // Ejecutar al cargar la página
+  useEffect(() => {
+    handleGoogleSignIn();
+  }, []);
+
+  // Ejecutar cuando se establece un nuevo token
+  useEffect(() => {
+    if (singingIn) {
+      setSingingIn(false); // Resetear para evitar bucles
+      handleGoogleSignIn();
+    }
+  }, [singingIn]);
 
   return (
-    <AuthContext.Provider value={{ currentUser, currentEntity, loading, verifying, verifyUser, signInWithGoogleForRegistration, logOut }}>
+    <AuthContext.Provider value={{ currentUser, currentEntity, loading, verifying, signInWithGoogle, logOut }}>
       {children}
     </AuthContext.Provider>
   );

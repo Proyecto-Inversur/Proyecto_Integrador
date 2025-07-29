@@ -15,7 +15,8 @@ const Preventivo = () => {
   const { currentEntity } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const mantenimiento = location.state?.mantenimiento || {};
+  const mantenimientoId = location.state?.mantenimientoId;
+  const [mantenimiento, setMantenimiento] = useState({});
   const [cuadrillas, setCuadrillas] = useState([]);
   const [sucursales, setSucursales] = useState([]);
   const [formData, setFormData] = useState({
@@ -40,14 +41,14 @@ const Preventivo = () => {
   const fetchMantenimiento = async () => {
     setIsLoading(true);
     try {
-      const response = await getMantenimientoPreventivo(mantenimiento.id);
+      const response = await getMantenimientoPreventivo(mantenimientoId);
+      setMantenimiento(response.data);
       setFormData({
         planillas: [],
         fotos: [],
-        fecha_cierre: mantenimiento.fecha_cierre?.split('T')[0] || null,
+        fecha_cierre: response.data.fecha_cierre?.split('T')[0] || null,
         extendido: response.data.extendido || null,
       });
-      navigate(location.pathname, { state: { mantenimiento: response.data } });
     } catch (error) {
       console.error('Error fetching mantenimiento:', error);
       setError('Error al cargar los datos actualizados.');
@@ -73,13 +74,9 @@ const Preventivo = () => {
   };
 
   useEffect(() => {
-    if (!currentEntity) {
-      navigate('/login');
-    } else {
-      fetchMantenimiento();
-      fetchData();
-    }
-  }, [currentEntity, navigate]);
+    fetchMantenimiento();
+    fetchData();
+  }, []);
 
   const handleFileChange = (e, field) => {
     const files = Array.from(e.target.files);

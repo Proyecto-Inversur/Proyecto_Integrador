@@ -16,6 +16,7 @@ import Correctivo from './pages/Correctivo';
 import Login from './pages/Login';
 import Mapa from './pages/Mapa';
 import Ruta from './pages/Ruta';
+import { mapsApiKey } from './config';
 import { LoadScript } from '@react-google-maps/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'leaflet/dist/leaflet.css';
@@ -25,6 +26,7 @@ const googleMapsLibraries = ['places'];
 
 const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
   const { currentEntity, loading, verifying } = useContext(AuthContext);
+  const location = useLocation();
 
   if (loading || verifying) {
     return (
@@ -37,7 +39,7 @@ const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
   }
 
   if (!currentEntity) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   if (adminOnly && (currentEntity.type !== 'usuario' || currentEntity.data.rol !== 'Administrador')) {
@@ -59,12 +61,13 @@ const AppContent = () => {
 
   useEffect(() => {
     if (currentEntity && !loading && !verifying && isLoginPage) {
-      navigate('/', { replace: true });
+      const redirectTo = location.state?.from || '/';
+      navigate(redirectTo, { replace: true });
     }
-  }, [currentEntity, loading, verifying, isLoginPage, navigate]);
+  }, [currentEntity, loading, verifying, isLoginPage, navigate, location]);
 
   return (
-    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={googleMapsLibraries}>
+    <LoadScript googleMapsApiKey={mapsApiKey} libraries={googleMapsLibraries}>
       <div className="d-flex flex-column min-vh-100">
         {!isLoginPage && <Navbar />}
         <main className="flex-grow-1">

@@ -1,5 +1,5 @@
-import React, { useEffect, useContext } from 'react';
-import { Link, useNavigate  } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import { FaUsers, FaClipboardList, FaMapMarkerAlt, FaFileAlt } from 'react-icons/fa';
@@ -7,13 +7,6 @@ import '../styles/home.css';
 
 const Home = () => {
   const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!currentEntity) {
-      navigate('/login');
-    }
-  }, [currentEntity, navigate]);
 
   return (
     <Container className="home-container">

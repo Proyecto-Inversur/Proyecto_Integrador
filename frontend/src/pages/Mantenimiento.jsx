@@ -1,6 +1,6 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Container } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 import { AuthContext } from '../context/AuthContext';
 import { FaTruck, FaHome, FaWrench, FaTools } from 'react-icons/fa';
@@ -8,13 +8,6 @@ import '../styles/mantenimiento.css';
 
 const Mantenimiento = () => {
   const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!currentEntity) {
-      navigate('/login');
-    }
-  }, [currentEntity, navigate]);
 
   return (
     <Container className="home-container">

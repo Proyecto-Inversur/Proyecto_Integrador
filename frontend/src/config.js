@@ -22,6 +22,30 @@ const getFirebaseConfig = () => {
   return JSON.parse(config);
 };
 
+const getMapsApiKey = () => {
+  const isProd = window.location.host.includes('nice-rock');
+  const config = import.meta.env[`VITE_GOOGLE_MAPS_API_KEY_${isProd ? 'PROD' : 'QA'}`];
+
+  if (!config) {
+    console.error('Missing Maps api key in .env');
+    return null;
+  }
+
+  return config;
+};
+
+const getWebPushPublicKey = () => {
+  const isProd = window.location.host.includes('nice-rock');
+  const key = import.meta.env[`VITE_WEB_PUSH_PUBLIC_KEY_${isProd ? 'PROD' : 'QA'}`];
+
+  if (!key) {
+    console.error('Missing web push public key in .env');
+    return null;
+  }
+
+  return key;
+};
+
 const getGoogleClient = () => {
   const isProd = window.location.host.includes('nice-rock');
   const clientId = import.meta.env[`VITE_GOOGLE_CLIENT_ID_${isProd ? 'PROD' : 'QA'}`];
@@ -36,4 +60,6 @@ const getGoogleClient = () => {
 
 export const API_URL = getApiUrl();
 export const firebaseConfig = getFirebaseConfig();
+export const mapsApiKey = getMapsApiKey();
 export const googleClientId = getGoogleClient();
+export const webPushPublicKey = getWebPushPublicKey();

@@ -1,38 +1,24 @@
 import { useState, useContext } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Button, Alert, Spinner } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { auth, GoogleAuthProvider, signInWithPopup } from '../services/firebase';
 import { FcGoogle } from 'react-icons/fc';
 import '../styles/login.css';
 import logoInversur from '../assets/logo_inversur.png';
 
 const Login = () => {
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
   const location = useLocation();
-  const googleProvider = new GoogleAuthProvider();
-  const { verifyUser, verifying, logOut } = useContext(AuthContext);
+  const { verifying, logOut, signInWithGoogle } = useContext(AuthContext);
 
   const handleGoogleSignIn = async () => {
     setError(null);
     try {
-      await logOut();
-
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken(true);
-      localStorage.setItem('authToken', idToken);
-      const verificationResult = await verifyUser(result.user, idToken);
-      if (verificationResult.success) {
-        navigate('/');
-      } else {
-        setError('Error al verificar el usuario');
-        await logOut();
-      }
+      await signInWithGoogle();
     } catch (err) {
       console.error("Error en inicio de sesión con Google:", err);
       setError(err.message || 'Error al iniciar sesión con Google');
-      await logOut();
+      await logOut(err.message);
     }
   };
 
