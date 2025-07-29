@@ -117,3 +117,26 @@ class MantenimientoCorrectivoCreate(BaseModel):
     rubro: Rubro
     estado: Estado
     prioridad: Prioridad
+
+
+class PushSubscriptionKeys(BaseModel):
+    p256dh: str
+    auth: str
+
+class PushSubscriptionCreate(BaseModel):
+    endpoint: str
+    keys: PushSubscriptionKeys
+    firebase_uid: str
+    device_info: Optional[str] = None
+    
+class PushSubscriptionDelete(BaseModel):
+    firebase_uid: str
+    device_info: Optional[str] = None
+    
+class MaintenanceNearInfo(BaseModel):
+    id: int
+    tipo: str
+    mensaje: str
+
+class NearbyNotificationCreate(BaseModel):
+    mantenimientos: list[MaintenanceNearInfo]

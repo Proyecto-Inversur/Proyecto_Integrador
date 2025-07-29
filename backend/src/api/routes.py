@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos, maps
+from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos, maps, notificaciones, push
 from config.database import get_db
 from services.auth import verify_user_token
 from auth.firebase import initialize_firebase
@@ -99,3 +99,5 @@ app.include_router(preventivos.router)
 app.include_router(mantenimientos_preventivos.router)
 app.include_router(mantenimientos_correctivos.router)
 app.include_router(maps.router)
+app.include_router(notificaciones.router)
+app.include_router(push.router)

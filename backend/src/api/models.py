@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, DateTime
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, DateTime, func, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import declarative_base
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 Base = declarative_base()
 
@@ -58,6 +60,7 @@ class MantenimientoPreventivo(Base):
     sucursal = relationship("Sucursal", back_populates="mantenimientos_preventivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_preventivos")
     preventivo_seleccionado = relationship("PreventivoSeleccionado", back_populates="mantenimiento_preventivo")
+    notificacion_preventivo = relationship("Notificacion_Preventivo", back_populates="mantenimiento_preventivo")
     planillas = relationship("MantenimientoPreventivoPlanilla", backref="mantenimiento")
     fotos = relationship("MantenimientoPreventivoFoto", backref="mantenimiento")
     
@@ -91,6 +94,7 @@ class MantenimientoCorrectivo(Base):
     sucursal = relationship("Sucursal", back_populates="mantenimientos_correctivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_correctivos")
     correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="mantenimiento_correctivo")
+    notificacion_correctivo = relationship("Notificacion_Correctivo", back_populates="mantenimiento_correctivo")
     fotos = relationship("MantenimientoCorrectivoFoto", backref="mantenimiento")
 
 class MantenimientoCorrectivoFoto(Base):
@@ -140,3 +144,39 @@ class PreventivoSeleccionado(Base):
     mantenimiento_preventivo = relationship("MantenimientoPreventivo", back_populates="preventivo_seleccionado")
     cuadrilla = relationship("Cuadrilla", back_populates="preventivo_seleccionado")
     sucursal = relationship("Sucursal", back_populates="preventivo_seleccionado")
+
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscription"
+
+    id = Column(Integer, primary_key=True, index=True)
+    firebase_uid = Column(String, nullable=False)
+    endpoint = Column(String, nullable=False)
+    p256dh = Column(String, nullable=False)
+    auth = Column(String, nullable=False)
+    device_info = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    
+class Notificacion_Correctivo(Base):
+    __tablename__ = "notificacion_correctivo"
+
+    id = Column(Integer, primary_key=True)
+    firebase_uid = Column(String, nullable=False)
+    id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_correctivo.id"))
+    mensaje = Column(String, nullable=False)
+    leida = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("America/Argentina/Buenos_Aires")))
+    
+    mantenimiento_correctivo = relationship("MantenimientoCorrectivo", back_populates="notificacion_correctivo")
+
+class Notificacion_Preventivo(Base):
+    __tablename__ = "notificacion_preventivo"
+
+    id = Column(Integer, primary_key=True)
+    firebase_uid = Column(String, nullable=False)
+    id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_preventivo.id"))
+    mensaje = Column(String, nullable=False)
+    leida = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("America/Argentina/Buenos_Aires")))
+    
+    mantenimiento_preventivo = relationship("MantenimientoPreventivo", back_populates="notificacion_preventivo")
