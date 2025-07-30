@@ -22,26 +22,31 @@
   margin-left: 2rem;
 }
 
-/* Contenedor del ícono de usuario + campana */
-.icon-container {
+.notification-icon {
   position: relative;
-  display: flex;
-  align-items: center;
-  margin-right: 1rem; /* Podés ajustar este valor */
+  display: inline-block;
 }
 
-
-/* Ícono de usuario */
-.icon-user {
-  color: white;
-}
-
-/* Ícono de campana */
-.icon-bell {
+.notification-counter {
   position: absolute;
-  bottom: -2px;
-  right: -8px;
-  color: white;
+  top: -6px;
+  right: -6px;
+  background-color: #ffc107; 
+  color: #000;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 18px;
+  text-align: center;
+}
+
+.mark-read-btn {
+  border-radius: 20px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 6px 14px;
+  font-size: 14px;
 }
 
 @media (max-width: 991px) {

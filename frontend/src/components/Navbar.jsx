@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Image, Modal, Button } from 'react-bootstrap';
 import logoInversur from '../assets/logo_inversur.png';
 import { FaRegBell, FaUser } from 'react-icons/fa';
+import { FaBell } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
-import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificaciones } from '../services/notificaciones';
+import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificaciones, delete_notificacion } from '../services/notificaciones';
 import '../styles/navbar.css';
 
 const Navbar = () => {
@@ -126,6 +127,51 @@ const Navbar = () => {
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+  try {
+    const correctivosNoLeidos = notifications.filter(n => n.tipo === 'correctivo' && !n.leida);
+    const preventivosNoLeidos = notifications.filter(n => n.tipo === 'preventivo' && !n.leida);
+
+    await Promise.all([
+      ...correctivosNoLeidos.map(n => correctivo_leido(n.id)),
+      ...preventivosNoLeidos.map(n => preventivo_leido(n.id))
+    ]);
+
+    await fetchNotifications();
+  } catch (error) {
+    console.error('Error al marcar todas como leídas:', error);
+  }
+};
+
+const renderNotification = (notification, index) => (
+  <div 
+    key={index} 
+    onClick={() => handleClick(notification)} 
+    className="mb-3 p-2 border-bottom hover:bg-gray-100 p-2 rounded d-flex align-items-center"
+  >
+    <div className="flex-grow-1">
+      <p className="mb-1">{notification.mensaje}</p>
+      <small className="text-muted">{timeAgo(notification.created_at)}</small>
+    </div>
+    {!notification.leida && (
+      <span 
+        className="bg-warning rounded-circle"
+        style={{ width: '10px', height: '10px', marginLeft: '10px' }}
+      ></span>
+    )}
+  </div>
+);
+
+const handleDeleteReadNotifications = async () => {
+  try {
+    const leidas = notifications.filter(n => n.leida);
+    await Promise.all(leidas.map(n => delete_notificacion(n.id))); 
+    await fetchNotifications();
+  } catch (error) {
+    console.error('Error al eliminar notificaciones leídas:', error);
+  }
+};
+
   return (
     <>
       <BootstrapNavbar bg="dark" variant="dark" expand="lg" className="custom-navbar">
@@ -167,15 +213,10 @@ const Navbar = () => {
             </Nav>
             <Nav className="nav-right">
               <Nav.Link onClick={handleShowNotifications} aria-label="Notificaciones">
-                <div className="icon-container">
-                  <FaUser size={22} className="icon-user" />
-                  <FaRegBell size={14} className="icon-bell" />
+                <div className="notification-icon">
+                  <FaBell size={24} color="#fff" />
+                  {unreadCount > 0 && <span className="notification-counter">{unreadCount}</span>}
                 </div>
-                {unreadCount > 0 && (
-                  <span className="notification-count">
-                    {unreadCount}
-                  </span>
-                )}
               </Nav.Link>
             </Nav>
           {/*</BootstrapNavbar.Collapse>*/}
@@ -184,37 +225,41 @@ const Navbar = () => {
 
       <Modal show={showNotifications} onHide={handleCloseNotifications} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Notificaciones</Modal.Title>
-          <Button 
-              variant="warning" 
-              onClick={handleDeleteAllNotifications} 
-              className="mb-3"
-            >
-              Eliminar todas las notificaciones
-          </Button>
+          <Modal.Title className="w-100 text-center">Notificaciones</Modal.Title>
         </Modal.Header>
+        <div className="d-flex flex-column gap-2 px-3 mt-2">
+          <Button 
+            variant="outline-primary" 
+            onClick={handleMarkAllAsRead} 
+            className="w-100 mark-read-btn"
+          >
+            <i className="bi bi-check2-all me-2"></i> Marcar todas como leídas
+          </Button>
+          <Button 
+            variant="outline-danger" 
+            onClick={handleDeleteReadNotifications} 
+            className="w-100"
+          >
+            <i className="bi bi-trash3 me-2"></i> Eliminar leídas
+          </Button>
+        </div>
         <Modal.Body>
           {notifications.length > 0 ? (
-            notifications.map((notification, index) => (
-              <div 
-                key={index} 
-                onClick={() => handleClick(notification)} 
-                className="mb-3 p-2 border-bottom hover:bg-gray-100 p-2 rounded d-flex align-items-center"
-              >
-                <div className="flex-grow-1">
-                  <p className="mb-1">{notification.mensaje}</p>
-                  <small className="text-muted">
-                    {timeAgo(notification.created_at)}
-                  </small>
-                </div>
-                {!notification.leida && (
-                  <span 
-                    className="bg-warning rounded-circle"
-                    style={{ width: '10px', height: '10px', marginLeft: '10px' }}
-                  ></span>
-                )}
-              </div>
-            ))
+            <>
+              {notifications.some(n => n.tipo === 'correctivo') && (
+                <h6 className="mt-2 mb-1 text-muted">Correctivos</h6>
+              )}
+              {notifications
+                .filter(n => n.tipo === 'correctivo')
+                .map((notification, index) => renderNotification(notification, index))}
+
+              {notifications.some(n => n.tipo === 'preventivo') && (
+                <h6 className="mt-3 mb-1 text-muted">Preventivos</h6>
+              )}
+              {notifications
+                .filter(n => n.tipo === 'preventivo')
+                .map((notification, index) => renderNotification(notification, index))}
+            </>
           ) : (
             <p>No tienes notificaciones.</p>
           )}
