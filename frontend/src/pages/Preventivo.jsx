@@ -301,9 +301,8 @@ const Preventivo = () => {
     if (!nuevoMensaje && !archivoAdjunto) return;
 
     const formData = new FormData();
-    formData.append('firebase_uid', currentEntity.firebase_uid);
-    formData.append('nombre_usuario', currentEntity.nombre);
-    formData.append('fecha', new Date().toISOString());
+    formData.append('firebase_uid', currentEntity.data.uid);
+    formData.append('nombre_usuario', currentEntity.data.nombre);
     if (nuevoMensaje) formData.append('texto', nuevoMensaje);
     if (archivoAdjunto) formData.append('archivo', archivoAdjunto);
 
@@ -403,7 +402,7 @@ const Preventivo = () => {
             <Col className="chat-section">
               <div className="chat-box" ref={chatBoxRef}>
                 {mensajes.map((msg, index) => {
-                  const esPropio = msg.firebase_uid === currentEntity.firebase_uid;
+                  const esPropio = msg.firebase_uid === currentEntity.data.uid;
                   const esImagen = msg.archivo?.match(/\.(jpeg|jpg|png|gif)$/i);
                   return (
                     <div key={index} className={`chat-message ${esPropio ? 'chat-message-sent' : 'chat-message-received'}`}>

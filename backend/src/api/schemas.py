@@ -117,11 +117,3 @@ class MantenimientoCorrectivoCreate(BaseModel):
     rubro: Rubro
     estado: Estado
     prioridad: Prioridad
-    
-# Esquema para Mensaje
-class Message(BaseModel):
-    firebase_uid: str
-    nombre_usuario: str
-    texto: Optional[str] = None
-    archivo: Optional[str] = None
-    fecha: datetime

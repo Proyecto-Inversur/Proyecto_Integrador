@@ -81,25 +81,25 @@ const Correctivo = () => {
   };
 
   useEffect(() => {
-  if (!currentEntity) {
-    navigate('/login');
-  } else {
-    const iniciarDatos = async () => {
-      await fetchMantenimiento();
-      await fetchData();
-      await cargarMensajes();
-    };
-    iniciarDatos();
-  }
-}, [currentEntity, navigate]);
+    if (!currentEntity) {
+      navigate('/login');
+    } else {
+      const iniciarDatos = async () => {
+        await fetchMantenimiento();
+        await fetchData();
+        await cargarMensajes();
+      };
+      iniciarDatos();
+    }
+  }, [currentEntity, navigate]);
 
-useEffect(() => {
-  const interval = setInterval(() => {
-    cargarMensajes();
-  }, 5000); // cada 5 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      cargarMensajes();
+    }, 120000); // cada 5 segundos
 
-  return () => clearInterval(interval); // limpiar cuando desmonta
-}, [mantenimiento.id]);
+    return () => clearInterval(interval); // limpiar cuando desmonta
+  }, [mantenimiento.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -314,15 +314,14 @@ const handleDeleteSelectedPlanilla = async () => {
   const handleEnviarMensaje = async () => {
   if (!nuevoMensaje && !archivoAdjunto) return;
 
-  const formData = new FormData();
-  formData.append('firebase_uid', currentEntity.firebase_uid);
-  formData.append('nombre_usuario', currentEntity.nombre);
-  formData.append('fecha', new Date().toISOString());
-  if (nuevoMensaje) formData.append('texto', nuevoMensaje);
-  if (archivoAdjunto) formData.append('archivo', archivoAdjunto);
+  const message = new FormData();
+  message.append('firebase_uid', currentEntity.data.uid);
+  message.append('nombre_usuario', currentEntity.data.nombre);
+  if (nuevoMensaje) message.append('texto', nuevoMensaje);
+  if (archivoAdjunto) message.append('archivo', archivoAdjunto);
 
   try {
-    await sendMessageCorrectivo(mantenimiento.id, formData);
+    await sendMessageCorrectivo(mantenimiento.id, message);
     setNuevoMensaje('');
     setArchivoAdjunto(null);
     await cargarMensajes();
@@ -463,7 +462,7 @@ const handleDeleteSelectedPlanilla = async () => {
             <Col className="chat-section">
               <div className="chat-box" ref={chatBoxRef}>
                 {mensajes.map((msg, index) => {
-                  const esPropio = msg.firebase_uid === currentEntity.firebase_uid;
+                  const esPropio = msg.firebase_uid === currentEntity.data.uid;
                   const esImagen = msg.archivo?.match(/\.(jpeg|jpg|png|gif)$/i);
                   return (
                     <div key={index} className={`chat-message ${esPropio ? 'chat-message-sent' : 'chat-message-received'}`}>

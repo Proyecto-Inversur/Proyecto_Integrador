@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import declarative_base
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 Base = declarative_base()
 
@@ -58,7 +60,7 @@ class MantenimientoPreventivo(Base):
     sucursal = relationship("Sucursal", back_populates="mantenimientos_preventivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_preventivos")
     preventivo_seleccionado = relationship("PreventivoSeleccionado", back_populates="mantenimiento_preventivo")
-    mensaje_preventivo = relationship("MensajePreventivo", back_populates="mantenimiento_preventivo")
+    mensaje_preventivo = relationship("MensajePreventivo", backref="mantenimiento")
     planillas = relationship("MantenimientoPreventivoPlanilla", backref="mantenimiento")
     fotos = relationship("MantenimientoPreventivoFoto", backref="mantenimiento")
     
@@ -92,7 +94,7 @@ class MantenimientoCorrectivo(Base):
     sucursal = relationship("Sucursal", back_populates="mantenimientos_correctivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_correctivos")
     correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="mantenimiento_correctivo")
-    mensaje_correctivo = relationship("MensajeCorrectivo", back_populates="mantenimiento_correctivo")
+    mensaje_correctivo = relationship("MensajeCorrectivo", backref="mantenimiento")
     fotos = relationship("MantenimientoCorrectivoFoto", backref="mantenimiento")
 
 class MantenimientoCorrectivoFoto(Base):
@@ -146,23 +148,19 @@ class PreventivoSeleccionado(Base):
 class MensajeCorrectivo(Base):
     __tablename__ = "mensaje_correctivo"
     id = Column(Integer, primary_key=True)
-    firebase_uid = Column(String, unique=True)
+    firebase_uid = Column(String)
     nombre_usuario = Column(String)
     id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_correctivo.id"))
     texto = Column(String, nullable=True)
     archivo = Column(String, nullable=True)
-    fecha = Column(DateTime)
-    
-    mantenimiento_correctivo = relationship("MantenimientoCorrectivo", back_populates="mensaje_correctivo")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("America/Argentina/Buenos_Aires")))
     
 class MensajePreventivo(Base):
     __tablename__ = "mensaje_preventivo"
     id = Column(Integer, primary_key=True)
-    firebase_uid = Column(String, unique=True)
+    firebase_uid = Column(String)
     nombre_usuario = Column(String)
     id_mantenimiento = Column(Integer, ForeignKey("mantenimiento_preventivo.id"))
     texto = Column(String, nullable=True)
     archivo = Column(String, nullable=True)
-    fecha = Column(DateTime)
-    
-    mantenimiento_preventivo = relationship("MantenimientoPreventivo", back_populates="mensaje_preventivo")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("America/Argentina/Buenos_Aires")))
