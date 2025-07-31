@@ -81,10 +81,15 @@ const Preventivo = () => {
   };
 
   useEffect(() => {
-    fetchMantenimiento();
-    fetchData();
-    cargarMensajes();
-  }, []);
+    if (currentEntity) {
+      const iniciarDatos = async () => {
+        await fetchMantenimiento();
+        await fetchData();
+        await cargarMensajes();
+      };
+      iniciarDatos();
+    }
+  }, [currentEntity]);
 
   useEffect(() => {
     const interval = setInterval(() => {

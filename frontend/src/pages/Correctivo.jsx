@@ -49,22 +49,22 @@ const Correctivo = () => {
   const fetchMantenimiento = async () => {
     setIsLoading(true);
     try {
-    const response = await getMantenimientoCorrectivo(mantenimientoId);
-    setMantenimiento(response.data);
-    setFormData({
-      planilla: '',
-      fotos: [],
-      fecha_cierre: response.data.fecha_cierre?.split('T')[0] || '',
-      extendido: response.data.extendido || '',
-      estado: response.data.estado,
-    });
-  } catch (error) {
-    console.error('Error fetching mantenimiento:', error);
-    setError('Error al cargar los datos actualizados.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+      const response = await getMantenimientoCorrectivo(mantenimientoId);
+      setMantenimiento(response.data);
+      setFormData({
+        planilla: '',
+        fotos: [],
+        fecha_cierre: response.data.fecha_cierre?.split('T')[0] || '',
+        extendido: response.data.extendido || '',
+        estado: response.data.estado,
+      });
+    } catch (error) {
+      console.error('Error fetching mantenimiento:', error);
+      setError('Error al cargar los datos actualizados.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -83,10 +83,15 @@ const Correctivo = () => {
   };
 
   useEffect(() => {
-    fetchMantenimiento();
-    fetchData();
-    cargarMensajes();
-  }, []);
+    if (currentEntity) {
+      const iniciarDatos = async () => {
+        await fetchMantenimiento();
+        await fetchData();
+        await cargarMensajes();
+      };
+      iniciarDatos();
+    }
+  }, [currentEntity]);
 
   useEffect(() => {
     const interval = setInterval(() => {
