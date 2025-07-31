@@ -10,6 +10,8 @@ import { getCuadrillas } from '../services/cuadrillaService';
 import { selectCorrectivo, deleteCorrectivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
+import { BsSave } from 'react-icons/bs';
+import { getChatCorrectivo, sendMessageCorrectivo } from '../services/chats';
 import '../styles/mantenimientos.css';
 
 const Correctivo = () => {
@@ -39,6 +41,10 @@ const Correctivo = () => {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
+  const [mensajes, setMensajes] = useState([]);
+  const [nuevoMensaje, setNuevoMensaje] = useState('');
+  const [archivoAdjunto, setArchivoAdjunto] = useState(null);
+  const chatBoxRef = React.useRef(null);
 
   const fetchMantenimiento = async () => {
     setIsLoading(true);
@@ -79,7 +85,16 @@ const Correctivo = () => {
   useEffect(() => {
     fetchMantenimiento();
     fetchData();
+    cargarMensajes();
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      cargarMensajes();
+    }, 120000); // cada 5 segundos
+
+    return () => clearInterval(interval); // limpiar cuando desmonta
+  }, [mantenimiento.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -281,6 +296,44 @@ const handleDeleteSelectedPlanilla = async () => {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   }
 
+  const cargarMensajes = async () => {
+    try {
+      const response = await getChatCorrectivo(mantenimiento.id);
+      setMensajes(response.data);
+      scrollToBottom();
+    } catch (error) {
+      console.error('Error al cargar mensajes:', error);
+    }
+  };
+
+  const handleEnviarMensaje = async () => {
+  if (!nuevoMensaje && !archivoAdjunto) return;
+
+  const message = new FormData();
+  message.append('firebase_uid', currentEntity.data.uid);
+  message.append('nombre_usuario', currentEntity.data.nombre);
+  if (nuevoMensaje) message.append('texto', nuevoMensaje);
+  if (archivoAdjunto) message.append('archivo', archivoAdjunto);
+
+  try {
+    await sendMessageCorrectivo(mantenimiento.id, message);
+    setNuevoMensaje('');
+    setArchivoAdjunto(null);
+    await cargarMensajes();
+  } catch (error) {
+    console.error('Error al enviar mensaje:', error);
+    setError('No se pudo enviar el mensaje');
+  }
+};
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      if (chatBoxRef.current) {
+        chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+      }
+    }, 100);
+  };
+
   return (
     <Container fluid className="mantenimiento-container">
       {isLoading ? (
@@ -392,39 +445,63 @@ const handleDeleteSelectedPlanilla = async () => {
                   {success && <Alert variant="success">{success}</Alert>}
                 </Form>
               )}
-              <button 
-                type="submit" 
-                onClick={handleSubmit} 
-                className="floating-save-btn"
+              <button
+                className="floating-save-btn d-flex align-items-center justify-content-center"
+                onClick={handleSubmit}
+                title="Guardar cambios"
               >
-                ✔
+                <BsSave size={28} />
               </button>
             </Col>
 
             <Col className="chat-section">
-              <div className="chat-box">
-                <div className="chat-message chat-message-received">
-                  <p className="chat-message-text">Mensaje</p>
-                  <span className="chat-info">info/hora/visto</span>
-                </div>
-                <div className="chat-message chat-message-sent">
-                  <p className="chat-message-text">Mensaje</p>
-                  <span className="chat-info">info/hora/visto</span>
-                </div>
+              <div className="chat-box" ref={chatBoxRef}>
+                {mensajes.map((msg, index) => {
+                  const esPropio = msg.firebase_uid === currentEntity.data.uid;
+                  const esImagen = msg.archivo?.match(/\.(jpeg|jpg|png|gif)$/i);
+                  return (
+                    <div key={index} className={`chat-message ${esPropio ? 'chat-message-sent' : 'chat-message-received'}`}>
+                      {msg.texto && <p className="chat-message-text">{msg.texto}</p>}
+                      {msg.archivo && (
+                        esImagen ? (
+                          <img src={msg.archivo} alt="Adjunto" className="chat-image-preview" />
+                        ) : (
+                          <a href={msg.archivo} target="_blank" rel="noopener noreferrer" className="chat-file-link">
+                            Archivo adjunto
+                          </a>
+                        )
+                      )}
+                      <span className="chat-info">
+                        {msg.nombre_usuario} · {new Date(msg.fecha).toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
               <div className="chat-input-form">
                 <input
                   type="text"
                   placeholder="Escribe un mensaje..."
                   className="chat-input"
+                  value={nuevoMensaje}
+                  onChange={(e) => setNuevoMensaje(e.target.value)}
                 />
-                <Button variant="light" className="chat-send-btn">
+                <input
+                  type="file"
+                  onChange={(e) => setArchivoAdjunto(e.target.files[0])}
+                  style={{ display: 'none' }}
+                  id="archivoAdjunto"
+                />
+                <label htmlFor="archivoAdjunto" className="chat-attach-btn">
+                  📎
+                </label>
+                <Button variant="light" className="chat-send-btn" onClick={handleEnviarMensaje}>
                   <FiSend size={20} color="black" />
                 </Button>
               </div>
             </Col>
 
-            <Col className="planilla-section">
+            <Col xs={12} md={4} className="planilla-section">
               <h4 className="planilla-section-title">Planilla</h4>
             <Form.Group>
               <input
