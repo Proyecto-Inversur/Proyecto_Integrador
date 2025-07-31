@@ -68,14 +68,9 @@ const MantenimientosCorrectivos = () => {
   };
 
   useEffect(() => {
-    if (currentEntity) {
-      fetchMantenimientos();
-      fetchData();
-    }
-    else {
-      navigate('/login');
-    }
-  }, [currentEntity, navigate]);
+    fetchMantenimientos();
+    fetchData();
+  }, []);
 
   const handleFilterChange = (e) => {
     const newFilters = { ...filters, [e.target.name]: e.target.value };
@@ -133,8 +128,8 @@ const MantenimientosCorrectivos = () => {
     setShowForm(true);
   };
 
-  const handleRowClick = (mantenimiento) => {
-    navigate('/correctivo', { state: { mantenimiento } });
+  const handleRowClick = (mantenimientoId) => {
+    navigate('/correctivo', { state: { mantenimientoId } });
   };
 
   const handleFormClose = () => {
@@ -308,7 +303,7 @@ const MantenimientosCorrectivos = () => {
                 {filteredMantenimientos.map((mantenimiento) => (
                   <tr 
                     key={mantenimiento.id}
-                    onClick={() => handleRowClick(mantenimiento)}
+                    onClick={() => handleRowClick(mantenimiento.id)}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>{mantenimiento.id}</td>

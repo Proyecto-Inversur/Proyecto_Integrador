@@ -12,7 +12,7 @@ const UserForm = ({ user, onClose }) => {
     rol: 'Administrador',
   });
   const [error, setError] = useState(null);
-  const { signInWithGoogleForRegistration } = useContext(AuthContext);
+  const { signInWithGoogle } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const UserForm = ({ user, onClose }) => {
       if (user) {
         await updateUser(user.id, formData);
       } else {
-        const { idToken, email } = await signInWithGoogleForRegistration();
+        const { idToken, email } = await signInWithGoogle();
         const payload = { ...formData, email: email, id_token: idToken };
         await createUser(payload);
       }

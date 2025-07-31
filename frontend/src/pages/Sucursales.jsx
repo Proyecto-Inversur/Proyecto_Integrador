@@ -30,16 +30,8 @@ const Sucursales = () => {
   };
 
   useEffect(() => {
-    if (currentEntity.type === 'usuario') {
-      fetchSucursales();
-    }
-    else if (currentEntity) {
-      navigate('/');
-    }
-    else {
-      navigate('/login');
-    }
-  }, [currentEntity, navigate]);
+    fetchSucursales();
+  }, []);
 
   const handleDelete = async (id) => {
     setIsLoading(true);

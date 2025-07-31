@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import Optional, List
 from services.gcloud_storage import upload_file_to_gcloud, delete_file_in_folder
 from services.google_sheets import append_preventivo, update_preventivo, delete_preventivo
+from services.notificaciones import notify_users_preventivo
 import os
 
 GOOGLE_CLOUD_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
@@ -44,6 +45,12 @@ def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuencia: s
     db.commit()
     db.refresh(db_mantenimiento)
     append_preventivo(db, db_mantenimiento)
+    notify_users_preventivo(
+        db_session=db,
+        id_mantenimiento=db_mantenimiento.id,
+        mensaje=f"Nuevo preventivo asignado - Sucursal: {preventivo.nombre_sucursal}",
+        firebase_uid=cuadrilla.firebase_uid, 
+    )
     return db_mantenimiento
 
 async def update_mantenimiento_preventivo(
@@ -76,6 +83,8 @@ async def update_mantenimiento_preventivo(
         if not preventivo:
             raise HTTPException(status_code=404, detail="Preventivo no encontrado")
         db_mantenimiento.id_sucursal = id_sucursal
+    else:
+        preventivo = db.query(Preventivo).filter(Preventivo.id_sucursal == db_mantenimiento.id_sucursal).first()
     if frecuencia is not None:
         db_mantenimiento.frecuencia = frecuencia
     if id_cuadrilla:
@@ -83,10 +92,18 @@ async def update_mantenimiento_preventivo(
         if not cuadrilla:
             raise HTTPException(status_code=404, detail="Cuadrilla no encontrada")
         db_mantenimiento.id_cuadrilla = id_cuadrilla
+    else:
+        cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.id == db_mantenimiento.id_cuadrilla).first() 
     if fecha_apertura is not None:
         db_mantenimiento.fecha_apertura = fecha_apertura
     if fecha_cierre is not None:
         db_mantenimiento.fecha_cierre = fecha_cierre
+        notify_users_preventivo(
+            db_session=db,
+            id_mantenimiento=db_mantenimiento.id,
+            mensaje=f"Preventivo Solucionado - Sucursal: {preventivo.nombre_sucursal}",
+            firebase_uid=None
+        )
     
     if planillas is not None:
         for planilla in planillas:
@@ -102,6 +119,12 @@ async def update_mantenimiento_preventivo(
     
     if extendido is not None:
         db_mantenimiento.extendido = extendido
+        notify_users_preventivo(
+            db_session=db,
+            id_mantenimiento=mantenimiento_id,
+            mensaje=f"Extendido solicitado - Sucursal: {preventivo.nombre_sucursal} | Cuadrilla: {cuadrilla.nombre}",
+            firebase_uid=None
+        )
     db.commit()
     db.refresh(db_mantenimiento)
     update_preventivo(db, db_mantenimiento)

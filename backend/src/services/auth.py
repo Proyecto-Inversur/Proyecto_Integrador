@@ -28,6 +28,7 @@ def verify_user_token(token: str, db: Session, retries: int = 3):
                     "type": "usuario",
                     "data": {
                         "id": user.id,
+                        "uid": user.firebase_uid,
                         "nombre": user.nombre,
                         "email": user.email,
                         "rol": user.rol
@@ -46,6 +47,7 @@ def verify_user_token(token: str, db: Session, retries: int = 3):
                     "type": "cuadrilla",
                     "data": {
                         "id": cuadrilla.id,
+                        "uid": cuadrilla.firebase_uid,
                         "nombre": cuadrilla.nombre,
                         "email": cuadrilla.email,
                         "zona": cuadrilla.zona

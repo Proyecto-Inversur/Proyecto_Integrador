@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import Optional, List
 from services.gcloud_storage import upload_file_to_gcloud, delete_file_in_folder
 from services.google_sheets import append_correctivo, update_correctivo, delete_correctivo
+from services.notificaciones import notify_user, notify_users_correctivo
 import os
 
 GOOGLE_CLOUD_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
@@ -49,6 +50,21 @@ def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla:
     db.commit()
     db.refresh(db_mantenimiento)
     append_correctivo(db, db_mantenimiento)
+    if cuadrilla is not None:
+        notify_users_correctivo(
+            db_session=db,
+            id_mantenimiento=db_mantenimiento.id,
+            mensaje=f"Nuevo correctivo asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
+            firebase_uid=cuadrilla.firebase_uid
+        )
+        # Notificar si es alta prioridad
+        if prioridad == "Alta":
+            notify_user(
+                db_session=db,
+                firebase_uid=cuadrilla.firebase_uid,
+                title="Nuevo correctivo urgente asignado",
+                body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
+            )
     return db_mantenimiento
 
 async def update_mantenimiento_correctivo(
@@ -85,11 +101,15 @@ async def update_mantenimiento_correctivo(
         if not sucursal:
             raise HTTPException(status_code=404, detail="Sucursal no encontrada")
         db_mantenimiento.id_sucursal = id_sucursal
+    else:
+        sucursal = db.query(Sucursal).filter(Sucursal.id == db_mantenimiento.id_sucursal).first()
     if id_cuadrilla:
         cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.id == id_cuadrilla).first()
         if not cuadrilla:
             raise HTTPException(status_code=404, detail="Cuadrilla no encontrada")
         db_mantenimiento.id_cuadrilla = id_cuadrilla
+    else:
+        cuadrilla = db.query(Cuadrilla).filter(Cuadrilla.id == db_mantenimiento.id_cuadrilla).first()
     if fecha_apertura is not None:
         db_mantenimiento.fecha_apertura = fecha_apertura
     if fecha_cierre is not None:
@@ -112,13 +132,41 @@ async def update_mantenimiento_correctivo(
     
     if estado is not None:
         db_mantenimiento.estado = estado
+        if estado == "Solucionado":
+            notify_users_correctivo(
+                db_session=db,
+                id_mantenimiento=mantenimiento_id,
+                mensaje=f"Correctivo Solucionado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}",
+                firebase_uid=None
+            )
     if prioridad is not None:
         db_mantenimiento.prioridad = prioridad
     if extendido is not None:
         db_mantenimiento.extendido = extendido
+        notify_users_correctivo(
+            db_session=db,
+            id_mantenimiento=mantenimiento_id,
+            mensaje=f"Extendido solicitado - Sucursal: {sucursal.nombre} | Cuadrilla: {cuadrilla.nombre}",
+            firebase_uid=None
+        )
     db.commit()
     db.refresh(db_mantenimiento)
     update_correctivo(db, db_mantenimiento)
+    if cuadrilla is not None:
+        # Notify only once after all updates
+        if prioridad == "Alta":
+            notify_users_correctivo(
+                db_session=db,
+                id_mantenimiento=db_mantenimiento.id,
+                mensaje=f"Correctivo urgente asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
+                firebase_uid=cuadrilla.firebase_uid
+            )
+            notify_user(
+                db_session=db,
+                firebase_uid=cuadrilla.firebase_uid,
+                title="Correctivo urgente asignado",
+                body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
+            )
     return db_mantenimiento
 
 def delete_mantenimiento_correctivo(db: Session, mantenimiento_id: int, current_entity: dict):
