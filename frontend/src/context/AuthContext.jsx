@@ -95,7 +95,6 @@ const AuthProvider = ({ children }) => {
           client_id: googleClientId,
           callback: async (response) => {
             try {
-              alert(JSON.stringify(response));
               const idToken = response.credential;
               if (loginIn) {
                 localStorage.setItem('googleIdToken', idToken);
