@@ -85,7 +85,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (loginIn) => {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
@@ -95,11 +95,22 @@ const AuthProvider = ({ children }) => {
           client_id: googleClientId,
           callback: async (response) => {
             try {
+              alert(JSON.stringify(response));
               const idToken = response.credential;
-              localStorage.setItem('googleIdToken', idToken);
-              sessionStorage.setItem('googleIdToken', idToken);
-              setSingingIn(true);
-              resolve(idToken);
+              if (loginIn) {
+                localStorage.setItem('googleIdToken', idToken);
+                sessionStorage.setItem('googleIdToken', idToken);
+                setSingingIn(true);
+              }
+              const emailResponse = await fetch(
+                `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${idToken}`
+              );
+              const tokenInfo = await emailResponse.json();
+              if (tokenInfo.email) {
+                resolve({ idToken, email: tokenInfo.email });
+              } else {
+                reject(new Error('Failed to retrieve email from Google ID token'));
+              }
             } catch (error) {
               console.error('Error processing Google ID token:', error);
               reject(error);

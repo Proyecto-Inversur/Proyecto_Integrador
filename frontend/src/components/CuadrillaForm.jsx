@@ -104,7 +104,7 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
       if (cuadrilla) {
         await updateCuadrilla(cuadrilla.id, formData);
       } else {
-        const { idToken, email } = await signInWithGoogle();
+        const { idToken, email } = await signInWithGoogle(false);
         const payload = { ...formData, email: email, id_token: idToken };
         await createCuadrilla(payload);
       }

@@ -14,7 +14,7 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     setError(null);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(true);
     } catch (err) {
       console.error("Error en inicio de sesión con Google:", err);
       setError(err.message || 'Error al iniciar sesión con Google');

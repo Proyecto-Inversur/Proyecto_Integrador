@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import CuadrillaForm from '../components/CuadrillaForm';
 import BackButton from '../components/BackButton';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getCuadrillas, deleteCuadrilla } from '../services/cuadrillaService';
-import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
 import '../styles/botones_forms.css';
 
 const Cuadrillas = () => {
-  const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
   const [cuadrillas, setCuadrillas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedCuadrilla, setSelectedCuadrilla] = useState(null);

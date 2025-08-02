@@ -1,7 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
 import UserForm from '../components/UserForm';
 import BackButton from '../components/BackButton';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
@@ -15,8 +13,6 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const fetchUsers = async () => {
     setIsLoading(true);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useContext } from 'react';
-import { Modal, Button, Form, Alert } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 import { createUser, updateUser } from '../services/userService';
 import { AuthContext } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
@@ -35,7 +35,7 @@ const UserForm = ({ user, onClose }) => {
       if (user) {
         await updateUser(user.id, formData);
       } else {
-        const { idToken, email } = await signInWithGoogle();
+        const { idToken, email } = await signInWithGoogle(false);
         const payload = { ...formData, email: email, id_token: idToken };
         await createUser(payload);
       }
