@@ -56,6 +56,7 @@ const Preventivo = () => {
         fecha_cierre: response.data.fecha_cierre?.split('T')[0] || null,
         extendido: response.data.extendido || null,
       });
+      await cargarMensajes(response.data.id);
     } catch (error) {
       console.error('Error fetching mantenimiento:', error);
       setError('Error al cargar los datos actualizados.');
@@ -81,24 +82,17 @@ const Preventivo = () => {
   };
 
   useEffect(() => {
-    if (currentEntity) {
-      const iniciarDatos = async () => {
-        await fetchMantenimiento();
-        await fetchData();
-        await cargarMensajes();
-      };
-      iniciarDatos();
-    }
-  }, [currentEntity]);
+    fetchMantenimiento();
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      cargarMensajes();
-    }, 5000);
+      cargarMensajes(mantenimiento.id);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [mantenimiento.id]);
-
 
   const handleFileChange = (e, field) => {
     const files = Array.from(e.target.files);
@@ -287,9 +281,9 @@ const Preventivo = () => {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   }
   
-  const cargarMensajes = async () => {
+  const cargarMensajes = async (id) => {
     try {
-      const response = await getChatPreventivo(mantenimiento.id);
+      const response = await getChatPreventivo(id);
       setMensajes(response.data);
       scrollToBottom();
     } catch (error) {
@@ -310,7 +304,7 @@ const Preventivo = () => {
       await sendMessagePreventivo(mantenimiento.id, formData);
       setNuevoMensaje('');
       setArchivoAdjunto(null);
-      await cargarMensajes();
+      await cargarMensajes(mantenimiento.id);
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
       setError('No se pudo enviar el mensaje');

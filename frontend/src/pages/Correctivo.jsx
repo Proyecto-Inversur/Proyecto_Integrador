@@ -58,6 +58,7 @@ const Correctivo = () => {
         extendido: response.data.extendido || '',
         estado: response.data.estado,
       });
+      await cargarMensajes(response.data.id);
     } catch (error) {
       console.error('Error fetching mantenimiento:', error);
       setError('Error al cargar los datos actualizados.');
@@ -83,22 +84,16 @@ const Correctivo = () => {
   };
 
   useEffect(() => {
-    if (currentEntity) {
-      const iniciarDatos = async () => {
-        await fetchMantenimiento();
-        await fetchData();
-        await cargarMensajes();
-      };
-      iniciarDatos();
-    }
-  }, [currentEntity]);
+    fetchMantenimiento();
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      cargarMensajes();
-    }, 120000); // cada 5 segundos
+      cargarMensajes(mantenimiento.id);
+    }, 30000);
 
-    return () => clearInterval(interval); // limpiar cuando desmonta
+    return () => clearInterval(interval);
   }, [mantenimiento.id]);
 
   const handleChange = (e) => {
@@ -126,30 +121,30 @@ const Correctivo = () => {
   };
 
   const handlePlanillaSelect = (planillaUrl) => {
-  setSelectedPlanilla(prev =>
-    prev === planillaUrl ? null : planillaUrl
-  );
-};
+    setSelectedPlanilla(prev =>
+      prev === planillaUrl ? null : planillaUrl
+    );
+  };
 
-const handleDeleteSelectedPlanilla = async () => {
-  setIsLoading(true);
-  try {
-    if (!selectedPlanilla) return;
+  const handleDeleteSelectedPlanilla = async () => {
+    setIsLoading(true);
+    try {
+      if (!selectedPlanilla) return;
 
-    const fileName = selectedPlanilla.split('/').pop();
-    await deleteMantenimientoPlanilla(mantenimiento.id, fileName);
+      const fileName = selectedPlanilla.split('/').pop();
+      await deleteMantenimientoPlanilla(mantenimiento.id, fileName);
 
-    setSelectedPlanilla(null);
-    setIsSelectingPlanilla(false);
-    setSuccess('Planilla eliminada correctamente.');
-    await fetchMantenimiento(); // Refresca los datos
-  } catch (error) {
-    console.error('Error al eliminar la planilla:', error);
-    setError('Error al eliminar la planilla.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+      setSelectedPlanilla(null);
+      setIsSelectingPlanilla(false);
+      setSuccess('Planilla eliminada correctamente.');
+      await fetchMantenimiento(); // Refresca los datos
+    } catch (error) {
+      console.error('Error al eliminar la planilla:', error);
+      setError('Error al eliminar la planilla.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePhotoSelect = (photoUrl) => {
     setSelectedPhotos(prev =>
@@ -301,9 +296,9 @@ const handleDeleteSelectedPlanilla = async () => {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   }
 
-  const cargarMensajes = async () => {
+  const cargarMensajes = async (id) => {
     try {
-      const response = await getChatCorrectivo(mantenimiento.id);
+      const response = await getChatCorrectivo(id);
       setMensajes(response.data);
       scrollToBottom();
     } catch (error) {
@@ -312,24 +307,24 @@ const handleDeleteSelectedPlanilla = async () => {
   };
 
   const handleEnviarMensaje = async () => {
-  if (!nuevoMensaje && !archivoAdjunto) return;
+    if (!nuevoMensaje && !archivoAdjunto) return;
 
-  const message = new FormData();
-  message.append('firebase_uid', currentEntity.data.uid);
-  message.append('nombre_usuario', currentEntity.data.nombre);
-  if (nuevoMensaje) message.append('texto', nuevoMensaje);
-  if (archivoAdjunto) message.append('archivo', archivoAdjunto);
+    const message = new FormData();
+    message.append('firebase_uid', currentEntity.data.uid);
+    message.append('nombre_usuario', currentEntity.data.nombre);
+    if (nuevoMensaje) message.append('texto', nuevoMensaje);
+    if (archivoAdjunto) message.append('archivo', archivoAdjunto);
 
-  try {
-    await sendMessageCorrectivo(mantenimiento.id, message);
-    setNuevoMensaje('');
-    setArchivoAdjunto(null);
-    await cargarMensajes();
-  } catch (error) {
-    console.error('Error al enviar mensaje:', error);
-    setError('No se pudo enviar el mensaje');
-  }
-};
+    try {
+      await sendMessageCorrectivo(mantenimiento.id, message);
+      setNuevoMensaje('');
+      setArchivoAdjunto(null);
+      await cargarMensajes(mantenimiento.id);
+    } catch (error) {
+      console.error('Error al enviar mensaje:', error);
+      setError('No se pudo enviar el mensaje');
+    }
+  };
 
   const scrollToBottom = () => {
     setTimeout(() => {

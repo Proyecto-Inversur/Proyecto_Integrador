@@ -65,19 +65,18 @@ const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('authToken');
     localStorage.removeItem('googleIdToken');
     sessionStorage.removeItem('googleIdToken');
-    setCurrentUser(null);
-    setCurrentEntity(null);
     setLoading(false);
     setVerifying(false);
     isVerifyingRef.current = false;
     isVerifiedRef.current = false;
-    const subscription = await getPushSubscription();
-    if (subscription) {
-      await deleteSubscription({
-        firebase_uid: response.data.data.uid,
-        device_info: navigator.userAgent
-      });
+    if (currentEntity) {
+      const sub = new FormData();
+      sub.append('firebase_uid', currentEntity.data.uid);
+      sub.append('device_info', navigator.userAgent);
+      await deleteSubscription(sub);
     }
+    setCurrentUser(null);
+    setCurrentEntity(null);
     await signOut(auth);
     if (error) {
       navigate('/login', { state: { error: error } });

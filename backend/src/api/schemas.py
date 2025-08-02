@@ -128,10 +128,6 @@ class PushSubscriptionCreate(BaseModel):
     firebase_uid: str
     device_info: Optional[str] = None
     
-class PushSubscriptionDelete(BaseModel):
-    firebase_uid: str
-    device_info: Optional[str] = None
-    
 class MaintenanceNearInfo(BaseModel):
     id: int
     tipo: str
