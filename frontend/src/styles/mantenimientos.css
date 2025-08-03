@@ -151,6 +151,7 @@ margin-top: 0.5rem;
 .chat-box {
   flex-grow: 1;
   overflow-y: auto;
+  max-height: 452px; 
   margin-bottom: 1rem;
   width: 100%;
   display: flex;
@@ -158,6 +159,7 @@ margin-top: 0.5rem;
   gap: 0.5rem;
   padding: 0.5rem;
   border-radius: 0.5rem;
+  background-color: #f8f9fa;
 }
 
 /* Mensajes comunes */

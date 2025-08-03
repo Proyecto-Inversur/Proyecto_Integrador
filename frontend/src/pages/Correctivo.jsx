@@ -44,6 +44,7 @@ const Correctivo = () => {
   const [mensajes, setMensajes] = useState([]);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [archivoAdjunto, setArchivoAdjunto] = useState(null);
+  const [previewArchivoAdjunto, setPreviewArchivoAdjunto] = useState(null);
   const chatBoxRef = React.useRef(null);
 
   const fetchMantenimiento = async () => {
@@ -319,6 +320,7 @@ const Correctivo = () => {
       await sendMessageCorrectivo(mantenimiento.id, message);
       setNuevoMensaje('');
       setArchivoAdjunto(null);
+      setPreviewArchivoAdjunto(null);
       await cargarMensajes(mantenimiento.id);
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
@@ -478,6 +480,23 @@ const Correctivo = () => {
                   );
                 })}
               </div>
+              {archivoAdjunto && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <strong>Archivo a enviar:</strong><br />
+                    {archivoAdjunto.type.startsWith("image/") && (
+                      <img src={previewArchivoAdjunto} alt="preview" style={{ maxWidth: '100px', borderRadius: '8px' }} />
+                    )}
+                    {archivoAdjunto.type.startsWith("video/") && (
+                      <video controls style={{ maxWidth: '120px', borderRadius: '8px' }}>
+                        <source src={previewArchivoAdjunto} type={archivoAdjunto.type} />
+                        Tu navegador no soporta videos.
+                      </video>
+                    )}
+                    {!archivoAdjunto.type.startsWith("image/") && !archivoAdjunto.type.startsWith("video/") && (
+                      <span>{archivoAdjunto.name}</span>
+                    )}
+                  </div>
+                )}
               <div className="chat-input-form">
                 <input
                   type="text"
@@ -488,7 +507,17 @@ const Correctivo = () => {
                 />
                 <input
                   type="file"
-                  onChange={(e) => setArchivoAdjunto(e.target.files[0])}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setArchivoAdjunto(file);
+                    if (file && file.type.startsWith("image/")) {
+                      setPreviewArchivoAdjunto(URL.createObjectURL(file));
+                    } else if (file && file.type.startsWith("video/")) {
+                      setPreviewArchivoAdjunto(URL.createObjectURL(file));
+                    } else {
+                      setPreviewArchivoAdjunto(file.name); // solo el nombre si no se puede previsualizar
+                    }
+                  }}
                   style={{ display: 'none' }}
                   id="archivoAdjunto"
                 />
