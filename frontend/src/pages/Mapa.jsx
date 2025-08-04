@@ -377,12 +377,51 @@ const Mapa = () => {
   }, [users, sucursales]);
 
   return (
-    <div className="map-container">
-      {error && <div className="alert alert-danger">{error}</div>}
+  <div className="ruta-container">
+    {error && <div className="alert alert-danger">{error}</div>}
+
+    <div className="ruta-controls">
       <h2>Mapa de Usuarios y Sucursales</h2>
-      <div ref={mapRef} style={mapContainerStyle}></div>
     </div>
-  );
+
+    <div className="ruta-main">
+      <div className="ruta-sidebar">
+        <h4>Cuadrillas Activas</h4>
+        {users.length === 0 && <p>No hay cuadrillas activas.</p>}
+        {users.map(user => (
+          <div
+            key={user.id}
+            className="obra-item"
+            onClick={() => {
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.setView([user.lat, user.lng], 13);
+                showPopup(
+                  {
+                    type: 'cuadrilla',
+                    name: user.name,
+                    correctivos: user.correctivos,
+                    preventivos: user.preventivos,
+                    sucursales: user.sucursales
+                  },
+                  [user.lat, user.lng]
+                );
+              }
+            }}
+          >
+            <strong>{user.name}</strong>
+            <br />
+            <small>{user.sucursales?.length || 0} obras asignadas</small>
+          </div>
+        ))}
+      </div>
+
+      <div className="ruta-map-container">
+        <div ref={mapRef} className="ruta-map"></div>
+      </div>
+    </div>
+  </div>
+);
+
 };
 
 export default Mapa;

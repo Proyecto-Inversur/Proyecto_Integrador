@@ -9,7 +9,7 @@ const Home = () => {
   const { currentEntity } = useContext(AuthContext);
 
   return (
-    <Container className="home-container">
+    <div className="home-container">
       <div className="page-content">
         <div className="button-home-container">
           {currentEntity && currentEntity.type === 'usuario' && currentEntity.data.rol === 'Administrador' && (
@@ -44,7 +44,7 @@ const Home = () => {
           )}
         </div>
       </div>
-    </Container>
+    </div>
   );
 };
 

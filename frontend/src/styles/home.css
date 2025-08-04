@@ -1,13 +1,11 @@
 /* Contenedor principal */
 .home-container {
-  padding: 0;
   display: flex;
   justify-content: center;
-  align-items: center; /* centrado vertical */
-  min-height: calc(100vh - 100px); /* alto total visible menos navbar/footer */
-  width: 100%;
-  padding-top: 2rem;
-  padding-bottom: 6rem;
+  align-items: center;
+  min-height: calc(100vh - 120px); /* Resta el header y footer */
+  padding: 6rem 1rem;
+  text-align: center;
 }
 
   
