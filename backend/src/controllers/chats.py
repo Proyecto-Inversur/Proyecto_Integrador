@@ -10,6 +10,8 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 def chat_correctivo_get(mantenimiento_id: int, request: Request, db_session: Session = Depends(get_db)):
     current_entity = request.state.current_entity
     chat = get_chat_correctivo(db_session, mantenimiento_id, current_entity)
+    if isinstance(chat, dict):
+        return []
     return [
         {
             "id": message.id,
@@ -27,6 +29,8 @@ def chat_correctivo_get(mantenimiento_id: int, request: Request, db_session: Ses
 def chat_preventivo_get(mantenimiento_id: int, request: Request, db_session: Session = Depends(get_db)):
     current_entity = request.state.current_entity
     chat = get_chat_preventivo(db_session, mantenimiento_id, current_entity)
+    if isinstance(chat, dict):
+        return []
     return [
         {
             "id": message.id,

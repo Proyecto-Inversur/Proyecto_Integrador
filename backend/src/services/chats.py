@@ -10,24 +10,18 @@ GOOGLE_CLOUD_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
 def get_chat_correctivo(db_session: Session, mantenimiento_id: int, current_entity: dict):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
-    try:
-        chat = db_session.query(MensajeCorrectivo).filter(MensajeCorrectivo.id_mantenimiento == mantenimiento_id).all()
-        if not chat:
-            raise HTTPException(status_code=404, detail="No hay mensajes")
-        return chat
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+    chat = db_session.query(MensajeCorrectivo).filter(MensajeCorrectivo.id_mantenimiento == mantenimiento_id).all()
+    if not chat:
+        return {"message": "No hay mensajes"}
+    return chat
 
 def get_chat_preventivo(db_session: Session, mantenimiento_id: int, current_entity: dict):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
-    try:
-        chat = db_session.query(MensajePreventivo).filter(MensajePreventivo.id_mantenimiento == mantenimiento_id).all()
-        if not chat:
-            raise HTTPException(status_code=404, detail="No hay mensajes")
-        return chat
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+    chat = db_session.query(MensajePreventivo).filter(MensajePreventivo.id_mantenimiento == mantenimiento_id).all()
+    if not chat:
+        return {"message": "No hay mensajes"}
+    return chat
 
 async def send_message_correctivo(
     db_session: Session,

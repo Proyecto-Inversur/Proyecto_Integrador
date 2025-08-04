@@ -2,7 +2,6 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Image, Modal, Button } from 'react-bootstrap';
 import logoInversur from '../assets/logo_inversur.png';
-import { FaRegBell, FaUser } from 'react-icons/fa';
 import { FaBell } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
 import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificaciones, delete_notificacion } from '../services/notificaciones';
@@ -24,16 +23,6 @@ const Navbar = () => {
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       navigate('/login', { state: { error: 'Error al cerrar sesión.' } });
-    }
-  };
-
-  const handleDeleteAllNotifications = async () => {
-    try {
-      await delete_notificaciones(currentEntity.data.uid);
-      setNotifications([]);
-      setUnreadCount(0);
-    } catch (error) {
-      console.error('Error al eliminar notificaciones:', error);
     }
   };
 
@@ -83,6 +72,7 @@ const Navbar = () => {
       }));
 
       const allNotificaciones = [...mappedCorrectivos, ...mappedPreventivos];
+      console.log(allNotificaciones);
       setUnreadCount(allNotificaciones.filter(n => !n.leida).length);
 
       // Ordenar por fecha descendente

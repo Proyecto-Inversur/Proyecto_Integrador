@@ -94,13 +94,13 @@ const Ruta = () => {
         ...selectedCorrectivosRes.data.map(c => c.id_mantenimiento),
         ...selectedPreventivosRes.data.map(p => p.id_mantenimiento)
       ]);
-      console.log("selectedIds", selectedIds);
+
       const nearbySucursalIds = new Set(
         sucursalesResponse.data
           .filter(s => currentLatLng.distanceTo(L.latLng(s.lat, s.lng)) <= NOTIFY_DISTANCE)
           .map(s => Number(s.id))
       );
-      console.log("nearbySucursalIds", nearbySucursalIds);
+
       const allMaintenances = [
         ...allCorrectivosRes.data
           .filter(m => m.estado === 'pendiente')
@@ -109,13 +109,13 @@ const Ruta = () => {
           .filter(m => !m.fechaCierre)
           .map(m => ({ ...m, tipo: 'preventivo' }))
       ];
-      console.log("allMaintenances", allMaintenances);
+
       const nearMaintenances = allMaintenances.filter(m =>
         m.id_cuadrilla === parseInt(currentEntity.data.id) &&
         nearbySucursalIds.has(m.id_sucursal) &&
         !selectedIds.has(m.id)
       );
-      console.log("nearMaintenances", nearMaintenances);
+
       const payload = [];
       nearMaintenances.forEach(m => {
         const key = `${m.tipo}-${m.id}`;
@@ -222,10 +222,6 @@ const Ruta = () => {
       routeWhileDragging: false,
       show: false
     }).addTo(mapInstanceRef.current);
-
-    control.on('routesfound', () => {
-      console.log('Ruta recalculada');
-    });
 
     control.on('routingerror', (err) => {
       console.error('Routing error:', err);

@@ -62,6 +62,8 @@ def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla:
             notify_user(
                 db_session=db,
                 firebase_uid=cuadrilla.firebase_uid,
+                id_mantenimiento=db_mantenimiento.id,
+                mensaje=f"Nuevo correctivo asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
                 title="Nuevo correctivo urgente asignado",
                 body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
             )
@@ -164,6 +166,8 @@ async def update_mantenimiento_correctivo(
             notify_user(
                 db_session=db,
                 firebase_uid=cuadrilla.firebase_uid,
+                id_mantenimiento=db_mantenimiento.id,
+                mensaje=f"Correctivo urgente asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
                 title="Correctivo urgente asignado",
                 body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
             )

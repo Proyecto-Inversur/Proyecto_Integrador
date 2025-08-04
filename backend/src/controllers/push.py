@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Request, Form
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from config.database import get_db
-from services.push_subscriptions import save_subscription, get_subscriptions, delete_subscription
+from services.push_subscriptions import save_subscription, get_subscriptions
 from api.schemas import PushSubscriptionCreate
 from typing import List
 
@@ -16,7 +16,3 @@ def push_subscribe(request: Request, sub: PushSubscriptionCreate, db: Session = 
 def push_list(firebase_uid: str, db: Session = Depends(get_db)):
     subs = get_subscriptions(db, firebase_uid)
     return [{"id": s.id, "endpoint": s.endpoint} for s in subs]
-
-@router.delete("/subscription", response_model=dict)
-def push_delete(firebase_uid: str = Form(...), device_info: str = Form(...), db: Session = Depends(get_db)):
-    return delete_subscription(db, firebase_uid, device_info)
