@@ -15,11 +15,6 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-        // Global error handler
-        window.addEventListener('error', (event) => {
-          alert(`Global error: ${event.message} at ${event.filename}:${event.lineno}`);
-        });
-
         // Registrar Service Worker para notificaciones web
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then(registrations => {

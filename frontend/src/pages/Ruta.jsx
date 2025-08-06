@@ -75,7 +75,7 @@ const Ruta = () => {
   };
 
   const checkNearbyMaintenances = async (currentLatLng) => {
-    if (!currentEntity?.data?.id) return;
+    if (!currentEntity?.data?.id || !isNavigating) return;
     try {
       const [sucursalesResponse, allCorrectivosRes, allPreventivosRes, selectedCorrectivosRes, selectedPreventivosRes] = await Promise.all([
         getSucursalesLocations(),
