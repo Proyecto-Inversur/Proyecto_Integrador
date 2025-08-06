@@ -1,6 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import React, { useEffect, useState, useRef } from 'react';
 import { getUsersLocations, getSucursalesLocations, getCorrectivos, getPreventivos } from '../services/maps';
 import { getMantenimientosCorrectivos } from '../services/mantenimientoCorrectivoService';
 import { getMantenimientosPreventivos } from '../services/mantenimientoPreventivoService';
@@ -12,7 +10,6 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import '../styles/mapa.css';
 
-const mapContainerStyle = { width: '100%', height: '100vh' };
 const defaultCenter = { lat: -31.4167, lng: -64.1833 };
 
 const Mapa = () => {
@@ -24,8 +21,6 @@ const Mapa = () => {
   const [preventivos, setPreventivos] = useState([]);
   const [error, setError] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const routeLayersRef = useRef({});

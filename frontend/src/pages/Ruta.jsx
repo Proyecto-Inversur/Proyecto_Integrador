@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Button } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { LocationContext } from '../context/LocationContext';
 import { getSucursalesLocations, getCorrectivos, getPreventivos, deleteSucursal, deleteSelection } from '../services/maps';
@@ -18,7 +16,6 @@ import 'leaflet-routing-machine';
 import 'leaflet-geometryutil';
 import '../styles/mapa.css';
 
-const mapContainerStyle = { width: '100%', height: '100%' };
 const defaultCenter = { lat: -31.4167, lng: -64.1833 };
 const ARRIVAL_RADIUS = 50;
 const ANIMATION_DURATION = 1000;
@@ -27,7 +24,6 @@ const NOTIFY_DISTANCE = 10000; // Distancia en metros para notificar mantenimien
 const Ruta = () => {
   const { currentEntity } = useContext(AuthContext);
   const { userLocation } = useContext(LocationContext);
-  const navigate = useNavigate();
   const [sucursales, setSucursales] = useState([]);
   const [routingControl, setRoutingControl] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -41,7 +37,6 @@ const Ruta = () => {
   const sucursalMarkersRef = useRef([]);
   const lastSucursalIdsRef = useRef([]);
   const notifiedMaintenancesRef = useRef(new Set());
-
 
   const fetchData = async () => {
     if (!currentEntity?.data?.id || !userLocation) return;

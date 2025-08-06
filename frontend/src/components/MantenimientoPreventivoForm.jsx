@@ -40,7 +40,6 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
           getCuadrillas(),
           getSucursales(),
         ]);
-        console.log('Fetched sucursales:', sucursalesResponse.data);
         setPreventivos(preventivosResponse.data || []);
         setCuadrillas(cuadrillasResponse.data || []);
         setSucursales(sucursalesResponse.data || []);
@@ -104,7 +103,6 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
 
   const handleEditPreventivo = (preventivo, e) => {
     e.stopPropagation();
-    console.log('Editing preventivo:', preventivo);
     setShowNewPreventivoInput(true);
     setIsEditing(true);
     setNewPreventivo({
@@ -134,7 +132,6 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
         nombre_sucursal: newPreventivo.nombre_sucursal,
         frecuencia: newPreventivo.frecuencia,
       };
-      console.log('Payload for preventivo:', isEditing ? 'update' : 'create', payload);
       let response;
       if (isEditing) {
         response = await updatePreventivo(newPreventivo.id, payload);
@@ -196,7 +193,6 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
         id_cuadrilla: parseInt(formData.id_cuadrilla),
         fecha_apertura: formData.fecha_apertura,
       };
-      console.log('Payload for mantenimiento:', payload);
 
       if (mantenimiento) {
         await updateMantenimientoPreventivo(mantenimiento.id, payload);

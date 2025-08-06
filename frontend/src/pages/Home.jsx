@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import { FaUsers, FaClipboardList, FaMapMarkerAlt, FaFileAlt } from 'react-icons/fa';
 import '../styles/home.css';

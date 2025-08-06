@@ -1,7 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
 import SucursalForm from '../components/SucursalForm';
 import BackButton from '../components/BackButton';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
@@ -14,8 +12,6 @@ const Sucursales = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedSucursal, setSelectedSucursal] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const fetchSucursales = async () => {
     setIsLoading(true);

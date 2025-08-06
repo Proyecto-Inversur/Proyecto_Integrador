@@ -51,12 +51,6 @@ def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla:
     db.refresh(db_mantenimiento)
     append_correctivo(db, db_mantenimiento)
     if cuadrilla is not None:
-        notify_users_correctivo(
-            db_session=db,
-            id_mantenimiento=db_mantenimiento.id,
-            mensaje=f"Nuevo correctivo asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
-            firebase_uid=cuadrilla.firebase_uid
-        )
         # Notificar si es alta prioridad
         if prioridad == "Alta":
             notify_user(
@@ -67,6 +61,12 @@ def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla:
                 title="Nuevo correctivo urgente asignado",
                 body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
             )
+        notify_users_correctivo(
+            db_session=db,
+            id_mantenimiento=db_mantenimiento.id,
+            mensaje=f"Nuevo correctivo asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
+            firebase_uid=cuadrilla.firebase_uid
+        )
     return db_mantenimiento
 
 async def update_mantenimiento_correctivo(
@@ -157,12 +157,6 @@ async def update_mantenimiento_correctivo(
     if cuadrilla is not None:
         # Notify only once after all updates
         if prioridad == "Alta":
-            notify_users_correctivo(
-                db_session=db,
-                id_mantenimiento=db_mantenimiento.id,
-                mensaje=f"Correctivo urgente asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
-                firebase_uid=cuadrilla.firebase_uid
-            )
             notify_user(
                 db_session=db,
                 firebase_uid=cuadrilla.firebase_uid,
@@ -170,6 +164,12 @@ async def update_mantenimiento_correctivo(
                 mensaje=f"Correctivo urgente asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
                 title="Correctivo urgente asignado",
                 body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
+            )
+            notify_users_correctivo(
+                db_session=db,
+                id_mantenimiento=db_mantenimiento.id,
+                mensaje=f"Correctivo urgente asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
+                firebase_uid=cuadrilla.firebase_uid
             )
     return db_mantenimiento
 

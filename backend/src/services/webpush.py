@@ -1,6 +1,6 @@
 import json
 import os
-from pywebpush import webpush, WebPushException
+from pywebpush import webpush
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from api.models import PushSubscription
@@ -27,6 +27,6 @@ def send_webpush_notification(db_session: Session, firebase_uid: str, title: str
                 vapid_private_key=VAPID_PRIVATE_KEY,
                 vapid_claims={"sub": "mailto:admin@example.com"}
             )
-        except Exception as exc:
+        except Exception:
             continue
     return {"message": "Web push sent"}

@@ -20,11 +20,6 @@
           alert(`Global error: ${event.message} at ${event.filename}:${event.lineno}`);
         });
 
-        // Unhandled promise rejection handler
-        window.addEventListener('unhandledrejection', (event) => {
-          alert(`Unhandled promise rejection: ${event.reason.message || event.reason}`);
-        });
-
         // Registrar Service Worker para notificaciones web
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then(registrations => {

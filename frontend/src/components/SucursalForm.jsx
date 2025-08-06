@@ -26,7 +26,6 @@ const SucursalForm = ({ sucursal, onClose }) => {
       setIsLoading(true);
       try {
         const response = await getZonas();
-        console.log('Zonas cargadas:', response.data); // Debug: inspeccionar datos
         setZonas(response.data);
       } catch (error) {
         console.error('Error fetching zonas:', error);

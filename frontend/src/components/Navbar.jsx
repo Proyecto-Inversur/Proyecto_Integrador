@@ -4,7 +4,7 @@ import { Navbar as BootstrapNavbar, Nav, Container, Image, Modal, Button } from 
 import logoInversur from '../assets/logo_inversur.png';
 import { FaBell } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
-import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificaciones, delete_notificacion } from '../services/notificaciones';
+import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificacion } from '../services/notificaciones';
 import '../styles/navbar.css';
 
 const Navbar = () => {
@@ -28,9 +28,8 @@ const Navbar = () => {
 
   const timeAgo = (timestamp) => {
     const now = new Date();
-    const nowWithOffset = new Date(now.getTime() + 3 * 60 * 60 * 1000); // suma 3 horas
     const past = new Date(timestamp);
-    const diff = Math.floor((nowWithOffset - past) / 1000); // en segundos
+    const diff = Math.floor((now - past) / 1000); // en segundos
 
     if (diff < 60) return `hace ${diff} seg`;
     if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
@@ -72,7 +71,6 @@ const Navbar = () => {
       }));
 
       const allNotificaciones = [...mappedCorrectivos, ...mappedPreventivos];
-      console.log(allNotificaciones);
       setUnreadCount(allNotificaciones.filter(n => !n.leida).length);
 
       // Ordenar por fecha descendente
