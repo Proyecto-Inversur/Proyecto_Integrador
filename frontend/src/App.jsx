@@ -16,6 +16,7 @@ import Correctivo from './pages/Correctivo';
 import Login from './pages/Login';
 import Mapa from './pages/Mapa';
 import Ruta from './pages/Ruta';
+import Reportes from './pages/Reportes';
 import { mapsApiKey } from './config';
 import { LoadScript } from '@react-google-maps/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -84,6 +85,7 @@ const AppContent = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/mapa" element={<ProtectedRoute usersOnly><Mapa /></ProtectedRoute>} />
             <Route path="/ruta" element={<ProtectedRoute><Ruta /></ProtectedRoute>} />
+            <Route path="/reportes" element={<ProtectedRoute adminOnly><Reportes /></ProtectedRoute>} />
           </Routes>
         </main>
         {!isLoginPage && <Footer />}

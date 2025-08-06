@@ -112,18 +112,6 @@ class Usuario(Base):
     email = Column(String, unique=True, nullable=False)
     rol = Column(String)
     firebase_uid = Column(String, unique=True, nullable=True)  # ID de Firebase
-    
-    reportes = relationship("Reporte", back_populates="usuario")
-
-class Reporte(Base):
-    __tablename__ = "reporte"
-    id = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer, ForeignKey("usuario.id"))
-    tipo = Column(String)
-    contenido = Column(Text)
-    fecha = Column(Date)
-
-    usuario = relationship("Usuario", back_populates="reportes")
 
 class CorrectivoSeleccionado(Base):
     __tablename__ = "correctivo_seleccionado"
