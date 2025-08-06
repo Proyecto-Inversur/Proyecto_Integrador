@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getMantenimientosCorrectivos } from '../services/mantenimientoCorrectivoService';
@@ -41,9 +40,15 @@ const Reportes = () => {
 
   const filterByMonthYear = (items, dateField) => {
     return items.filter(item => {
-      const date = new Date(item[dateField]);
+      const rawDate = item[dateField];
+      if (!rawDate) return false;
+
+      const date = new Date(rawDate);
+      if (isNaN(date)) return false;
+
       const matchesMonth = month ? date.getMonth() + 1 === parseInt(month) : true;
       const matchesYear = year ? date.getFullYear() === parseInt(year) : true;
+
       return matchesMonth && matchesYear;
     });
   };
@@ -88,7 +93,9 @@ const Reportes = () => {
     const totalAvgDays = filtered.length
       ? (filtered.reduce((sum, c) => sum + (new Date(c.fecha_cierre) - new Date(c.fecha_apertura)) / (1000 * 60 * 60 * 24), 0) / filtered.length).toFixed(2)
       : 0;
-    return { rubros: report, totalAvgDays };
+    const totalCount = filtered.length;
+
+    return { rubros: report, totalAvgDays, totalCount };
   };
 
   const generateZonaReport = () => {
@@ -285,7 +292,7 @@ const Reportes = () => {
             <thead><tr><th>Rubro</th><th>Promedio Días</th><th>Cantidad Resueltos</th></tr></thead>
             <tbody>
               {reportData.rubros.rubros.map((r, i) => <tr key={i}><td>{r.rubro}</td><td>{r.avgDays}</td><td>{r.count}</td></tr>)}
-              <tr className="total-row"><td>Total General</td><td>{reportData.rubros.totalAvgDays}</td><td>-</td></tr>
+              <tr className="total-row"><td>Total General</td><td>{reportData.rubros.totalAvgDays}</td><td>{reportData.rubros.totalCount}</td></tr>
             </tbody>
           </table>
         </div>
