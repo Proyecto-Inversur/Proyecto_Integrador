@@ -7,6 +7,9 @@ import { getZonas } from '../services/zonaService';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import '../styles/reportes.css';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import logoImg from '../assets/logo_inversur.png';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -149,60 +152,92 @@ const Reportes = () => {
   const months = [...Array(12)].map((_, i) => ({ value: `${i + 1}`, label: new Date(0, i).toLocaleString('es-AR', { month: 'long' }) }));
   const years = [...Array(10)].map((_, i) => new Date().getFullYear() - i);
 
-  const handleDownloadReport = () => {
+  const handleDownloadReport = async () => {
+    const reportElement = document.querySelector('.reports-container');
+
+    if (!reportElement) {
+      alert('No se encontró el contenido del reporte.');
+      return;
+    }
+
+    const canvas = await html2canvas(reportElement, {
+      scale: 2,
+      useCORS: true,
+      scrollY: -window.scrollY, // para capturar correctamente desde el top
+    });
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const marginTop = 28;  // Espacio para navbar/logo
+    const marginBottom = 10; // Espacio inferior
+    const usableHeight = pageHeight - marginTop - marginBottom - 3;
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    const canvasToPDFRatio = canvas.height / imgHeight;
+    const pageCanvasHeight = usableHeight * canvasToPDFRatio;
+
+    const overlapPx = 50; // cantidad de píxeles para superposición entre páginas
+    const totalPages = Math.ceil((canvas.height - overlapPx) / (pageCanvasHeight - overlapPx));
+
+    let currentYOffset = 200; // primer recorte (corrige el espacio vacío arriba)
+
+    for (let page = 0; page < totalPages; page++) {
+      const pageCanvas = document.createElement('canvas');
+      const context = pageCanvas.getContext('2d');
+
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = pageCanvasHeight;
+
+      context.drawImage(
+        canvas,
+        0, currentYOffset,
+        canvas.width, pageCanvasHeight,
+        0, 0,
+        canvas.width, pageCanvasHeight
+      );
+
+      const pageImgData = pageCanvas.toDataURL('image/png');
+
+      if (page > 0) pdf.addPage();
+
+      // Barra superior
+      pdf.setFillColor('#2c2c2c');
+      pdf.rect(0, 0, pageWidth, marginTop - 3, 'F');
+
+      // Logo centrado
+      const logoWidth = 33.33;
+      const logoHeight = 15;
+      const logoX = (pageWidth - logoWidth) / 2;
+      const logoY = 5;
+
+      pdf.addImage(logoImg, 'PNG', logoX, logoY, logoWidth, logoHeight);
+
+      // Imagen de contenido
+      pdf.addImage(
+        pageImgData,
+        'PNG',
+        0,
+        marginTop,
+        imgWidth,
+        usableHeight
+      );
+
+      // Barra inferior
+      pdf.setFillColor('#2c2c2c');
+      pdf.rect(0, pageHeight - marginBottom, pageWidth, marginBottom, 'F');
+
+      // Aumentar el offset para la siguiente página, aplicando superposición
+      currentYOffset += pageCanvasHeight - overlapPx;
+    }
+
     const now = new Date();
-    const dateStr = now.toLocaleDateString().replace(/\//g, '-');
-    const timeStr = now.toLocaleTimeString().replace(/:/g, '-');
-    const fileName = `Reporte_${dateStr}_${timeStr}.txt`;
-
-    let content = `Reporte generado el ${now.toLocaleString()}\n\n`;
-
-    if (reportData.preventivos) {
-      content += '--- Preventivos ---\n';
-      reportData.preventivos.forEach(p => {
-        content += `Cuadrilla: ${p.nombre} | Asignados: ${p.asignados} | Resueltos: ${p.resueltos} | Ratio: ${p.ratio}\n`;
-      });
-      content += '\n';
-    }
-
-    if (reportData.correctivos) {
-      content += '--- Correctivos ---\n';
-      reportData.correctivos.forEach(c => {
-        content += `Cuadrilla: ${c.nombre} | Asignados: ${c.asignados} | Resueltos: ${c.resueltos} | Ratio: ${c.ratio}\n`;
-      });
-      content += '\n';
-    }
-
-    if (reportData.rubros) {
-      content += '--- Rubros ---\n';
-      reportData.rubros.rubros.forEach(r => {
-        content += `Rubro: ${r.rubro} | Promedio Días: ${r.avgDays} | Cantidad: ${r.count}\n`;
-      });
-      content += `Total Promedio Días: ${reportData.rubros.totalAvgDays}\n\n`;
-    }
-
-    if (reportData.zonas) {
-      content += '--- Zonas ---\n';
-      reportData.zonas.forEach(z => {
-        content += `Zona: ${z.zona} | Total Correctivos: ${z.totalCorrectivos} | Promedio por Sucursal: ${z.avgCorrectivos}\n`;
-      });
-      content += '\n';
-    }
-
-    if (reportData.sucursales) {
-      content += '--- Sucursales ---\n';
-      reportData.sucursales.forEach(s => {
-        content += `Sucursal: ${s.sucursal} | Zona: ${s.zona} | Total Correctivos: ${s.totalCorrectivos}\n`;
-      });
-    }
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
+    const fileName = `Reporte_${now.toLocaleDateString().replace(/\//g, '-')}_${now.toLocaleTimeString().replace(/:/g, '-')}.pdf`;
+    pdf.save(fileName);
   };
 
   return (
