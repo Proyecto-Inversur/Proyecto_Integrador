@@ -4,11 +4,13 @@ import { getMantenimientosCorrectivos } from '../services/mantenimientoCorrectiv
 import { getMantenimientosPreventivos } from '../services/mantenimientoPreventivoService';
 import { renderToString } from 'react-dom/server';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import BackButton from '../components/BackButton';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import '../styles/mapa.css';
+import '../styles/botones_forms.css';
 
 const defaultCenter = { lat: -31.4167, lng: -64.1833 };
 
@@ -25,6 +27,7 @@ const Mapa = () => {
   const mapInstanceRef = useRef(null);
   const routeLayersRef = useRef({});
   const usersMarkersRef = useRef([]);
+  const cuadrillasMarkersRef = useRef([]);
   const sucursalMarkersRef = useRef([]);
 
   const fetchData = async () => {
@@ -35,10 +38,26 @@ const Mapa = () => {
         getMantenimientosCorrectivos(),
         getMantenimientosPreventivos()
       ]);
-      setCuadrillas(usersResponse.data || []);
+      const allUsers = usersResponse.data || [];
+      const parsedUsers = (allUsers || []).map(user => ({
+        ...user,
+        lat: parseFloat(user.lat),
+        lng: parseFloat(user.lng)
+      }));
+      const filteredUsers = parsedUsers.filter(
+        user => !isNaN(user.lat) && !isNaN(user.lng) && user.lat !== 0 && user.lng !== 0
+      );
+      const correctivosFiltrados = (correctivosResponse.data || []).filter(
+        c => c.estado === "Pendiente"
+      );
+      const preventivosFiltrados = (preventivosResponse.data || []).filter(
+        c => c.fecha_cierre === null
+      );
+      setCuadrillas(filteredUsers.filter(u => u.tipo === 'cuadrilla'));
+      setUsers(filteredUsers.filter(u => u.tipo === 'Encargado de Mantenimiento'));
       setSucursalesLocations(sucursalesResponse.data || []);
-      setCorrectivos(correctivosResponse.data || []);
-      setPreventivos(preventivosResponse.data || []);
+      setCorrectivos(correctivosFiltrados);
+      setPreventivos(preventivosFiltrados);
       setIsDataLoaded(true);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -46,14 +65,12 @@ const Mapa = () => {
   };
 
   const fetchCuadrillaData = async () => {
-    if (!sucursalesLocations.length) return;
+    if (!sucursalesLocations.length || !cuadrillas.length) return;
     try {
-      const responseUsers = await getUsersLocations();
-      const updatedUsers = await Promise.all(
-        responseUsers.data.map(async user => {
+      const updatedCuadrillas = await Promise.all(cuadrillas.map(async cuadrilla => {
           const [Correctivos, Preventivos] = await Promise.all([
-            getCorrectivos(user.id),
-            getPreventivos(user.id)
+            getCorrectivos(cuadrilla.id),
+            getPreventivos(cuadrilla.id)
           ]);
           const correctivoIds = Correctivos.data?.map(c => Number(c.id_sucursal)) || [];
           const preventivoIds = Preventivos.data?.map(p => Number(p.id_sucursal)) || [];
@@ -61,12 +78,12 @@ const Mapa = () => {
           let filteredSucursales = sucursalesLocations.filter(s => selectedSucursalIds.has(Number(s.id)))
           filteredSucursales = [...filteredSucursales].sort((a, b) => {
             const distA = Math.sqrt(
-              Math.pow(user.lat - a.lat, 2) +
-              Math.pow(user.lng - a.lng, 2)
+              Math.pow(cuadrilla.lat - a.lat, 2) +
+              Math.pow(cuadrilla.lng - a.lng, 2)
             );
             const distB = Math.sqrt(
-              Math.pow(user.lat - b.lat, 2) +
-              Math.pow(user.lng - b.lng, 2)
+              Math.pow(cuadrilla.lat - b.lat, 2) +
+              Math.pow(cuadrilla.lng - b.lng, 2)
             );
             return distA - distB;
           });
@@ -79,7 +96,7 @@ const Mapa = () => {
             }));
           const correctivoMantenimientoIds = Correctivos.data?.map(c => Number(c.id_mantenimiento)) || [];
           const preventivoMantenimientoIds = Preventivos.data?.map(p => Number(p.id_mantenimiento)) || [];
-          const userCorrectivos = correctivos
+          const cuadrillaCorrectivos = correctivos
             .filter(c => correctivoMantenimientoIds.includes(Number(c.id)))
             .map(c => ({
               id: c.id,
@@ -88,7 +105,7 @@ const Mapa = () => {
               numero_caso: c.numero_caso || 'Sin número',
               estado: c.estado || 'Sin estado'
             }));
-          const userPreventivos = preventivos
+          const cuadrillaPreventivos = preventivos
             .filter(p => preventivoMantenimientoIds.includes(Number(p.id)))
             .map(p => ({
               id: p.id,
@@ -97,17 +114,18 @@ const Mapa = () => {
               frecuencia: p.frecuencia || 'Sin frecuencia'
             }));
           return {
-            id: user.id,
-            name: user.name || 'Unknown',
-            lat: parseFloat(user.lat),
-            lng: parseFloat(user.lng),
-            correctivos: userCorrectivos,
-            preventivos: userPreventivos,
+            id: cuadrilla.id,
+            tipo: cuadrilla.tipo,
+            name: cuadrilla.name || 'Unknown',
+            lat: parseFloat(cuadrilla.lat),
+            lng: parseFloat(cuadrilla.lng),
+            correctivos: cuadrillaCorrectivos,
+            preventivos: cuadrillaPreventivos,
             sucursales: selectedSucursales
           };
         })
       );
-      setUsers(updatedUsers.filter(user => !isNaN(user.lat) && !isNaN(user.lng) && user.lat !== 0 && user.lng !== 0));
+      setCuadrillas(updatedCuadrillas);
     } catch (error) {
       console.error('Error fetching cuadrilla data:', error);
       setError('Error al cargar datos de cuadrillas');
@@ -153,42 +171,47 @@ const Mapa = () => {
     }
   };
 
-  const generarRutas = (user) => {
-    if (!user.sucursales || !mapInstanceRef.current) return;
-    const waypoints = user.sucursales.map(s => L.latLng(s.lat, s.lng)).filter(Boolean);
+  const generarRutas = (cuadrilla) => {
+    if (!cuadrilla.sucursales || !mapInstanceRef.current) return;
+
+    const waypoints = cuadrilla.sucursales
+      .map(s => L.latLng(s.lat, s.lng))
+      .filter(wp => wp && !isNaN(wp.lat) && !isNaN(wp.lng));
 
     if (waypoints.length > 0) {
-      if (routeLayersRef.current[user.id]?.control) {
-        mapInstanceRef.current.removeControl(routeLayersRef.current[user.id].control);
-      }
-
       const control = L.Routing.control({
-        waypoints: [[user.lat, user.lng], ...waypoints],
+        waypoints: [[cuadrilla.lat, cuadrilla.lng], ...waypoints],
         router: L.Routing.osrmv1({ serviceUrl: import.meta.env.VITE_OSRM_URL }),
-        lineOptions: { styles: [{ color: '#3399FF', weight: 5 }] },
+        lineOptions: { styles: [{ color: '#2c2c2c', weight: 5 }] },
         createMarker: () => null,
         addWaypoints: false,
         routeWhileDragging: false,
         show: false,
-        fitSelectedRoutes: false
+        fitSelectedRoutes: false,
+        containerClassName: 'hidden-routing-control'
       }).addTo(mapInstanceRef.current);
 
       control.on('routesfound', (e) => {
         const route = e.routes[0];
-        if (routeLayersRef.current[user.id]?.polyline) {
-          routeLayersRef.current[user.id].polyline.remove();
+        const polyline = L.polyline(route.coordinates, { color: '#2c2c2c', weight: 5 }).addTo(mapInstanceRef.current);
+
+        if (routeLayersRef.current[cuadrilla.id]) {
+          if (routeLayersRef.current[cuadrilla.id].control) {
+            mapInstanceRef.current.removeControl(routeLayersRef.current[cuadrilla.id].control);
+          }
+          if (routeLayersRef.current[cuadrilla.id].polyline) {
+            routeLayersRef.current[cuadrilla.id].polyline.remove();
+          }
         }
 
-        const polyline = L.polyline(route.coordinates, { color: '#3399FF', weight: 5 }).addTo(mapInstanceRef.current);
-
-        routeLayersRef.current[user.id] = {
+        routeLayersRef.current[cuadrilla.id] = {
           control,
           polyline
         };
       });
 
       control.on('routingerror', (err) => {
-        console.error('Routing error for user', user.id, err);
+        console.error('Routing error for user', cuadrilla.id, err);
       });
     }
   };
@@ -198,69 +221,78 @@ const Mapa = () => {
 
     const content =
       data.type === 'cuadrilla'
-        ? `
-          <div style="max-height: 200px; overflow-y: auto;">
-            <h3>${data.name}</h3>
-            <h4>Ruta</h4>
-            <ul>
-              ${data.sucursales?.map(s => `<li>${s.name}</li>`).join('') || '<li>Sin sucursales seleccionadas</li>'}
-            </ul>
-            <h4>Mantenimientos</h4>
-            <h5>Correctivos Seleccionados</h5>
-            <ul>
-              ${(data.correctivos && Array.isArray(data.correctivos) ? data.correctivos : []).map(c => `
-                <li>
-                  Mantenimiento: ${c.id}<br/>
-                  Sucursal: ${c.nombre_sucursal}<br/>
-                  Fecha Apertura: ${c.fecha_apertura}<br/>
-                  Número de Caso: ${c.numero_caso}<br/>
-                  Estado: ${c.estado}
-                </li>
-              `).join('') || '<li>Sin correctivos seleccionados</li>'}
-            </ul>
-            <h5>Preventivos Seleccionados</h5>
-            <ul>
-              ${(data.preventivos && Array.isArray(data.preventivos) ? data.preventivos : []).map(p => `
-                <li>
-                  Mantenimiento: ${p.id}<br/>
-                  Sucursal: ${p.nombre_sucursal}<br/>
-                  Fecha Apertura: ${p.fecha_apertura}<br/>
-                  Frecuencia: ${p.frecuencia}
-                </li>
-              `).join('') || '<li>Sin preventivos seleccionados</li>'}
-            </ul>
-          </div>
-        `
-        : `
-          <div style="max-height: 200px; overflow-y: auto;">
-            <h3>${data.name || 'Unknown'}</h3>
-            <h4>Mantenimientos</h4>
-            <h5>Correctivos</h5>
-            <ul>
-              ${(data.Correctivos && Array.isArray(data.Correctivos) ? data.Correctivos : []).map(c => `
-                <li>
-                  Mantenimiento: ${c.id}<br/>
-                  Cuadrilla: ${c.cuadrilla_name}<br/>
-                  Fecha Apertura: ${c.fecha_apertura}<br/>
-                  Número de Caso: ${c.numero_caso}<br/>
-                  Estado: ${c.estado}
-                </li>
-              `).join('') || '<li>Sin correctivos</li>'}
-            </ul>
-            <h5>Preventivos</h5>
-            <ul>
-              ${(data.Preventivos && Array.isArray(data.Preventivos) ? data.Preventivos : []).map(p => `
-                <li>
-                  Mantenimiento: ${p.id}<br/>
-                  Cuadrilla: ${p.cuadrilla_name}<br/>
-                  Fecha Apertura: ${p.fecha_apertura}<br/>
-                  Frecuencia: ${p.frecuencia}
-                </li>
-              `).join('') || '<li>Sin preventivos</li>'}
-            </ul>
-          </div>
-        `;
-
+        ? 
+          `
+            <div style="max-height: 200px; overflow-y: auto;">
+              <h3>${data.name}</h3>
+              <h4>Ruta</h4>
+              <ul>
+                ${data.sucursales?.map(s => `<li>${s.name}</li>`).join('') || '<li>Sin sucursales seleccionadas</li>'}
+              </ul>
+              <h4>Mantenimientos</h4>
+              <h5>Correctivos Seleccionados</h5>
+              <ul>
+                ${(data.correctivos && Array.isArray(data.correctivos) ? data.correctivos : []).map(c => `
+                  <li>
+                    Mantenimiento: ${c.id}<br/>
+                    Sucursal: ${c.nombre_sucursal}<br/>
+                    Fecha Apertura: ${c.fecha_apertura}<br/>
+                    Número de Caso: ${c.numero_caso}<br/>
+                    Estado: ${c.estado}
+                  </li>
+                `).join('') || '<li>Sin correctivos seleccionados</li>'}
+              </ul>
+              <h5>Preventivos Seleccionados</h5>
+              <ul>
+                ${(data.preventivos && Array.isArray(data.preventivos) ? data.preventivos : []).map(p => `
+                  <li>
+                    Mantenimiento: ${p.id}<br/>
+                    Sucursal: ${p.nombre_sucursal}<br/>
+                    Fecha Apertura: ${p.fecha_apertura}<br/>
+                    Frecuencia: ${p.frecuencia}
+                  </li>
+                `).join('') || '<li>Sin preventivos seleccionados</li>'}
+              </ul>
+            </div>
+          `
+        : 
+          data.type === 'encargado'
+            ? 
+              `
+                <div style="max-height: 200px; overflow-y: auto;">
+                  <h3>${data.name}</h3>
+                </div>
+              `
+            :
+              `
+                <div style="max-height: 200px; overflow-y: auto;">
+                  <h3>${data.name || 'Unknown'}</h3>
+                  <h4>Mantenimientos</h4>
+                  <h5>Correctivos</h5>
+                  <ul>
+                    ${(data.Correctivos && Array.isArray(data.Correctivos) ? data.Correctivos : []).map(c => `
+                      <li>
+                        Mantenimiento: ${c.id}<br/>
+                        Cuadrilla: ${c.cuadrilla_name}<br/>
+                        Fecha Apertura: ${c.fecha_apertura}<br/>
+                        Número de Caso: ${c.numero_caso}<br/>
+                        Estado: ${c.estado}
+                      </li>
+                    `).join('') || '<li>Sin correctivos</li>'}
+                  </ul>
+                  <h5>Preventivos</h5>
+                  <ul>
+                    ${(data.Preventivos && Array.isArray(data.Preventivos) ? data.Preventivos : []).map(p => `
+                      <li>
+                        Mantenimiento: ${p.id}<br/>
+                        Cuadrilla: ${p.cuadrilla_name}<br/>
+                        Fecha Apertura: ${p.fecha_apertura}<br/>
+                        Frecuencia: ${p.frecuencia}
+                      </li>
+                    `).join('') || '<li>Sin preventivos</li>'}
+                  </ul>
+                </div>
+              `;
     L.popup()
       .setLatLng(latlng)
       .setContent(content)
@@ -306,43 +338,73 @@ const Mapa = () => {
   }, []);
 
   useEffect(() => {
-    if (!mapInstanceRef.current || !users.length || !sucursales.length) return;;
-    // Add user markers
-    usersMarkersRef.current.forEach(marker => marker?.remove());
-    users.map(user => {
-      const marker = L.marker([user.lat, user.lng], {
-        icon: L.divIcon({
-          html: `<div style="width: 15px; height: 20px; background:rgb(22, 109, 196); clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
-          className: '',
-          iconSize: [20, 20],
-          iconAnchor: [10, 20],
-        }),
-        title: user.name
-      }).addTo(mapInstanceRef.current);
+    if (!mapInstanceRef.current || !sucursales.length) return;
+    if (users.length) {
+      // Add user markers
+      usersMarkersRef.current.forEach(marker => marker?.remove());
+      users.map(user => {
+        const marker = L.marker([user.lat, user.lng], {
+          icon: L.divIcon({
+            html: `<div style="width: 15px; height: 20px; background:#2c2c2c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
+            className: '',
+            iconSize: [20, 20],
+            iconAnchor: [10, 20],
+          }),
+          title: user.name
+        }).addTo(mapInstanceRef.current);
 
-      marker.on('click', () =>
-        showPopup(
-          {
-            type: 'cuadrilla',
-            name: user.name,
-            correctivos: user.correctivos,
-            preventivos: user.preventivos,
-            sucursales: user.sucursales
-          },
-          [user.lat, user.lng]
-        )
-      );
+        marker.on('click', () =>
+          showPopup(
+            {
+              type: 'encargado',
+              name: user.name,
+            },
+            [user.lat, user.lng]
+          )
+        );
 
-      usersMarkersRef.current.push(marker);
-      generarRutas(user);
-    });
+        usersMarkersRef.current.push(marker);
+      });
+    }
+
+    if (cuadrillas.length) {
+      // Add cuadrilla markers
+      cuadrillasMarkersRef.current.forEach(marker => marker?.remove());
+      cuadrillas.map(cuadrilla => {
+        const marker = L.marker([cuadrilla.lat, cuadrilla.lng], {
+          icon: L.divIcon({
+            html: `<div style="width: 15px; height: 20px; background:#2c2c2c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
+            className: '',
+            iconSize: [20, 20],
+            iconAnchor: [10, 20],
+          }),
+          title: cuadrilla.name
+        }).addTo(mapInstanceRef.current);
+
+        marker.on('click', () =>
+          showPopup(
+            {
+              type: 'cuadrilla',
+              name: cuadrilla.name,
+              correctivos: cuadrilla.correctivos,
+              preventivos: cuadrilla.preventivos,
+              sucursales: cuadrilla.sucursales
+            },
+            [cuadrilla.lat, cuadrilla.lng]
+          )
+        );
+
+        cuadrillasMarkersRef.current.push(marker);
+        generarRutas(cuadrilla);
+      });
+    }
 
     // Add sucursal markers
     sucursalMarkersRef.current.forEach(marker => marker?.remove());
     sucursales.map(sucursal => {
       const marker = L.marker([sucursal.lat, sucursal.lng], {
         icon: L.divIcon({
-          html: renderToString(<FaMapMarkerAlt style={{ color: 'rgb(22, 109, 196)', fontSize: '24px' }} />),
+          html: renderToString(<FaMapMarkerAlt style={{ color: '#2c2c2c', fontSize: '24px' }} />),
           className: 'sucursal-marker',
           iconSize: [20, 20],
           iconAnchor: [10, 20],
@@ -367,51 +429,105 @@ const Mapa = () => {
 
     return () => {
       usersMarkersRef.current.forEach(marker => marker?.remove());
+      cuadrillasMarkersRef.current.forEach(marker => marker?.remove());
       sucursalMarkersRef.current.forEach(marker => marker?.remove());
     };
-  }, [users, sucursales]);
+  }, [cuadrillas, users, sucursales]);
 
   return (
-  <div className="ruta-container">
+  <div className="map-container">
     {error && <div className="alert alert-danger">{error}</div>}
-
-    <div className="ruta-controls">
-      <h2>Mapa de Usuarios y Sucursales</h2>
-    </div>
-
-    <div className="ruta-main">
-      <div className="ruta-sidebar">
-        <h4>Cuadrillas Activas</h4>
-        {users.length === 0 && <p>No hay cuadrillas activas.</p>}
-        {users.map(user => (
-          <div
-            key={user.id}
-            className="obra-item"
-            onClick={() => {
-              if (mapInstanceRef.current) {
-                mapInstanceRef.current.setView([user.lat, user.lng], 13);
-                showPopup(
-                  {
-                    type: 'cuadrilla',
-                    name: user.name,
-                    correctivos: user.correctivos,
-                    preventivos: user.preventivos,
-                    sucursales: user.sucursales
-                  },
-                  [user.lat, user.lng]
-                );
-              }
-            }}
-          >
-            <strong>{user.name}</strong>
-            <br />
-            <small>{user.sucursales?.length || 0} obras asignadas</small>
-          </div>
-        ))}
+    <div className="contenido-wrapper">
+      <BackButton />
+      <div className="map-controls">
+        <h2>Mapa de Usuarios y Sucursales</h2>
       </div>
+      <div className="map-main">
+        <div className="map-sidebar-left">
+          <h4>Cuadrillas</h4>
+          {cuadrillas.length === 0 && <p>No hay cuadrillas activas.</p>}
+          {cuadrillas.map(cuadrilla => (
+            <div
+              key={cuadrilla.id}
+              className="obra-item"
+              onClick={() => {
+                if (mapInstanceRef.current) {
+                  mapInstanceRef.current.setView([cuadrilla.lat, cuadrilla.lng], 13);
+                  showPopup(
+                    {
+                      type: 'cuadrilla',
+                      name: cuadrilla.name,
+                      correctivos: cuadrilla.correctivos,
+                      preventivos: cuadrilla.preventivos,
+                      sucursales: cuadrilla.sucursales
+                    },
+                    [cuadrilla.lat, cuadrilla.lng]
+                  );
+                }
+              }}
+            >
+              <strong>- {cuadrilla.name}</strong>
+              <br />
+              <small>{cuadrilla.sucursales?.length || 0} obras asignadas</small>
+            </div>
+          ))}
+          <h4>Encargados</h4>
+          {users.length === 0 && <p>No hay encargados.</p>}
+          {users.map(user => (
+            <div
+              key={user.id}
+              className="obra-item"
+              onClick={() => {
+                if (mapInstanceRef.current) {
+                  mapInstanceRef.current.setView([user.lat, user.lng], 13);
+                  showPopup(
+                    {
+                      type: 'encargado',
+                      name: user.name,
+                    },
+                    [user.lat, user.lng]
+                  );
+                }
+              }}
+            >
+              <strong>- {user.name}</strong>
+              <br />
+            </div>
+          ))}
+        </div>
 
-      <div className="ruta-map-container">
-        <div ref={mapRef} className="ruta-map"></div>
+        <div className="map-sidebar-rigth">
+          <h4>Sucursales</h4>
+          {sucursales.length === 0 && <p>No hay sucursales activas.</p>}
+          {sucursales.map(sucursal => (
+            <div
+              key={sucursal.id}
+              className="obra-item"
+              onClick={() => {
+                if (mapInstanceRef.current) {
+                  mapInstanceRef.current.setView([sucursal.lat, sucursal.lng], 13);
+                  showPopup(
+                    {
+                      type: 'sucursal',
+                      name: sucursal.name,
+                      Correctivos: sucursal.Correctivos,
+                      Preventivos: sucursal.Preventivos
+                    },
+                    [sucursal.lat, sucursal.lng]
+                  );
+                }
+              }}
+            >
+              <strong>- {sucursal.name}</strong>
+              <br />
+              <small>{sucursal.Correctivos?.length || 0} correctivos, {sucursal.Preventivos?.length || 0} preventivos</small>
+            </div>
+          ))}
+        </div>
+
+        <div className="container-map">
+          <div ref={mapRef} className="ruta-map"></div>
+        </div>
       </div>
     </div>
   </div>

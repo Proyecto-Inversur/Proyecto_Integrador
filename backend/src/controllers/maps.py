@@ -26,7 +26,7 @@ async def locations_get(request: Request):
 async def locations_get(request: Request):
     current_entity = request.state.current_entity
     users = await get_users_locations(current_entity)
-    return [{"id": u.id, "name": u.name, "lat": u.lat, "lng": u.lng} for u in users]
+    return [{"id": u.id, "tipo": u.tipo, "name": u.name, "lat": u.lat, "lng": u.lng} for u in users]
 
 @router.get("/correctivo-selection/{id_cuadrilla}", response_model=List[dict])
 def correctivo_get(request: Request, id_cuadrilla: int = None, db_session: Session = Depends(get_db)):
@@ -43,8 +43,13 @@ def preventivo_get(request: Request, id_cuadrilla: int, db_session: Session = De
 @router.post("/update-user-location", response_model=dict)
 async def location_update(request: Request, location: LocationUpdate):
     current_entity = request.state.current_entity
+    firebase_uid = str(current_entity["data"]["uid"])
     user_id = str(current_entity["data"]["id"])
-    return await update_user_location(current_entity, user_id, location.name, location.lat, location.lng)
+    if current_entity["type"] == "usuario":
+        tipo = str(current_entity["data"]["rol"])
+    else:
+        tipo = str(current_entity["type"])
+    return await update_user_location(current_entity, firebase_uid, user_id, tipo, location.name, location.lat, location.lng)
 
 @router.post("/select-correctivo", response_model=dict)
 def correctivo_update(request: Request, s: Seleccion, db_session: Session = Depends(get_db)):

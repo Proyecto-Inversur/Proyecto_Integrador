@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { LocationContext } from '../context/LocationContext';
 import { getSucursalesLocations, getCorrectivos, getPreventivos, deleteSucursal, deleteSelection } from '../services/maps';
@@ -7,6 +8,7 @@ import { getMantenimientosPreventivos } from '../services/mantenimientoPreventiv
 import { notify_nearby_maintenances } from '../services/notificaciones';
 import { renderToString } from 'react-dom/server';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FiArrowLeft } from 'react-icons/fi';
 import { bearing } from '@turf/turf';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -24,10 +26,11 @@ const NOTIFY_DISTANCE = 10000; // Distancia en metros para notificar mantenimien
 const Ruta = () => {
   const { currentEntity } = useContext(AuthContext);
   const { userLocation } = useContext(LocationContext);
+  const navigate = useNavigate();
   const [sucursales, setSucursales] = useState([]);
   const [routingControl, setRoutingControl] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [error, setError] = useState(null);
+  const [isCenter, setIsCenter] = useState(true);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const userMarkerRef = useRef(null);
@@ -70,7 +73,6 @@ const Ruta = () => {
       setSucursales(filteredSucursales);
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Error al cargar datos');
     }
   };
 
@@ -189,7 +191,7 @@ const Ruta = () => {
       userMarkerRef.current?.remove();
       userMarkerRef.current = L.marker(userLatLng, {
         icon: L.divIcon({
-          html: `<div style="width: 15px; height: 20px; background:rgb(22, 109, 196); clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
+          html: `<div style="width: 15px; height: 20px; background:#2c2c2c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
           className: '',
           iconSize: [20, 20],
           iconAnchor: [10, 20],
@@ -211,7 +213,7 @@ const Ruta = () => {
     const control = L.Routing.control({
       waypoints,
       router: L.Routing.osrmv1({ serviceUrl: import.meta.env.VITE_OSRM_URL }),
-      lineOptions: { styles: [{ color: '#3399FF', weight: 5 }] },
+      lineOptions: { styles: [{ color: '#2c2c2c', weight: 5 }] },
       createMarker: () => null,
       addWaypoints: false,
       routeWhileDragging: false,
@@ -220,7 +222,6 @@ const Ruta = () => {
 
     control.on('routingerror', (err) => {
       console.error('Routing error:', err);
-      setError('Error al calcular la ruta');
     });
 
     routeMarkerRef.current = { control };
@@ -248,6 +249,9 @@ const Ruta = () => {
   };
 
   const borrarRuta = () => {
+    if (!window.confirm("⚠️ Vas a borrar toda la selección. ¿Seguro que querés continuar?")) {
+      return;
+    }
     setSucursales([]);
     sucursalMarkersRef.current.forEach(marker => marker?.remove());
     if (routeMarkerRef.current?.control) {
@@ -280,7 +284,7 @@ const Ruta = () => {
       userMarkerRef.current?.remove();
       userMarkerRef.current = L.marker(currentLatLng, {
         icon: L.divIcon({
-          html: `<div style="width: 15px; height: 20px; background:rgb(22, 109, 196); clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
+          html: `<div style="width: 15px; height: 20px; background:#2c2c2c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
           className: '',
           iconSize: [20, 20],
           iconAnchor: [10, 20],
@@ -296,7 +300,7 @@ const Ruta = () => {
   useEffect(() => {
     if (!navigator.geolocation) {
       console.log('Geolocation not available');
-      return setError('Geolocalización no disponible');
+      return;
     }
 
     const watchId = navigator.geolocation.watchPosition(
@@ -334,7 +338,6 @@ const Ruta = () => {
     },
     (err) => {
       console.error('Geolocation error:', err);
-      setError('No se pudo obtener la ubicación');
     },
     { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }
   );
@@ -364,7 +367,7 @@ const Ruta = () => {
       sucursales.forEach(sucursal => {
         const marker = L.marker([sucursal.lat, sucursal.lng], {
           icon: L.divIcon({
-            html: renderToString(<FaMapMarkerAlt style={{ color: 'rgb(22, 109, 196)', fontSize: '24px' }} />),
+            html: renderToString(<FaMapMarkerAlt style={{ color: '#2c2c2c', fontSize: '24px' }} />),
             className: 'sucursal-marker',
             iconSize: [20, 20],
             iconAnchor: [10, 20],
@@ -376,48 +379,42 @@ const Ruta = () => {
     }
   }, [sucursales, isNavigating]);
 
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    mapInstanceRef.current.on('move', () => {
+      const centroActual = mapInstanceRef.current.getCenter();
+      if (userLocation) {
+        const distancia = centroActual.distanceTo(L.latLng(userLocation.lat, userLocation.lng));
+        setIsCenter(distancia < 10); // tolerancia de 10 metros
+      }
+    });
+  }, [userLocation]);
+
 return (
     <div className="ruta-container">
-      {error && <div className="alert alert-danger">{error}</div>}
-      
-      <div className="ruta-controls">
-        <button className="ruta-btn primary" onClick={centerOnUser}>
-          📍 Centrar en mi ubicación
-        </button>
-        <button
-          className={`ruta-btn ${isNavigating ? 'danger' : 'success'}`}
-          onClick={toggleNavegacion}
-        >
-          {isNavigating ? '🛑 Detener navegación' : '🚗 Iniciar navegación'}
-        </button>
-        <button className="ruta-btn danger" onClick={borrarRuta}>
-          ❌ Borrar ruta
-        </button>
-      </div>
-
       <div className="ruta-main">
-        <div className="ruta-sidebar">
-          <h5>Obras Seleccionadas</h5>
-          {sucursales.length === 0 && <p>No hay obras seleccionadas.</p>}
-          {sucursales.map((sucursal, idx) => (
-            <div
-              key={idx}
-              className="obra-item"
-              onClick={() => {
-                if (mapInstanceRef.current) {
-                  mapInstanceRef.current.flyTo([sucursal.lat, sucursal.lng], 18, { duration: 1 });
-                }
-              }}
-            >
-              <strong>{sucursal.name}</strong>
-              <div>Lat: {sucursal.lat.toFixed(4)}</div>
-              <div>Lng: {sucursal.lng.toFixed(4)}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="ruta-map-container">
+        <div className="container-ruta">
           <div ref={mapRef} className="ruta-map"></div>
+          <button
+            onClick={() => navigate('/')}
+            className="ruta-btn danger boton-volver"
+          >
+            <FiArrowLeft size={28} color="white" />
+          </button>
+          <button className="ruta-btn danger boton-borrar" onClick={borrarRuta}>
+            ❌ Borrar ruta
+          </button>
+          {!isCenter && !isNavigating && (
+            <button className="ruta-btn primary boton-centrar" onClick={centerOnUser}>
+              📍 Centrar
+            </button>
+          )}
+          <button
+            className={`ruta-btn ${isNavigating ? 'danger' : 'success'} boton-navegar`}
+            onClick={toggleNavegacion}
+          >
+            {isNavigating ? '🛑 Detener' : '🚗 Iniciar'}
+          </button>
         </div>
       </div>
     </div>
