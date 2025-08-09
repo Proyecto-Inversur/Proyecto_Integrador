@@ -3,6 +3,7 @@ from api.models import MensajeCorrectivo, MensajePreventivo
 from fastapi import HTTPException, UploadFile
 from typing import Optional
 from services.gcloud_storage import upload_chat_file_to_gcloud
+from services.chat_ws import chat_manager
 import os
 
 GOOGLE_CLOUD_BUCKET_NAME = os.getenv("GOOGLE_CLOUD_BUCKET_NAME")
@@ -55,10 +56,23 @@ async def send_message_correctivo(
         db_session.add(db_message)
         db_session.commit()
         db_session.refresh(db_message)
+        await chat_manager.send_message(
+            id_mantenimiento,
+            {
+                "id": db_message.id,
+                "firebase_uid": db_message.firebase_uid,
+                "nombre_usuario": db_message.nombre_usuario,
+                "id_mantenimiento": db_message.id_mantenimiento,
+                "texto": db_message.texto,
+                "archivo": db_message.archivo,
+                "fecha": db_message.created_at.isoformat() if db_message.created_at else None,
+            },
+        )
         return db_message
     except Exception as e:
         db_session.rollback()
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
 
 async def send_message_preventivo(
     db_session: Session,
@@ -92,6 +106,18 @@ async def send_message_preventivo(
         db_session.add(db_message)
         db_session.commit()
         db_session.refresh(db_message)
+        await chat_manager.send_message(
+            id_mantenimiento,
+            {
+                "id": db_message.id,
+                "firebase_uid": db_message.firebase_uid,
+                "nombre_usuario": db_message.nombre_usuario,
+                "id_mantenimiento": db_message.id_mantenimiento,
+                "texto": db_message.texto,
+                "archivo": db_message.archivo,
+                "fecha": db_message.created_at.isoformat() if db_message.created_at else None,
+            },
+        )
         return db_message
     except Exception as e:
         db_session.rollback()

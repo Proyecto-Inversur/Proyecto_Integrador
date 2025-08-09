@@ -19,7 +19,7 @@ def get_mantenimiento_preventivo(db: Session, mantenimiento_id: int):
         raise HTTPException(status_code=404, detail="Mantenimiento preventivo no encontrado")
     return mantenimiento
 
-def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuencia: str, id_cuadrilla: int, fecha_apertura: date, current_entity: dict):
+async def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuencia: str, id_cuadrilla: int, fecha_apertura: date, current_entity: dict):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     if current_entity["type"] != "usuario":
@@ -45,7 +45,7 @@ def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuencia: s
     db.commit()
     db.refresh(db_mantenimiento)
     append_preventivo(db, db_mantenimiento)
-    notify_users_preventivo(
+    await notify_users_preventivo(
         db_session=db,
         id_mantenimiento=db_mantenimiento.id,
         mensaje=f"Nuevo preventivo asignado - Sucursal: {preventivo.nombre_sucursal}",
@@ -98,7 +98,7 @@ async def update_mantenimiento_preventivo(
         db_mantenimiento.fecha_apertura = fecha_apertura
     if fecha_cierre is not None:
         db_mantenimiento.fecha_cierre = fecha_cierre
-        notify_users_preventivo(
+        await notify_users_preventivo(
             db_session=db,
             id_mantenimiento=db_mantenimiento.id,
             mensaje=f"Preventivo Solucionado - Sucursal: {preventivo.nombre_sucursal}",
@@ -119,7 +119,7 @@ async def update_mantenimiento_preventivo(
     
     if extendido is not None:
         db_mantenimiento.extendido = extendido
-        notify_users_preventivo(
+        await notify_users_preventivo(
             db_session=db,
             id_mantenimiento=mantenimiento_id,
             mensaje=f"Extendido solicitado - Sucursal: {preventivo.nombre_sucursal} | Cuadrilla: {cuadrilla.nombre}",

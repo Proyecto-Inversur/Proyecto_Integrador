@@ -1,14 +1,16 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Image, Modal, Button } from 'react-bootstrap';
 import logoInversur from '../assets/logo_inversur.png';
 import { FaBell } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
 import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificacion } from '../services/notificaciones';
+import { subscribeToNotifications } from '../services/notificationWs';
 import '../styles/navbar.css';
 
 const Navbar = () => {
   const { currentEntity, logOut } = useContext(AuthContext);
+  const socketRef = useRef(null);
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -19,6 +21,10 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
       await logOut();
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -86,17 +92,33 @@ const Navbar = () => {
     if (currentEntity) {
       fetchNotifications();
     }
-
-  }, []);
+  }, [currentEntity]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (currentEntity) {
-        fetchNotifications();
+    if (!currentEntity) return;
+
+    // Si ya hay socket abierto, no crear otro
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    const onMessage = (data) => {
+      setNotifications((prev) => {
+        const updated = [data, ...prev];
+        setUnreadCount(updated.filter((n) => !n.leida).length);
+        return updated;
+      });
+    };
+
+    const socket = subscribeToNotifications(currentEntity.data.uid, onMessage);
+    socketRef.current = socket;
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
       }
-    }, 60000);
-  
-    return () => clearInterval(interval);
+    };
   }, [currentEntity]);
 
   const handleClick = async (notification) => {

@@ -1,9 +1,11 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos, maps, notificaciones, push, chats
 from config.database import get_db
 from services.auth import verify_user_token
+from services.chat_ws import chat_manager
+from services.notification_ws import notification_manager
 from auth.firebase import initialize_firebase
 from init_admin import init_admin
 from dotenv import load_dotenv
@@ -89,6 +91,24 @@ async def auth_middleware(request: Request, call_next):
             content={"detail": "Error interno en el procesamiento de la solicitud"},
             status_code=500
         )
+
+@app.websocket("/ws/chat/{mantenimiento_id}")
+async def websocket_route(websocket: WebSocket, mantenimiento_id: int):
+    await chat_manager.connect(mantenimiento_id, websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        chat_manager.disconnect(mantenimiento_id, websocket)
+
+@app.websocket("/ws/notificaciones/{firebase_uid}")
+async def websocket_notifications(websocket: WebSocket, firebase_uid: str):
+    await notification_manager.connect(firebase_uid, websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        notification_manager.disconnect(firebase_uid, websocket)
 
 app.include_router(users.router)
 app.include_router(cuadrillas.router)

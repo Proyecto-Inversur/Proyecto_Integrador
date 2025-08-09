@@ -42,9 +42,9 @@ def mantenimiento_preventivo_get(mantenimiento_id: int, db: Session = Depends(ge
     }
 
 @router.post("/", response_model=dict)
-def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivoCreate, request: Request, db: Session = Depends(get_db)):
+async def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivoCreate, request: Request, db: Session = Depends(get_db)):
     current_entity = request.state.current_entity
-    new_mantenimiento = create_mantenimiento_preventivo(
+    new_mantenimiento = await create_mantenimiento_preventivo(
         db,
         mantenimiento.id_sucursal,
         mantenimiento.frecuencia,

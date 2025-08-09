@@ -11,7 +11,8 @@ import { selectPreventivo, deletePreventivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import { BsSave } from 'react-icons/bs';
-import { getChatPreventivo, sendMessagePreventivo } from '../services/chats';
+import { getChatCorrectivo, sendMessagePreventivo } from '../services/chats';
+import { subscribeToChat } from '../services/chatWs';
 import '../styles/mantenimientos.css';
 
 const Preventivo = () => {
@@ -87,11 +88,34 @@ const Preventivo = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      cargarMensajes(mantenimiento.id);
-    }, 30000);
+    let socket;
+    let reconnectTimeout;
 
-    return () => clearInterval(interval);
+    const connect = () => {
+      if (!mantenimiento.id) return;
+
+      socket = subscribeToChat(mantenimiento.id, (data) => {
+        setMensajes((prev) => (Array.isArray(data) ? data : [...prev, data]));
+        scrollToBottom();
+      });
+
+      if (socket) {
+        socket.onclose = () => {
+          reconnectTimeout = setTimeout(connect, 5000);
+        };
+
+        socket.onerror = () => {
+          socket.close();
+        };
+      }
+    };
+
+    connect();
+
+    return () => {
+      if (socket) socket.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
   }, [mantenimiento.id]);
 
   const handleFileChange = (e, field) => {
@@ -281,7 +305,7 @@ const Preventivo = () => {
 
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   }
-  
+
   const cargarMensajes = async (id) => {
     try {
       const response = await getChatPreventivo(id);
@@ -291,7 +315,7 @@ const Preventivo = () => {
       console.error('Error al cargar mensajes:', error);
     }
   };
-
+  
   const handleEnviarMensaje = async () => {
     if (!nuevoMensaje && !archivoAdjunto) return;
 
@@ -305,7 +329,6 @@ const Preventivo = () => {
       await sendMessagePreventivo(mantenimiento.id, formData);
       setNuevoMensaje('');
       setArchivoAdjunto(null);
-      await cargarMensajes(mantenimiento.id);
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
       setError('No se pudo enviar el mensaje');

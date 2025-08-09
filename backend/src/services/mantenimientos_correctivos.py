@@ -19,7 +19,7 @@ def get_mantenimiento_correctivo(db: Session, mantenimiento_id: int):
         raise HTTPException(status_code=404, detail="Mantenimiento correctivo no encontrado")
     return mantenimiento
 
-def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla: int, fecha_apertura: date, numero_caso: str, incidente: str, rubro: str, estado: str, prioridad: str, current_entity: dict):
+async def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla: int, fecha_apertura: date, numero_caso: str, incidente: str, rubro: str, estado: str, prioridad: str, current_entity: dict):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     if current_entity["type"] != "usuario":
@@ -61,7 +61,7 @@ def create_mantenimiento_correctivo(db: Session, id_sucursal: int, id_cuadrilla:
                 title="Nuevo correctivo urgente asignado",
                 body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
             )
-        notify_users_correctivo(
+        await notify_users_correctivo(
             db_session=db,
             id_mantenimiento=db_mantenimiento.id,
             mensaje=f"Nuevo correctivo asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
@@ -137,7 +137,7 @@ async def update_mantenimiento_correctivo(
         if estado != "Solucionado" and estado != "Finalizado":
             db_mantenimiento.fecha_cierre = None
         if estado == "Solucionado":
-            notify_users_correctivo(
+            await notify_users_correctivo(
                 db_session=db,
                 id_mantenimiento=mantenimiento_id,
                 mensaje=f"Correctivo Solucionado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}",
@@ -147,7 +147,7 @@ async def update_mantenimiento_correctivo(
         db_mantenimiento.prioridad = prioridad
     if extendido is not None:
         db_mantenimiento.extendido = extendido
-        notify_users_correctivo(
+        await notify_users_correctivo(
             db_session=db,
             id_mantenimiento=mantenimiento_id,
             mensaje=f"Extendido solicitado - Sucursal: {sucursal.nombre} | Cuadrilla: {cuadrilla.nombre}",
@@ -167,7 +167,7 @@ async def update_mantenimiento_correctivo(
                 title="Correctivo urgente asignado",
                 body=f"Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)}"
             )
-            notify_users_correctivo(
+            await notify_users_correctivo(
                 db_session=db,
                 id_mantenimiento=db_mantenimiento.id,
                 mensaje=f"Correctivo urgente asignado - Sucursal: {sucursal.nombre} | Incidente: {str(db_mantenimiento.incidente)} | Prioridad: {str(db_mantenimiento.prioridad)}",
