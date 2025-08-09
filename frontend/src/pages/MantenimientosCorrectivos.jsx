@@ -38,7 +38,7 @@ const MantenimientosCorrectivos = () => {
     try {
       const response = await getMantenimientosCorrectivos();
       const mantenimientoArray = currentEntity.type === 'cuadrilla'
-        ? response.data.filter(m => m.id_cuadrilla === currentEntity.data.id)
+        ? response.data.filter(m => m.id_cuadrilla === currentEntity.data.id && m.estado !== 'Finalizado')
         : response.data;
       setMantenimientos(mantenimientoArray);
       setFilteredMantenimientos(mantenimientoArray);
@@ -180,17 +180,19 @@ const MantenimientosCorrectivos = () => {
           </Row>
 
           <Row className="mb-3">
-            <Col md={2}>
-              <Form.Group>
-                <Form.Label>Cuadrilla</Form.Label>
-                <Form.Select name="cuadrilla" value={filters.cuadrilla} onChange={handleFilterChange}>
-                  <option value="">Todas</option>
-                  {cuadrillas.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
+            {currentEntity.type === 'usuario' && (
+              <Col md={2}>
+                <Form.Group>
+                  <Form.Label>Cuadrilla</Form.Label>
+                  <Form.Select name="cuadrilla" value={filters.cuadrilla} onChange={handleFilterChange}>
+                    <option value="">Todas</option>
+                    {cuadrillas.map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            )}
             <Col md={2}>
               <Form.Group>
                 <Form.Label>Sucursal</Form.Label>
@@ -236,10 +238,12 @@ const MantenimientosCorrectivos = () => {
               <Form.Group>
                 <Form.Label>Estado</Form.Label>
                 <Form.Select name="estado" value={filters.estado} onChange={handleFilterChange}>
+                  {currentEntity.type === 'usuario' && (
+                    <option value="Finalizado">Finalizado</option>
+                  )}
                   <option value="">Todos</option>
                   <option value="Pendiente">Pendiente</option>
                   <option value="En Progreso">En Progreso</option>
-                  <option value="Finalizado">Finalizado</option>
                   <option value="A Presupuestar">A Presupuestar</option>
                   <option value="Presupuestado">Presupuestado</option>
                   <option value="Presupuesto Aprobado">Presupuesto Aprobado</option>

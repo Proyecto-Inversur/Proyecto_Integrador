@@ -134,6 +134,8 @@ async def update_mantenimiento_correctivo(
     
     if estado is not None:
         db_mantenimiento.estado = estado
+        if estado != "Solucionado" and estado != "Finalizado":
+            db_mantenimiento.fecha_cierre = None
         if estado == "Solucionado":
             notify_users_correctivo(
                 db_session=db,

@@ -100,7 +100,7 @@ const Ruta = () => {
 
       const allMaintenances = [
         ...allCorrectivosRes.data
-          .filter(m => m.estado === 'pendiente')
+          .filter(m => m.estado === 'Pendiente')
           .map(m => ({ ...m, tipo: 'correctivo' })),
         ...allPreventivosRes.data
           .filter(m => !m.fechaCierre)

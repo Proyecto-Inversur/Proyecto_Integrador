@@ -35,7 +35,7 @@ const MantenimientosPreventivos = () => {
     try {
       const response = await getMantenimientosPreventivos();
       const mantenimientoArray = currentEntity.type === 'cuadrilla'
-        ? response.data.filter(m => m.id_cuadrilla === currentEntity.data.id)
+        ? response.data.filter(m => m.id_cuadrilla === currentEntity.data.id && m.fecha_cierre === null)
         : response.data;
       setMantenimientos(mantenimientoArray);
       setFilteredMantenimientos(mantenimientoArray);
@@ -168,17 +168,19 @@ const MantenimientosPreventivos = () => {
           </Row>
 
           <Row className="mb-3">
-            <Col md={2}>
-              <Form.Group>
-                <Form.Label>Cuadrilla</Form.Label>
-                <Form.Select name="cuadrilla" value={filters.cuadrilla} onChange={handleFilterChange}>
-                  <option value="">Todas</option>
-                  {cuadrillas.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
+            {currentEntity.type === 'usuario' && (
+              <Col md={2}>
+                <Form.Group>
+                  <Form.Label>Cuadrilla</Form.Label>
+                  <Form.Select name="cuadrilla" value={filters.cuadrilla} onChange={handleFilterChange}>
+                    <option value="">Todas</option>
+                    {cuadrillas.map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            )}
             <Col md={2}>
               <Form.Group>
                 <Form.Label>Sucursal</Form.Label>

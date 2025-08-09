@@ -191,13 +191,23 @@ const Correctivo = () => {
 
     const data = overrideData || formData;
 
+    let fechaCierreFinal = data.fecha_cierre;
+    if (!fechaCierreFinal && (data.estado === 'Finalizado' || data.estado === 'Solucionado')) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      console.log(`${year}-${month}-${day}`);
+      fechaCierreFinal = `${year}-${month}-${day}`;
+    }
+
     const formDataToSend = new FormData();
     if (data.planilla) {
       formDataToSend.append('planilla', data.planilla);
     }
     data.fotos.forEach(file => formDataToSend.append('fotos', file));
-    if (data.fecha_cierre) {
-      formDataToSend.append('fecha_cierre', data.fecha_cierre);
+    if (fechaCierreFinal) {
+      formDataToSend.append('fecha_cierre', fechaCierreFinal);
     }
     if (data.extendido) {
       formDataToSend.append('extendido', data.extendido);
@@ -416,7 +426,7 @@ const Correctivo = () => {
                   <FiPlusCircle className="me-2" size={18} />{isSelected ? 'Borrar de la ruta' : 'Agregar a la ruta actual'}
                 </Button>
               )}
-              {currentEntity.type !== 'usuario' && (
+              {currentEntity.type !== 'usuario' && mantenimiento.estado !== 'Finalizado' && mantenimiento.estado !== 'Solucionado' && (
                 <Button variant="dark" className="info-button-finish" onClick={handleFinish}>
                   <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
                 </Button>

@@ -211,6 +211,7 @@ const Preventivo = () => {
     const hasFoto = mantenimiento.fotos?.length > 0;
 
     if (!hasPlanilla || !hasFoto) {
+      alert('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
       setError('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
       return;
     }
@@ -379,7 +380,7 @@ const Preventivo = () => {
                   <FiPlusCircle className="me-2" size={18} />{isSelected ? 'Borrar de la ruta' : 'Agregar a la ruta actual'}
                 </Button>
               )}
-              {currentEntity.type !== 'usuario' && (
+              {mantenimiento.fecha_cierre === null && (
                 <Button variant="dark" className="info-button-finish" onClick={handleFinish}>
                   <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
                 </Button>
