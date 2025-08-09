@@ -113,6 +113,10 @@ async def notify_users_correctivo(db_session: Session, id_mantenimiento: int, me
         encargados = db_session.query(Usuario).filter(Usuario.rol == "Encargado de Mantenimiento").all()
         for encargado in encargados:
             await send_notification_correctivo(db_session, encargado.firebase_uid, id_mantenimiento, mensaje)
+        if "Solucionado" in mensaje:
+            admins = db_session.query(Usuario).filter(Usuario.rol == "Administrador").all()
+            for admin in admins:
+                await send_notification_correctivo(db_session, admin.firebase_uid, id_mantenimiento, mensaje)
 
 async def notify_users_preventivo(db_session: Session, id_mantenimiento: int, mensaje: str, firebase_uid: Optional[str] = None):
     if firebase_uid is not None:
@@ -121,6 +125,10 @@ async def notify_users_preventivo(db_session: Session, id_mantenimiento: int, me
         encargados = db_session.query(Usuario).filter(Usuario.rol == "Encargado de Mantenimiento").all()
         for encargado in encargados:
             await send_notification_preventivo(db_session, encargado.firebase_uid, id_mantenimiento, mensaje)
+        if "Solucionado" in mensaje:
+            admins = db_session.query(Usuario).filter(Usuario.rol == "Administrador").all()
+            for admin in admins:
+                await send_notification_preventivo(db_session, admin.firebase_uid, id_mantenimiento, mensaje)
 
 async def notify_nearby_maintenances(db_session: Session, current_entity: dict, mantenimientos: list[dict]):
     if not current_entity:
@@ -142,18 +150,16 @@ def delete_notificaciones(db_session: Session, firebase_uid: str):
     return {"message": "Notificaciones eliminadas"}
 
 def delete_notificacion(db_session: Session, id_notificacion: int):
-    # Buscar en correctivos
-    noti = db_session.query(Notificacion_Correctivo).filter(Notificacion_Correctivo.id == id_notificacion).first()
-    if noti:
-        db_session.delete(noti)
+    notification = db_session.query(Notificacion_Correctivo).filter(Notificacion_Correctivo.id == id_notificacion).first()
+    if notification:
+        db_session.delete(notification)
         db_session.commit()
-        return True
+        return {"detail": "Notificación eliminada"}
 
-    # Buscar en preventivos
-    noti = db_session.query(Notificacion_Preventivo).filter(Notificacion_Preventivo.id == id_notificacion).first()
-    if noti:
-        db_session.delete(noti)
+    notification = db_session.query(Notificacion_Preventivo).filter(Notificacion_Preventivo.id == id_notificacion).first()
+    if notification:
+        db_session.delete(notification)
         db_session.commit()
-        return True
+        return {"detail": "Notificación eliminada"}
 
-    return False  # No encontrada
+    return {"detail": "No se encontró la notificación"}

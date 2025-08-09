@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Image, Modal, Button } from 'react-bootstrap';
 import logoInversur from '../assets/logo_inversur.png';
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaTimes } from 'react-icons/fa';
 import { AuthContext } from '../context/AuthContext';
 import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificacion } from '../services/notificaciones';
 import { subscribeToNotifications } from '../services/notificationWs';
@@ -137,50 +137,70 @@ const Navbar = () => {
     }
   };
 
+  const handleDeleteNotification = async (notificationId, e) => {
+    e.stopPropagation();
+    try {
+      await delete_notificacion(notificationId);
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Error al eliminar notificación:', error);
+    }
+  };
+
   const handleMarkAllAsRead = async () => {
-  try {
-    const correctivosNoLeidos = notifications.filter(n => n.tipo === 'correctivo' && !n.leida);
-    const preventivosNoLeidos = notifications.filter(n => n.tipo === 'preventivo' && !n.leida);
+    try {
+      const correctivosNoLeidos = notifications.filter(n => n.tipo === 'correctivo' && !n.leida);
+      const preventivosNoLeidos = notifications.filter(n => n.tipo === 'preventivo' && !n.leida);
 
-    await Promise.all([
-      ...correctivosNoLeidos.map(n => correctivo_leido(n.id)),
-      ...preventivosNoLeidos.map(n => preventivo_leido(n.id))
-    ]);
+      await Promise.all([
+        ...correctivosNoLeidos.map(n => correctivo_leido(n.id)),
+        ...preventivosNoLeidos.map(n => preventivo_leido(n.id))
+      ]);
 
-    await fetchNotifications();
-  } catch (error) {
-    console.error('Error al marcar todas como leídas:', error);
-  }
-};
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Error al marcar todas como leídas:', error);
+    }
+  };
 
-const renderNotification = (notification, index) => (
-  <div 
-    key={index} 
-    onClick={() => handleClick(notification)} 
-    className="mb-3 p-2 border-bottom hover:bg-gray-100 p-2 rounded d-flex align-items-center"
-  >
-    <div className="flex-grow-1">
-      <p className="mb-1">{notification.mensaje}</p>
-      <small className="text-muted">{timeAgo(notification.created_at)}</small>
+  const renderNotification = (notification, index) => (
+    <div 
+      key={index} 
+      onClick={() => handleClick(notification)} 
+      className="mb-3 p-2 border-bottom hover:bg-gray-100 p-2 rounded d-flex align-items-center"
+    >
+      <div className="flex-grow-1">
+        <p className="mb-1">{notification.mensaje}</p>
+        <small className="text-muted">{timeAgo(notification.created_at)}</small>
+      </div>
+      <div className="d-flex align-items-center">
+        {!notification.leida && (
+          <span 
+            className="bg-warning rounded-circle"
+            style={{ width: '10px', height: '10px', marginLeft: '10px' }}
+          ></span>
+        )}
+        <Button
+          variant="outline-danger"
+          size="sm"
+          onClick={(e) => handleDeleteNotification(notification.id, e)}
+          className="ms-2"
+        >
+          <FaTimes />
+        </Button>
+      </div>
     </div>
-    {!notification.leida && (
-      <span 
-        className="bg-warning rounded-circle"
-        style={{ width: '10px', height: '10px', marginLeft: '10px' }}
-      ></span>
-    )}
-  </div>
-);
+  );
 
-const handleDeleteReadNotifications = async () => {
-  try {
-    const leidas = notifications.filter(n => n.leida);
-    await Promise.all(leidas.map(n => delete_notificacion(n.id))); 
-    await fetchNotifications();
-  } catch (error) {
-    console.error('Error al eliminar notificaciones leídas:', error);
-  }
-};
+  const handleDeleteReadNotifications = async () => {
+    try {
+      const leidas = notifications.filter(n => n.leida);
+      await Promise.all(leidas.map(n => delete_notificacion(n.id))); 
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Error al eliminar notificaciones leídas:', error);
+    }
+  };
 
   return (
     <>

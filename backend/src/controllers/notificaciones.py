@@ -36,9 +36,6 @@ async def notificaciones_nearby(payload: NearbyNotificationCreate, request: Requ
     current = request.state.current_entity
     return await notify_nearby_maintenances(db, current, [m.dict() for m in payload.mantenimientos])
 
-@router.delete("/una/{id_notificacion}", response_model=dict)
-def eliminar_notificacion(id_notificacion: int, db: Session = Depends(get_db)):
-    success = delete_notificacion(db, id_notificacion)
-    if success:
-        return {"detail": "Notificación eliminada"}
-    return {"detail": "No se encontró la notificación"}
+@router.delete("/delete/{id_notificacion}", response_model=dict)
+def notificacion_delete(id_notificacion: int, db: Session = Depends(get_db)):
+    return delete_notificacion(db, id_notificacion)

@@ -25,3 +25,9 @@ def save_subscription(db_session: Session, current_entity: dict, sub: PushSubscr
 
 def get_subscriptions(db_session: Session, firebase_uid: str):
     return db_session.query(PushSubscription).filter(PushSubscription.firebase_uid == firebase_uid).all()
+
+def delete_subscription(db_session: Session, endpoint: str):
+    db_session.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).delete()
+    db_session.commit()
+
+    return {"message": "Subscription deleted"}

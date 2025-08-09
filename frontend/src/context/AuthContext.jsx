@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useRef } from 'react';
 import { auth, signOut, getPushSubscription, signInWithCredential, GoogleAuthProvider } from '../services/firebase';
-import { saveSubscription } from '../services/notificaciones';
+import { saveSubscription, deleteSubscription } from '../services/notificaciones';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { googleClientId } from '../config';
@@ -10,6 +10,7 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentEntity, setCurrentEntity] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [singingIn, setSingingIn] = useState(false);
@@ -34,10 +35,11 @@ const AuthProvider = ({ children }) => {
       setCurrentUser(user);
       setCurrentEntity(response.data);
 
-      const subscription = await getPushSubscription();
-      if (subscription) {
+      const push_subscription = await getPushSubscription();
+      if (push_subscription) {
+        setSubscription(push_subscription.toJSON());
         await saveSubscription({
-          ...subscription.toJSON(),
+          ...push_subscription.toJSON(),
           firebase_uid: response.data.data.uid,
           device_info: navigator.userAgent
         });
@@ -71,6 +73,10 @@ const AuthProvider = ({ children }) => {
     isVerifiedRef.current = false;
     setCurrentUser(null);
     setCurrentEntity(null);
+    if (subscription) {
+      await deleteSubscription({ params: { endpoint: subscription.endpoint } });
+    }
+    setSubscription(null);
     await signOut(auth);
     if (error) {
       navigate('/login', { state: { error: error } });
