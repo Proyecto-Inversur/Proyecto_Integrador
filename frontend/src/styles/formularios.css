@@ -90,6 +90,7 @@
   background-color: #6c757d !important; /* Gris oscuro */
   border-color: #6c757d !important;
   color: #ffffff !important; /* Texto blanco */
+  width: 100%;
 }
 
 .custom-save-button:hover {

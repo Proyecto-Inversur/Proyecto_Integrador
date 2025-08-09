@@ -96,7 +96,7 @@ const UserForm = ({ user, onClose }) => {
                   </Form.Select>
                 </Form.Group>
                 <Button
-                  className="custom-save-button d-flex align-items-center justify-content-center gap-2"
+                  className="custom-save-button"
                   type="submit"
                   disabled={!isFormValid()}
                 >

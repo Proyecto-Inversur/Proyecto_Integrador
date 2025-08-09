@@ -167,9 +167,9 @@ const MantenimientosPreventivos = () => {
             </Col>
           </Row>
 
-          <Row className="mb-3">
+          <Row className="mb-3 justify-content-center">
             {currentEntity.type === 'usuario' && (
-              <Col md={2}>
+              <Col xs={12} sm={6} md={3} lg={2}>
                 <Form.Group>
                   <Form.Label>Cuadrilla</Form.Label>
                   <Form.Select name="cuadrilla" value={filters.cuadrilla} onChange={handleFilterChange}>
@@ -181,7 +181,7 @@ const MantenimientosPreventivos = () => {
                 </Form.Group>
               </Col>
             )}
-            <Col md={2}>
+            <Col xs={12} sm={6} md={3} lg={2}>
               <Form.Group>
                 <Form.Label>Sucursal</Form.Label>
                 <Form.Select name="sucursal" value={filters.sucursal} onChange={handleFilterChange}>
@@ -192,7 +192,7 @@ const MantenimientosPreventivos = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col md={2}>
+            <Col xs={12} sm={6} md={3} lg={2}>
               <Form.Group>
                 <Form.Label>Zona</Form.Label>
                 <Form.Select name="zona" value={filters.zona} onChange={handleFilterChange}>
@@ -203,7 +203,7 @@ const MantenimientosPreventivos = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col md={2}>
+            <Col xs={12} sm={6} md={3} lg={2}>
               <Form.Group>
                 <Form.Label>Ordenar por Fecha</Form.Label>
                 <Form.Select name="sortByDate" value={filters.sortByDate} onChange={handleFilterChange}>
