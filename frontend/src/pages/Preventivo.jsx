@@ -11,7 +11,7 @@ import { selectPreventivo, deletePreventivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import { BsSave } from 'react-icons/bs';
-import { getChatCorrectivo, sendMessagePreventivo } from '../services/chats';
+import { getChatPreventivo, sendMessagePreventivo } from '../services/chats';
 import { subscribeToChat } from '../services/chatWs';
 import '../styles/mantenimientos.css';
 

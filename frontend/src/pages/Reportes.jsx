@@ -184,7 +184,13 @@ const Reportes = () => {
     const overlapPx = 50; // cantidad de píxeles para superposición entre páginas
     const totalPages = Math.ceil((canvas.height - overlapPx) / (pageCanvasHeight - overlapPx));
 
-    let currentYOffset = 200; // primer recorte (corrige el espacio vacío arriba)
+    let currentYOffset;
+
+    if (window.innerWidth > 1024) {
+      currentYOffset = canvas.height * 0.035; // offset para PC
+    } else {
+      currentYOffset = 0; // offset para móvil/tablet
+    }
 
     for (let page = 0; page < totalPages; page++) {
       const pageCanvas = document.createElement('canvas');
