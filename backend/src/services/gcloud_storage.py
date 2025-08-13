@@ -5,6 +5,9 @@ import uuid
 import os
 import json
 
+import logging
+logger = logging.getLogger(__name__)
+
 GOOGLE_CREDENTIALS = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 
 def create_folder_if_not_exists(bucket_name: str, folder_path: str):
@@ -31,8 +34,18 @@ def generate_gallery_html(bucket_name: str, folder: str):
         storage_client = storage.Client.from_service_account_info(GOOGLE_CREDENTIALS)
         bucket = storage_client.bucket(bucket_name)
         prefix = folder.rstrip("/") + "/"
+        
+        # Borrar el index.html si ya existe
+        index_blob = bucket.blob(f"{prefix}index.html")
+        if index_blob.exists():
+            index_blob.delete()
+        
         blobs = bucket.list_blobs(prefix=prefix)
-        urls = [f"https://storage.googleapis.com/{bucket_name}/{blob.name}" for blob in blobs if not blob.name.endswith("index.html")]
+        urls = [
+            f"https://storage.googleapis.com/{bucket_name}/{blob.name}"
+            for blob in blobs
+            if not blob.name.endswith("index.html") and blob.content_type.startswith("image/")
+        ]
         
         if not urls:
             return None  # No photos, no gallery needed
@@ -50,7 +63,7 @@ def generate_gallery_html(bucket_name: str, folder: str):
             <div class="gallery">
         """
         for url in urls:
-            html_content += f'<a href="{url}" target="_blank"><img src="{url}" alt="Photo"></a>'
+            html_content += f'<a href="{url}" target="_blank"><img src="{url}"></a>'
         html_content += """
             </div>
         </body>
@@ -58,7 +71,9 @@ def generate_gallery_html(bucket_name: str, folder: str):
         """
         
         blob = bucket.blob(f"{prefix}index.html")
+        blob.cache_control = "no-cache, max-age=0"
         blob.upload_from_string(html_content, content_type="text/html")
+        blob.patch()
         return f"https://storage.googleapis.com/{bucket_name}/{prefix}index.html"
     except GoogleAPIError as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate gallery HTML: {str(e)}")
@@ -79,7 +94,9 @@ async def upload_file_to_gcloud(file: UploadFile, bucket_name: str, folder: str 
         destination_blob_name = f"{folder.rstrip('/')}/{uuid.uuid4()}.{file_extension}"
         
         blob = bucket.blob(destination_blob_name)
+        blob.cache_control = "no-cache, max-age=0"
         blob.upload_from_file(file.file, content_type=file.content_type)
+        blob.patch()
         
         generate_gallery_html(bucket_name, folder)
         
@@ -118,11 +135,15 @@ def delete_file_in_folder(bucket_name: str, folder: str, file_path: str) -> bool
         
         storage_client = storage.Client.from_service_account_info(GOOGLE_CREDENTIALS)
         bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(f"{folder.rstrip('/')}{file_path}")
-        if blob.exists():
+        blob = bucket.blob(f"{folder.rstrip('/')}/{file_path.lstrip('/')}")
+        exists = blob.exists()
+        if exists:
             blob.delete()
-            generate_gallery_html(bucket_name, folder)
-            return True
-        return False
+        else:
+            logger.warning(
+                "File %s not found in folder %s of bucket %s", file_path, folder, bucket_name
+            )
+        generate_gallery_html(bucket_name, folder)
+        return exists
     except GoogleAPIError as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete file in GCS: {str(e)}")
