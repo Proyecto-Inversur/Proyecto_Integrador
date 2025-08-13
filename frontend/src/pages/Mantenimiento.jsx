@@ -10,7 +10,7 @@ const Mantenimiento = () => {
   const { currentEntity } = useContext(AuthContext);
 
   return (
-    <Container className="home-container">
+    <Container>
     <div className="back-button-wrapper">
       <BackButton to="/" />
     </div>
