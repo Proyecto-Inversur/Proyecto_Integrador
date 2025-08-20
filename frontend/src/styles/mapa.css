@@ -96,6 +96,12 @@
   left: 1rem;
 }
 
+.boton-brujula {
+  position: absolute;
+  bottom: 7.5rem;
+  right: 1rem;
+}
+
 .boton-borrar {
   position: absolute;
   top: 6.5rem;
@@ -200,6 +206,12 @@
   .boton-volver {
     top: 6.5rem;
     left: 0.5rem;
+  }
+
+  .boton-brujula {
+    position: absolute;
+    bottom: 9rem;
+    right: 0.5rem;
   }
 
   .boton-borrar {
