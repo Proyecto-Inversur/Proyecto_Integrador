@@ -54,8 +54,13 @@ const MantenimientosPreventivos = () => {
         getSucursales(),
         getZonas(),
       ]);
+      console.log(mantenimientos);
+      const sucursalesConMantenimientos = sucursalesResponse.data.filter(sucursal =>
+        mantenimientos.some(m => m.id_sucursal === sucursal.id)
+      );
+
+      setSucursales(sucursalesConMantenimientos);
       setCuadrillas(cuadrillasResponse.data);
-      setSucursales(sucursalesResponse.data);
       setZonas(zonasResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -66,8 +71,11 @@ const MantenimientosPreventivos = () => {
 
   useEffect(() => {
     fetchMantenimientos();
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [mantenimientos]);
 
   const handleFilterChange = (e) => {
     const newFilters = { ...filters, [e.target.name]: e.target.value };
@@ -124,7 +132,6 @@ const MantenimientosPreventivos = () => {
     setShowForm(false);
     setSelectedMantenimiento(null);
     fetchMantenimientos();
-    fetchData();
   };
 
   const getSucursalNombre = (id_sucursal) => {
@@ -192,17 +199,19 @@ const MantenimientosPreventivos = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col xs={12} sm={6} md={3} lg={2}>
-              <Form.Group>
-                <Form.Label>Zona</Form.Label>
-                <Form.Select name="zona" value={filters.zona} onChange={handleFilterChange}>
-                  <option value="">Todas</option>
-                  {zonas.map(z => (
-                    <option key={z.id} value={z.nombre}>{z.nombre}</option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
+            {currentEntity.type === 'usuario' && (
+              <Col xs={12} sm={6} md={3} lg={2}>
+                <Form.Group>
+                  <Form.Label>Zona</Form.Label>
+                  <Form.Select name="zona" value={filters.zona} onChange={handleFilterChange}>
+                    <option value="">Todas</option>
+                    {zonas.map(z => (
+                      <option key={z.id} value={z.nombre}>{z.nombre}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            )}
             <Col xs={12} sm={6} md={3} lg={2}>
               <Form.Group>
                 <Form.Label>Ordenar por Fecha</Form.Label>
@@ -224,12 +233,20 @@ const MantenimientosPreventivos = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  {currentEntity.type === 'usuario' && (
+                    <th>ID</th>
+                  )}
                   <th>Preventivo</th>
-                  <th>Cuadrilla</th>
-                  <th>Zona</th>
+                  {currentEntity.type === 'usuario' && (
+                    <th>Cuadrilla</th>
+                  )}
+                  {currentEntity.type === 'usuario' && (
+                    <th>Zona</th>
+                  )}
                   <th>Fecha Apertura</th>
-                  <th>Fecha Cierre</th>
+                  {currentEntity.type === 'usuario' && (
+                    <th>Fecha Cierre</th>
+                  )}
                   {currentEntity.type === 'usuario' && (
                     <th className="acciones-col">Acciones</th>
                   )}
@@ -242,12 +259,20 @@ const MantenimientosPreventivos = () => {
                     onClick={() => handleRowClick(mantenimiento.id)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <td>{mantenimiento.id}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td>{mantenimiento.id}</td>
+                    )}
                     <td>{getSucursalNombre(mantenimiento.id_sucursal)} - {mantenimiento.frecuencia}</td>
-                    <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
-                    <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+                    )}
+                    {currentEntity.type === 'usuario' && (
+                      <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                    )}
                     <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-                    <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+                    )}
                     {currentEntity.type === 'usuario' && (
                       <td className="action-cell" onClick={(e) => e.stopPropagation()}>
                         <button

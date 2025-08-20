@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, test, expect, vi } from 'vitest';
 import App from '../src/App';
 
-jest.mock('../src/services/api'); 
+vi.mock('../src/services/api');
 
 describe('App component', () => {
   test('renderiza el Navbar y el Footer', () => {

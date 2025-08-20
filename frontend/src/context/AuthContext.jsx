@@ -42,42 +42,46 @@ const AuthProvider = ({ children }) => {
 
   const verifyUser = async (user, idToken) => {
     isVerifyingRef.current = true;
-    try {
-      setLoading(true);
-      setVerifying(true);
+    for (let i = 0; i < 3; i++) {
+      try {
+        setLoading(true);
+        setVerifying(true);
 
-      const response = await api.post(
-        '/auth/verify',
-        {},
-        { headers: { Authorization: `Bearer ${idToken}` } }
-      );
+        const response = await api.post(
+          '/auth/verify',
+          {},
+          { headers: { Authorization: `Bearer ${idToken}` } }
+        );
 
-      // pequeña espera para UX
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      isVerifiedRef.current = true;
-      setCurrentUser(user);
-      setCurrentEntity(response.data);
+        // pequeña espera para UX
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        isVerifiedRef.current = true;
+        setCurrentUser(user);
+        setCurrentEntity(response.data);
 
-      const push_subscription = await getPushSubscription();
-      if (push_subscription) {
-        const jsonSub = push_subscription.toJSON();
-        setSubscription(jsonSub);
-        await saveSubscription({
-          ...jsonSub,
-          firebase_uid: response?.data?.data?.uid,
-          device_info: navigator.userAgent,
-        });
+        const push_subscription = await getPushSubscription();
+        if (push_subscription) {
+          const jsonSub = push_subscription.toJSON();
+          setSubscription(jsonSub);
+          await saveSubscription({
+            ...jsonSub,
+            firebase_uid: response?.data?.data?.uid,
+            device_info: navigator.userAgent,
+          });
+        }
+
+        return { success: true, data: response.data };
+      } catch (error) {
+        if (i == 2) {
+          const userMessage = buildUserAuthError(error, 'Error al verificar el usuario.');
+          await logOut(userMessage); 
+          return { success: false, data: null };
+        }
+      } finally {
+        isVerifyingRef.current = false;
+        setLoading(false);
+        setVerifying(false);
       }
-
-      return { success: true, data: response.data };
-    } catch (error) {
-      const userMessage = buildUserAuthError(error, 'Error al verificar el usuario.');
-      await logOut(userMessage); 
-      return { success: false, data: null };
-    } finally {
-      isVerifyingRef.current = false;
-      setLoading(false);
-      setVerifying(false);
     }
   };
 
@@ -160,9 +164,15 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  const retrySignIn = async (credential, retries = 3, delay = 1000) => {
+  const retrySignIn = async (retries = 3, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
       try {
+        const idToken =
+        sessionStorage.getItem('googleIdToken') || localStorage.getItem('googleIdToken');
+        if (!idToken) {
+          return; // no hay token; no se hace nada
+        }
+        const credential = GoogleAuthProvider.credential(idToken);
         const result = await signInWithCredential(auth, credential);
         return result;
       } catch (error) {
@@ -175,15 +185,9 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (isOnload) => {
     try {
-      const idToken =
-        sessionStorage.getItem('googleIdToken') || localStorage.getItem('googleIdToken');
-      if (!idToken) {
-        return; // no hay token; no se hace nada
-      }
-      const credential = GoogleAuthProvider.credential(idToken);
-      const result = await retrySignIn(credential);
+      const result = await retrySignIn();
       const user = result.user;
       if (user) {
         const firebaseToken = await user.getIdToken();
@@ -191,17 +195,27 @@ const AuthProvider = ({ children }) => {
         sessionStorage.setItem('authToken', firebaseToken);
         await verifyUser(user, firebaseToken);
       } else {
-        await logOut('No se pudo obtener el usuario.');
+        if (isOnload) {
+          await logOut();
+        }
+        else {
+          await logOut('No se pudo obtener el usuario.');
+        }
       }
     } catch (error) {
-      const userMessage = buildUserAuthError(error, 'No se pudo completar el inicio de sesión.');
-      await logOut(userMessage);
+      if (isOnload) {
+        await logOut();
+      }
+      else {
+        const userMessage = buildUserAuthError(error, 'No se pudo completar el inicio de sesión.');
+        await logOut(userMessage);
+      }
     }
   };
 
   // Ejecutar al cargar la página
   useEffect(() => {
-    handleGoogleSignIn();
+    handleGoogleSignIn(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -209,7 +223,7 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (singingIn) {
       setSingingIn(false); // evitar loops
-      handleGoogleSignIn();
+      handleGoogleSignIn(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singingIn]);

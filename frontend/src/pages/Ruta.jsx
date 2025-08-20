@@ -8,7 +8,7 @@ import { getMantenimientosPreventivos } from '../services/mantenimientoPreventiv
 import { notify_nearby_maintenances } from '../services/notificaciones';
 import { renderToString } from 'react-dom/server';
 import { FaMapMarkerAlt } from 'react-icons/fa';
-import { FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft, FiCompass } from 'react-icons/fi';
 import { bearing } from '@turf/turf';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,12 +16,15 @@ import 'leaflet-rotate/dist/leaflet-rotate.js';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import 'leaflet-geometryutil';
+import 'leaflet-rotatedmarker';
 import '../styles/mapa.css';
 
 const defaultCenter = { lat: -31.4167, lng: -64.1833 };
 const ARRIVAL_RADIUS = 50;
 const ANIMATION_DURATION = 1000;
 const NOTIFY_DISTANCE = 10000; // Distancia en metros para notificar mantenimientos cercanos
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
 const Ruta = () => {
   const { currentEntity } = useContext(AuthContext);
@@ -31,6 +34,7 @@ const Ruta = () => {
   const [routingControl, setRoutingControl] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isCenter, setIsCenter] = useState(true);
+  const [heading, setHeading] = useState(null);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const userMarkerRef = useRef(null);
@@ -40,6 +44,7 @@ const Ruta = () => {
   const sucursalMarkersRef = useRef([]);
   const lastSucursalIdsRef = useRef([]);
   const notifiedMaintenancesRef = useRef(new Set());
+  const headingRef = useRef(null);
 
   const fetchData = async () => {
     if (!currentEntity?.data?.id || !userLocation) return;
@@ -148,6 +153,48 @@ const Ruta = () => {
     }
   };
 
+  useEffect(() => {
+    if (!isNavigating) return;
+
+    const handleOrientation = (event) => {
+      let value;
+
+      if (typeof event.webkitCompassHeading === 'number') {
+        value = isIOS ? (360 - event.webkitCompassHeading) : event.webkitCompassHeading;
+      } else if (typeof event.alpha === 'number') {
+        value = event.alpha;
+      }
+
+      if (typeof value === 'number') {
+        setHeading(value);
+        headingRef.current = value;
+      }
+    };
+
+    const enable = async () => {
+      try {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+          const permission = await DeviceOrientationEvent.requestPermission();
+          if (permission !== 'granted') return;
+        }
+        window.addEventListener('deviceorientation', handleOrientation);
+      } catch (err) {
+        console.error('Device orientation error:', err);
+      }
+    };
+
+    enable();
+
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation);
+    };
+  }, [isNavigating]);
+
+  useEffect(() => {
+    if (!isNavigating || heading == null) return;
+    mapInstanceRef.current?.setBearing(heading);
+  }, [heading, isNavigating]);
+
   const iniciarNavegacion = (route) => {
     const waypoints = route.getPlan().getWaypoints();
     if (!waypoints || waypoints.length < 2) {
@@ -248,6 +295,14 @@ const Ruta = () => {
     return a.every((s, i) => s.id === b[i]?.id);
   };
 
+  const rotarNorte = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setBearing(0); // apunto al norte
+    }
+    setHeading(0);
+    headingRef.current = 0;
+  };
+
   const borrarRuta = () => {
     if (!window.confirm("⚠️ Vas a borrar toda la selección. ¿Seguro que querés continuar?")) {
       return;
@@ -273,6 +328,8 @@ const Ruta = () => {
       zoom: 12,
       rotate: true,
       rotateControl: false,
+      zoomControl: false,
+      touchRotate: true,
     });
     mapInstanceRef.current = map;
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -322,15 +379,15 @@ const Ruta = () => {
         const nextWaypoints = [currentLatLng, ...sucursales.map(s => L.latLng(s.lat, s.lng))];
         actualizarWaypoints(nextWaypoints);
 
-        // Movimiento suave
-        let heading = 0;
-        if (prevLatLngRef.current) {
-          heading = bearing(
+        let mapBearing = headingRef.current;
+        if (mapBearing == null && prevLatLngRef.current) {
+          const calc = bearing(
             [prevLatLngRef.current.lng, prevLatLngRef.current.lat],
             [longitude, latitude]
           );
+          mapBearing = -calc;
         }
-        smoothPanTo(currentLatLng, 20, -heading);
+        smoothPanTo(currentLatLng, 20, mapBearing ?? 0);
       }
 
       prevLatLngRef.current = currentLatLng;
@@ -400,6 +457,12 @@ return (
             className="ruta-btn danger boton-volver"
           >
             <FiArrowLeft size={28} color="white" />
+          </button>
+          <button
+            onClick={rotarNorte}
+            className="ruta-btn primary boton-brujula"
+          >
+            <FiCompass size={28} color="white" />
           </button>
           <button className="ruta-btn danger boton-borrar" onClick={borrarRuta}>
             ❌ Borrar ruta
