@@ -1,17 +1,35 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup } from 'firebase/auth';
-import { NODE_ENV } from '../config';
-
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
+import { getDatabase } from 'firebase/database';
+import { initializeAuth, indexedDBLocalPersistence, browserPopupRedirectResolver, signOut, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { firebaseConfig, webPushPublicKey } from '../config';
 
 const app = initializeApp(firebaseConfig);
-const auth = NODE_ENV === 'test' && window.__firebase_auth__ ? window.__firebase_auth__ : getAuth(app);
+const database = getDatabase(app);
+const auth = initializeAuth(app, {
+  persistence: indexedDBLocalPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver
+});
+// We rely on the standard Push API for notifications
 
-export { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup };
+const urlBase64ToUint8Array = (base64String) => {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+};
+
+const getPushSubscription = async () => {
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
+    });
+    return subscription;
+  } catch (err) {
+    console.error('Error subscribing for web push:', err);
+    return null;
+  }
+};
+
+export { database, auth, getPushSubscription, signOut, GoogleAuthProvider, signInWithCredential };

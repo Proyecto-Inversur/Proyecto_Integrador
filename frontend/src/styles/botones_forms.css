@@ -1,0 +1,54 @@
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.action-btn.edit {
+  background-color: #ffc720;
+  color: #ffffff;
+}
+
+.action-btn.delete {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
+/* Centrado de botones en la columna de acciones */
+.action-cell {
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  padding: 0.5rem 0;
+  border: none !important;
+}
+
+/* Ancho de la columna Acciones */
+th.acciones-col,
+td.acciones-col {
+  width: 120px;
+  text-align: center;
+}
+
+/* Diseño Contenedor de Tablas */
+.contenido-wrapper {
+  background-color: #efefef; 
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+}
+

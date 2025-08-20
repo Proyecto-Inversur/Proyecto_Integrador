@@ -26,7 +26,7 @@ def sucursal_create(sucursal: SucursalCreate, request: Request, db: Session = De
 @router.put("/{sucursal_id}", response_model=dict)
 def sucursal_update(sucursal_id: int, sucursal: SucursalUpdate, request: Request, db: Session = Depends(get_db)):
     current_entity = request.state.current_entity
-    updated_sucursal = update_sucursal(db, sucursal_id, sucursal.nombre, sucursal.zona, sucursal.direccion, sucursal.superficie, current_entity)
+    updated_sucursal = update_sucursal(db, sucursal_id, current_entity, sucursal.nombre, sucursal.zona, sucursal.direccion, sucursal.superficie)
     return {"id": updated_sucursal.id, "nombre": updated_sucursal.nombre, "zona": updated_sucursal.zona, "direccion": updated_sucursal.direccion, "superficie": updated_sucursal.superficie}
 
 @router.delete("/{sucursal_id}", response_model=dict)

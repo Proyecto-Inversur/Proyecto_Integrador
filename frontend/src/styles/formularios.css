@@ -45,6 +45,14 @@
   left: 90%;
 }
 
+/* Estilo para el botón de editar dentro de los Dropdown Items */
+.custom-edit-button {
+  padding: 0.1rem 0.3rem;
+  font-size: 0.8rem;
+  position: absolute;
+  left: 82%;
+}
+
 /* Estilo para el Dropdown Item de "Agregar nueva zona" */
 .custom-dropdown-item-add {
   display: flex;
@@ -82,6 +90,7 @@
   background-color: #6c757d !important; /* Gris oscuro */
   border-color: #6c757d !important;
   color: #ffffff !important; /* Texto blanco */
+  width: 100%;
 }
 
 .custom-save-button:hover {

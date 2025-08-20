@@ -13,21 +13,12 @@ def init_admin(email: str, nombre: str, password: str, rol: Role = Role.ADMIN):
         if existing_admin:
             print(f"Ya existe un administrador: {existing_admin.email}")
             return
-        
         try:
             existing_user = auth.get_user_by_email(email)
-        except Exception as e:
-            existing_user = ''
-            print(f"Creando usuario admin en firebase")
-        
-        if existing_user:
-            print(f"El usuario ya existe en Firebase: {email}")
             firebase_uid = existing_user.uid
-        else:
-            firebase_user = auth.create_user(
-                email=email,
-                password=password
-            )
+        except auth.UserNotFoundError:
+            print(f"Creating admin user in Firebase")
+            firebase_user = auth.create_user(email=email, password=password)
             firebase_uid = firebase_user.uid
         
         db_user = Usuario(

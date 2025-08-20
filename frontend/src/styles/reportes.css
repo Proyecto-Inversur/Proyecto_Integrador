@@ -1,0 +1,202 @@
+
+/* Contenedor general */
+.reports-container {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  padding-top: 7rem;
+  padding-bottom: 5rem;
+  border-radius: 8px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+/* Títulos */
+.report-header {
+  color: #2c2c2c;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Inputs */
+.date-label {
+  color: #2c2c2c;
+  font-weight: 500;
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.date-input {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  color: #495057;
+  min-width: 120px;
+  margin-right: 1rem;
+}
+
+/* Botón */
+.generate-button {
+  background-color: #343a40;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  height: fit-content;
+  align-items: center;
+}
+
+.generate-button:hover {
+  background-color: #146c43;
+}
+
+/* Grilla de gráficos */
+.graph-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Gráfico individual */
+.chart-card {
+  padding: 1rem;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  max-height: 320px;
+  display:grid;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.chart-card canvas {
+  max-height: 240px !important;
+}
+
+/* Título del gráfico */
+.chart-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* Tablas */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem;
+  text-align: left;
+  color: #2c2c2c;
+}
+
+.report-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.report-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.total-row {
+  font-weight: 600;
+  background-color: #e9ecef;
+}
+
+/* Tarjeta resumen */
+.summary-card {
+  background: #f1f3f5;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+/* Filtros sticky opcional */
+.filter-bar {
+  position: sticky;
+  top: 5rem;
+  background-color: #ffffff;
+  z-index: 10;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.filters-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filters-container > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.download-button {
+  background-color: #343a40;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  height: fit-content;
+}
+
+.download-button:hover {
+  background-color: #ffc720
+}
+
+
+/* Pantallas pequeñas: móviles (hasta 768px) */
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 1rem;
+    margin-top: 6rem;
+    padding-bottom: 5rem;
+  }
+
+  .date-input {
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+
+  .generate-button {
+    width: 100%;
+  }
+
+  .chart-card {
+    max-height: 280px;
+  }
+
+  .report-table {
+  font-size: 0.87rem;
+  }
+
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+}

@@ -1,5 +1,5 @@
 import firebase_admin
-from firebase_admin import credentials, auth
+from firebase_admin import credentials, auth, db
 import os
 import json
 
@@ -8,9 +8,8 @@ def initialize_firebase():
         if os.getenv("TESTING") == "true":
             return None  # No inicializar Firebase en tests
         if os.getenv("FIREBASE_CREDENTIALS"):
-            firebase_creds = json.loads(os.getenv("FIREBASE_CREDENTIALS"))
-            cred = credentials.Certificate(firebase_creds)
-        firebase_admin.initialize_app(cred)
+            cred = credentials.Certificate(json.loads(os.getenv("FIREBASE_CREDENTIALS")))
+        firebase_admin.initialize_app(cred, {'databaseURL': os.getenv("FIREBASE_DATABASE_URL")})
     return firebase_admin.get_app()
 
 # Inicializar Firebase al importar el módulo
