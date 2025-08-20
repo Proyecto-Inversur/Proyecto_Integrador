@@ -57,7 +57,12 @@ const MantenimientosCorrectivos = () => {
         getCuadrillas(),
         getZonas(),
       ]);
-      setSucursales(sucursalesResponse.data);
+      
+      const sucursalesConMantenimientos = sucursalesResponse.data.filter(sucursal =>
+        mantenimientos.some(m => m.id_sucursal === sucursal.id)
+      );
+
+      setSucursales(sucursalesConMantenimientos);
       setCuadrillas(cuadrillasResponse.data);
       setZonas(zonasResponse.data);
     } catch (error) {
@@ -69,8 +74,11 @@ const MantenimientosCorrectivos = () => {
 
   useEffect(() => {
     fetchMantenimientos();
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [mantenimientos]);
 
   const handleFilterChange = (e) => {
     const newFilters = { ...filters, [e.target.name]: e.target.value };
@@ -136,7 +144,6 @@ const MantenimientosCorrectivos = () => {
     setShowForm(false);
     setSelectedMantenimiento(null);
     fetchMantenimientos();
-    fetchData();
   };
 
   const getSucursalNombre = (id_sucursal) => {
@@ -178,7 +185,6 @@ const MantenimientosCorrectivos = () => {
               )}
             </Col>
           </Row>
-
           <Row className="mb-3 justify-content-center">
             {currentEntity.type === 'usuario' && (
               <Col xs={12} sm={6} md={3} lg={2}>
@@ -204,17 +210,19 @@ const MantenimientosCorrectivos = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col xs={12} sm={6} md={3} lg={2}>
-              <Form.Group>
-                <Form.Label>Zona</Form.Label>
-                <Form.Select name="zona" value={filters.zona} onChange={handleFilterChange}>
-                  <option value="">Todas</option>
-                  {zonas.map(z => (
-                    <option key={z.id} value={z.nombre}>{z.nombre}</option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
+            {currentEntity.type === 'usuario' && (
+              <Col xs={12} sm={6} md={3} lg={2}>
+                <Form.Group>
+                  <Form.Label>Zona</Form.Label>
+                  <Form.Select name="zona" value={filters.zona} onChange={handleFilterChange}>
+                    <option value="">Todas</option>
+                    {zonas.map(z => (
+                      <option key={z.id} value={z.nombre}>{z.nombre}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            )}
             <Col xs={12} sm={6} md={3} lg={2}>
               <Form.Group>
                 <Form.Label>Rubro</Form.Label>
@@ -287,15 +295,27 @@ const MantenimientosCorrectivos = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  {currentEntity.type === 'usuario' && (
+                    <th>ID</th>
+                  )}
                   <th>Sucursal</th>
-                  <th>Cuadrilla</th>
-                  <th>Zona</th>
+                  {currentEntity.type === 'usuario' && (
+                    <th>Cuadrilla</th>
+                  )}
+                  {currentEntity.type === 'usuario' && (
+                    <th>Zona</th>
+                  )}
                   <th>Rubro</th>
-                  <th>Número de Caso</th>
+                  {currentEntity.type === 'usuario' && (
+                    <th>Número de Caso</th>
+                  )}
                   <th>Fecha Apertura</th>
-                  <th>Fecha Cierre</th>
-                  <th>Incidente</th>
+                  {currentEntity.type === 'usuario' && (
+                    <th>Fecha Cierre</th>
+                  )}
+                  {currentEntity.type === 'usuario' && (
+                    <th>Incidente</th>
+                  )}
                   <th>Estado</th>
                   <th>Prioridad</th>
                   {currentEntity.type === 'usuario' && (
@@ -310,27 +330,39 @@ const MantenimientosCorrectivos = () => {
                     onClick={() => handleRowClick(mantenimiento.id)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <td>{mantenimiento.id}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td>{mantenimiento.id}</td>
+                    )}
                     <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
-                    <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
-                    <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+                    )}
+                    {currentEntity.type === 'usuario' && (
+                      <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                    )}
                     <td>{mantenimiento.rubro}</td>
-                    <td>{mantenimiento.numero_caso}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td>{mantenimiento.numero_caso}</td>
+                    )}
                     <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-                    <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
-                    <td>{mantenimiento.incidente}</td>
+                    {currentEntity.type === 'usuario' && (
+                      <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+                    )}
+                    {currentEntity.type === 'usuario' && (
+                      <td>{mantenimiento.incidente}</td>
+                    )}
                     <td>{mantenimiento.estado}</td>
                     <td>{mantenimiento.prioridad}</td>
                     {currentEntity.type === 'usuario' && (
                       <td className="action-cell" onClick={(e) => e.stopPropagation()}>
                         <button
-                          className="action-btn edit me-2"
+                          className="action-btn edit me-2" aria-label="Editar"
                           onClick={() => handleEdit(mantenimiento)}
                         >
                           <FiEdit />
                         </button>
                         <button
-                          className="action-btn delete"
+                          className="action-btn delete" aria-label="Eliminar"
                           onClick={() => handleDelete(mantenimiento.id)}
                         >
                           <FiTrash2 />

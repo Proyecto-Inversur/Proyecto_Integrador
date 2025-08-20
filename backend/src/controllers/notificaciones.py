@@ -34,7 +34,7 @@ def notificaciones_delete(firebase_uid: str, db: Session = Depends(get_db)):
 @router.post("/nearby", response_model=dict)
 async def notificaciones_nearby(payload: NearbyNotificationCreate, request: Request, db: Session = Depends(get_db)):
     current = request.state.current_entity
-    return await notify_nearby_maintenances(db, current, [m.dict() for m in payload.mantenimientos])
+    return await notify_nearby_maintenances(db, current, [m.model_dump() for m in payload.mantenimientos])
 
 @router.delete("/delete/{id_notificacion}", response_model=dict)
 def notificacion_delete(id_notificacion: int, db: Session = Depends(get_db)):

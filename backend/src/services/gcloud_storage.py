@@ -5,9 +5,6 @@ import uuid
 import os
 import json
 
-import logging
-logger = logging.getLogger(__name__)
-
 GOOGLE_CREDENTIALS = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 
 def create_folder_if_not_exists(bucket_name: str, folder_path: str):
@@ -139,10 +136,6 @@ def delete_file_in_folder(bucket_name: str, folder: str, file_path: str) -> bool
         exists = blob.exists()
         if exists:
             blob.delete()
-        else:
-            logger.warning(
-                "File %s not found in folder %s of bucket %s", file_path, folder, bucket_name
-            )
         generate_gallery_html(bucket_name, folder)
         return exists
     except GoogleAPIError as e:
