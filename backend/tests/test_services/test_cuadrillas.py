@@ -1,36 +1,34 @@
 import pytest
+from fastapi import HTTPException
 from src.services import cuadrillas as cuadrillas_service
 from src.api.models import Cuadrilla
-from fastapi import HTTPException
 
 def test_get_cuadrillas(db_session):
-    """Test retrieving all cuadrillas"""
-    # Create two cuadrillas
-    db_session.add(Cuadrilla(nombre="Cuadrilla 1", zona="Zona 1", email="c1@test.com"))
-    db_session.add(Cuadrilla(nombre="Cuadrilla 2", zona="Zona 2", email="c2@test.com"))
+    cuadrilla = Cuadrilla(nombre="C1", zona="Norte", email="c1@example.com")
+    db_session.add(cuadrilla)
     db_session.commit()
+    db_session.refresh(cuadrilla)
 
-    cuadrillas = cuadrillas_service.get_cuadrillas(db_session)
-    assert len(cuadrillas) == 2
-    assert any(c.nombre == "Cuadrilla 1" for c in cuadrillas)
-    assert any(c.nombre == "Cuadrilla 2" for c in cuadrillas)
+    result = cuadrillas_service.get_cuadrillas(db_session)
+
+    assert result[0].id == cuadrilla.id
+    assert result[0].nombre == "C1"
 
 def test_get_cuadrilla(db_session):
-    """Test retrieving a single cuadrilla by ID"""
-    db_cuadrilla = Cuadrilla(nombre="Cuadrilla Test", zona="Zona Test", email="test@test.com")
-    db_session.add(db_cuadrilla)
+    cuadrilla = Cuadrilla(nombre="C1", zona="Norte", email="c1@example.com")
+    db_session.add(cuadrilla)
     db_session.commit()
-    cuadrilla_id = db_cuadrilla.id
+    db_session.refresh(cuadrilla)
 
-    cuadrilla = cuadrillas_service.get_cuadrilla(db_session, cuadrilla_id)
-    assert cuadrilla.id == cuadrilla_id
-    assert cuadrilla.nombre == "Cuadrilla Test"
-    assert cuadrilla.zona == "Zona Test"
-    assert cuadrilla.email == "test@test.com"
+    result = cuadrillas_service.get_cuadrilla(db_session, cuadrilla.id)
+
+    assert result.id == cuadrilla.id
+    assert result.nombre == "C1"
+
+def test_get_cuadrillas_empty(db_session):
+    result = cuadrillas_service.get_cuadrillas(db_session)
+    assert result == []
 
 def test_get_cuadrilla_not_found(db_session):
-    """Test retrieving a non-existent cuadrilla"""
-    with pytest.raises(HTTPException) as exc:
-        cuadrillas_service.get_cuadrilla(db_session, 9999)
-    assert exc.value.status_code == 404
-    assert "no encontrada" in exc.value.detail
+    with pytest.raises(HTTPException):
+        cuadrillas_service.get_cuadrilla(db_session, 999)

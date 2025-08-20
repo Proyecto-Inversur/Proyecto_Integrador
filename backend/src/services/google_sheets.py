@@ -1,7 +1,6 @@
 import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from sqlalchemy.orm import Session
 from api.models import MantenimientoCorrectivo, MantenimientoPreventivo
 from google.cloud import storage
 import json

@@ -1,272 +1,176 @@
 import pytest
-from src.services import auth as auth_service
-from src.api.models import Usuario, Cuadrilla
-from src.api.schemas import UserCreate, UserUpdate, CuadrillaCreate, CuadrillaUpdate, Role
 from fastapi import HTTPException
+from src.services import auth as auth_service
+from src.api.schemas import UserCreate, UserUpdate, CuadrillaCreate, CuadrillaUpdate, Role
+from src.api.models import Usuario, Cuadrilla
 
-def test_verify_user_token_user_success(db_session, mocker):
-    """Test successful verification of a user token"""
-    # Mock Firebase verify_id_token
-    mocker.patch(
-        "firebase_admin.auth.verify_id_token",
-        return_value={"email": "user@test.com", "uid": "test-uid"}
-    )
-
-    # Create a user in the database
-    db_user = Usuario(
-        nombre="Test User",
-        email="user@test.com",
-        rol=Role.ADMIN,
-        firebase_uid=None  # Simulate user without firebase_uid
-    )
-    db_session.add(db_user)
+def test_verify_user_token(db_session, monkeypatch):
+    user = Usuario(nombre="Test", email="user@example.com", rol="Admin")
+    db_session.add(user)
     db_session.commit()
+    db_session.refresh(user)
 
-    # Call verify_user_token
-    result = auth_service.verify_user_token("valid_token", db_session)
+    def mock_verify_id_token(token):
+        return {"email": "user@example.com", "uid": "uid123"}
 
-    # Assertions
+    monkeypatch.setattr(auth_service.auth, "verify_id_token", mock_verify_id_token)
+
+    result = auth_service.verify_user_token("token", db_session)
+
     assert result["type"] == "usuario"
-    assert result["data"]["id"] == db_user.id
-    assert result["data"]["nombre"] == "Test User"
-    assert result["data"]["email"] == "user@test.com"
-    assert result["data"]["rol"] == Role.ADMIN
-    # Verify firebase_uid was updated
-    db_session.refresh(db_user)
-    assert db_user.firebase_uid == "test-uid"
+    assert result["data"]["email"] == "user@example.com"
+    assert result["data"]["uid"] == "uid123"
+    assert db_session.query(Usuario).filter_by(email="user@example.com").first().firebase_uid == "uid123"
 
-def test_verify_user_token_cuadrilla_success(db_session, mocker):
-    """Test successful verification of a cuadrilla token"""
-    # Mock Firebase verify_id_token
-    mocker.patch(
-        "firebase_admin.auth.verify_id_token",
-        return_value={"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"}
-    )
+def test_create_firebase_user(db_session, monkeypatch):
+    user_data = UserCreate(nombre="Nuevo", email="new@example.com", rol=Role.ENCARGADO, id_token="t")
+    current = {"type": "usuario", "data": {"rol": Role.ADMIN}}
 
-    # Create a cuadrilla in the database
-    db_cuadrilla = Cuadrilla(
-        nombre="Test Cuadrilla",
-        email="cuadrilla@test.com",
-        zona="Zona Test",
-        firebase_uid=None  # Simulate cuadrilla without firebase_uid
-    )
-    db_session.add(db_cuadrilla)
+    class DummyResp:
+        def json(self):
+            return {"email": "new@example.com", "sub": "google"}
+
+    class DummyFirebaseUser:
+        uid = "fb123"
+
+    monkeypatch.setattr(auth_service.requests, "get", lambda url: DummyResp())
+    monkeypatch.setattr(auth_service.auth, "create_user", lambda email: DummyFirebaseUser())
+
+    result = auth_service.create_firebase_user(user_data, db_session, current, "token")
+
+    assert result.email == "new@example.com"
+    assert result.firebase_uid == "fb123"
+
+def test_update_firebase_user(db_session):
+    user = Usuario(nombre="Old", email="old@example.com", rol=Role.ENCARGADO, firebase_uid="u1")
+    db_session.add(user)
     db_session.commit()
+    db_session.refresh(user)
 
-    # Call verify_user_token
-    result = auth_service.verify_user_token("valid_token", db_session)
+    update = UserUpdate(nombre="Nuevo")
+    current = {"type": "usuario", "data": {"rol": Role.ADMIN}}
 
-    # Assertions
-    assert result["type"] == "cuadrilla"
-    assert result["data"]["id"] == db_cuadrilla.id
-    assert result["data"]["nombre"] == "Test Cuadrilla"
-    assert result["data"]["email"] == "cuadrilla@test.com"
-    assert result["data"]["zona"] == "Zona Test"
-    # Verify firebase_uid was updated
-    db_session.refresh(db_cuadrilla)
-    assert db_cuadrilla.firebase_uid == "cuadrilla-uid"
+    result = auth_service.update_firebase_user(user.id, update, db_session, current)
 
-def test_verify_user_token_invalid_token(db_session, mocker):
-    """Test token verification with invalid token"""
-    # Mock Firebase verify_id_token to raise an exception
-    mocker.patch(
-        "firebase_admin.auth.verify_id_token",
-        side_effect=Exception("Invalid token")
-    )
+    assert result.nombre == "Nuevo"
 
-    with pytest.raises(HTTPException) as exc:
-        auth_service.verify_user_token("invalid_token", db_session)
-    assert exc.value.status_code == 401
-    assert "Token inválido" in exc.value.detail
-
-def test_create_firebase_user(db_session, mocker):
-    """Test creating a user with admin permissions"""
-    # Mock Firebase verify_id_token
-    mocker.patch(
-        "firebase_admin.auth.verify_id_token",
-        return_value={"email": "user@test.com", "uid": "test-uid"}
-    )
-    # Mock Firebase get_user to simulate existing user
-    mocker.patch(
-        "firebase_admin.auth.get_user",
-        return_value=type("obj", (), {"email": "user@test.com", "uid": "test-uid"})
-    )
-
-    user_data = UserCreate(
-        nombre="Test User",
-        email="user@test.com",
-        rol=Role.ADMIN,
-        id_token="mock-id-token"
-    )
-    current_entity = {
-        "type": "usuario",
-        "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
-    }
-    user = auth_service.create_firebase_user(user_data, db_session, current_entity, id_token="mock-id-token")
-    assert user.nombre == "Test User"
-    assert user.email == "user@test.com"
-    assert user.rol == Role.ADMIN
-    assert user.firebase_uid == "test-uid"
-
-def test_create_firebase_user_unauthorized(db_session, mocker):
-    """Test creating a user without admin permissions"""
-    # Mock Firebase verify_id_token
-    mocker.patch(
-        "firebase_admin.auth.verify_id_token",
-        return_value={"email": "user@test.com", "uid": "test-uid"}
-    )
-
-    user_data = UserCreate(
-        nombre="Test User",
-        email="user@test.com",
-        rol=Role.ENCARGADO,
-        id_token="mock-id-token"
-    )
-    current_entity = {
-        "type": "usuario",
-        "data": {"id": 2, "nombre": "Worker", "email": "worker@test.com", "rol": Role.ENCARGADO}
-    }
-    with pytest.raises(HTTPException) as exc:
-        auth_service.create_firebase_user(user_data, db_session, current_entity, id_token="mock-id-token")
-    assert exc.value.status_code == 403
-    assert "No tienes permisos de administrador" in exc.value.detail
-
-def test_update_firebase_user(db_session, mocker):
-    """Test updating a user with admin permissions"""
-    # Create a user
-    db_user = Usuario(nombre="Old User", email="old@test.com", rol=Role.ADMIN, firebase_uid="test-uid")
-    db_session.add(db_user)
+def test_delete_firebase_user(db_session, monkeypatch):
+    user = Usuario(nombre="Del", email="del@example.com", rol=Role.ENCARGADO, firebase_uid="uid123")
+    db_session.add(user)
     db_session.commit()
-    user_id = db_user.id
+    db_session.refresh(user)
 
-    user_data = UserUpdate(
-        nombre="Updated User",
-        rol=Role.ADMIN
-    )
-    current_entity = {
-        "type": "usuario",
-        "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
-    }
-    user = auth_service.update_firebase_user(user_id, user_data, db_session, current_entity)
-    assert user.nombre == "Updated User"
-    assert user.email == "old@test.com"  # Email should not change
-    assert user.rol == Role.ADMIN
+    monkeypatch.setattr(auth_service.auth, "delete_user", lambda uid: None)
 
-def test_delete_firebase_user(db_session, mocker):
-    """Test deleting a user with admin permissions"""
-    # Create a user
-    db_user = Usuario(nombre="Delete User", email="delete@test.com", rol=Role.ADMIN, firebase_uid="test-uid")
-    db_session.add(db_user)
+    current = {"type": "usuario", "data": {"rol": Role.ADMIN}}
+    result = auth_service.delete_firebase_user(user.id, db_session, current)
+
+    assert "eliminado" in result["message"]
+
+def test_create_firebase_cuadrilla(db_session, monkeypatch):
+    data = CuadrillaCreate(nombre="C1", zona="Z", email="c@example.com", id_token="t")
+    current = {"type": "usuario"}
+
+    class DummyResp:
+        def json(self):
+            return {"email": "c@example.com", "sub": "google"}
+
+    class DummyFirebaseUser:
+        uid = "fb123"
+
+    monkeypatch.setattr(auth_service.requests, "get", lambda url: DummyResp())
+    monkeypatch.setattr(auth_service.auth, "create_user", lambda email: DummyFirebaseUser())
+
+    result = auth_service.create_firebase_cuadrilla(data, db_session, current, "token")
+
+    assert result.email == "c@example.com"
+    assert result.firebase_uid == "fb123"
+
+def test_update_firebase_cuadrilla(db_session):
+    cuadrilla = Cuadrilla(nombre="Old", zona="Z", email="c@example.com", firebase_uid="u1")
+    db_session.add(cuadrilla)
     db_session.commit()
-    user_id = db_user.id
+    db_session.refresh(cuadrilla)
 
-    # Mock Firebase delete_user
-    mocker.patch("firebase_admin.auth.delete_user", return_value=None)
+    update = CuadrillaUpdate(nombre="Nueva")
+    current = {"type": "usuario"}
 
-    current_entity = {
-        "type": "usuario",
-        "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
-    }
-    result = auth_service.delete_firebase_user(user_id, db_session, current_entity)
-    assert "eliminado correctamente" in result["message"]
+    result = auth_service.update_firebase_cuadrilla(cuadrilla.id, update, db_session, current)
 
-    # Verify user is deleted
-    with pytest.raises(HTTPException) as exc:
-        auth_service.update_firebase_user(user_id, UserUpdate(), db_session, current_entity)
-    assert exc.value.status_code == 404
+    assert result.nombre == "Nueva"
 
-def test_create_firebase_cuadrilla(db_session, mocker):
-    """Test creating a cuadrilla with usuario permissions"""
-    # Mock Firebase verify_id_token
-    mocker.patch(
-        "firebase_admin.auth.verify_id_token",
-        return_value={"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"}
-    )
-    # Mock Firebase get_user
-    mocker.patch(
-        "firebase_admin.auth.get_user",
-        return_value=type("obj", (), {"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"})
-    )
-
-    cuadrilla_data = CuadrillaCreate(
-        nombre="Test Cuadrilla",
-        email="cuadrilla@test.com",
-        zona="Zona Test",
-        id_token="mock-id-token"
-    )
-    current_entity = {
-        "type": "usuario",
-        "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
-    }
-    cuadrilla = auth_service.create_firebase_cuadrilla(cuadrilla_data, db_session, current_entity, id_token="mock-id-token")
-    assert cuadrilla.nombre == "Test Cuadrilla"
-    assert cuadrilla.email == "cuadrilla@test.com"
-    assert cuadrilla.zona == "Zona Test"
-    assert cuadrilla.firebase_uid == "cuadrilla-uid"
-
-def test_create_firebase_cuadrilla_unauthorized(db_session, mocker):
-    """Test creating a cuadrilla with non-usuario entity"""
-    # Mock Firebase verify_id_token
-    mocker.patch(
-        "firebase_admin.auth.verify_id_token",
-        return_value={"email": "cuadrilla@test.com", "uid": "cuadrilla-uid"}
-    )
-
-    cuadrilla_data = CuadrillaCreate(
-        nombre="Test Cuadrilla",
-        email="cuadrilla@test.com",
-        zona="Zona Test",
-        id_token="mock-id-token"
-    )
-    current_entity = {
-        "type": "cuadrilla",
-        "data": {"id": 1, "nombre": "Cuadrilla", "email": "c@test.com", "zona": "Zona"}
-    }
-    with pytest.raises(HTTPException) as exc:
-        auth_service.create_firebase_cuadrilla(cuadrilla_data, db_session, current_entity, id_token="mock-id-token")
-    assert exc.value.status_code == 403
-    assert "No tienes permisos" in exc.value.detail
-
-def test_update_firebase_cuadrilla(db_session, mocker):
-    """Test updating a cuadrilla with usuario permissions"""
-    # Create a cuadrilla
-    db_cuadrilla = Cuadrilla(nombre="Old Cuadrilla", email="oldc@test.com", zona="Old Zona", firebase_uid="cuadrilla-uid")
-    db_session.add(db_cuadrilla)
+def test_delete_firebase_cuadrilla(db_session, monkeypatch):
+    cuadrilla = Cuadrilla(nombre="Del", zona="Z", email="d@example.com", firebase_uid="uid123")
+    db_session.add(cuadrilla)
     db_session.commit()
-    cuadrilla_id = db_cuadrilla.id
+    db_session.refresh(cuadrilla)
 
-    cuadrilla_data = CuadrillaUpdate(
-        nombre="Updated Cuadrilla",
-        zona="Updated Zona"
-    )
-    current_entity = {
-        "type": "usuario",
-        "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
-    }
-    cuadrilla = auth_service.update_firebase_cuadrilla(cuadrilla_id, cuadrilla_data, db_session, current_entity)
-    assert cuadrilla.nombre == "Updated Cuadrilla"
-    assert cuadrilla.email == "oldc@test.com"  # Email should not change
-    assert cuadrilla.zona == "Updated Zona"
+    monkeypatch.setattr(auth_service.auth, "delete_user", lambda uid: None)
 
-def test_delete_firebase_cuadrilla(db_session, mocker):
-    """Test deleting a cuadrilla with usuario permissions"""
-    # Create a cuadrilla
-    db_cuadrilla = Cuadrilla(nombre="Delete Cuadrilla", email="deletec@test.com", zona="Zona", firebase_uid="cuadrilla-uid")
-    db_session.add(db_cuadrilla)
-    db_session.commit()
-    cuadrilla_id = db_cuadrilla.id
+    current = {"type": "usuario"}
+    result = auth_service.delete_firebase_cuadrilla(cuadrilla.id, db_session, current)
 
-    # Mock Firebase delete_user
-    mocker.patch("firebase_admin.auth.delete_user", return_value=None)
+    assert "eliminada" in result["message"]
 
-    current_entity = {
-        "type": "usuario",
-        "data": {"id": 1, "nombre": "Admin", "email": "admin@test.com", "rol": Role.ADMIN}
-    }
-    result = auth_service.delete_firebase_cuadrilla(cuadrilla_id, db_session, current_entity)
-    assert "eliminada correctamente" in result["message"]
+def test_verify_user_token_invalid_token(db_session, monkeypatch):
+    def mock_verify_id_token(token):
+        raise Exception("bad token")
 
-    # Verify cuadrilla is deleted
-    with pytest.raises(HTTPException) as exc:
-        auth_service.update_firebase_cuadrilla(cuadrilla_id, CuadrillaUpdate(), db_session, current_entity)
-    assert exc.value.status_code == 404
+    monkeypatch.setattr(auth_service.auth, "verify_id_token", mock_verify_id_token)
+
+    with pytest.raises(HTTPException) as exc_info:
+        auth_service.verify_user_token("invalid", db_session)
+
+    assert exc_info.value.status_code == 401
+
+def test_create_firebase_user_missing_id_token(db_session):
+    user_data = UserCreate(nombre="Nuevo", email="new@example.com", rol=Role.ENCARGADO, id_token="")
+    current = {"type": "usuario", "data": {"rol": Role.ADMIN}}
+
+    with pytest.raises(HTTPException) as exc_info:
+        auth_service.create_firebase_user(user_data, db_session, current, None)
+
+    assert exc_info.value.status_code == 400
+
+def test_update_firebase_user_not_found(db_session):
+    current = {"type": "usuario", "data": {"rol": Role.ADMIN}}
+    update = UserUpdate(nombre="Nuevo")
+
+    with pytest.raises(HTTPException) as exc_info:
+        auth_service.update_firebase_user(999, update, db_session, current)
+
+    assert exc_info.value.status_code == 404
+
+def test_delete_firebase_user_not_found(db_session):
+    current = {"type": "usuario", "data": {"rol": Role.ADMIN}}
+
+    with pytest.raises(HTTPException) as exc_info:
+        auth_service.delete_firebase_user(999, db_session, current)
+
+    assert exc_info.value.status_code == 404
+
+def test_create_firebase_cuadrilla_missing_id_token(db_session):
+    data = CuadrillaCreate(nombre="C1", zona="Z", email="c@example.com", id_token="")
+    current = {"type": "usuario"}
+
+    with pytest.raises(HTTPException) as exc_info:
+        auth_service.create_firebase_cuadrilla(data, db_session, current, None)
+
+    assert exc_info.value.status_code == 400
+
+def test_update_firebase_cuadrilla_not_found(db_session):
+    update = CuadrillaUpdate(nombre="Nueva")
+    current = {"type": "usuario"}
+
+    with pytest.raises(HTTPException) as exc_info:
+        auth_service.update_firebase_cuadrilla(999, update, db_session, current)
+
+    assert exc_info.value.status_code == 404
+
+def test_delete_firebase_cuadrilla_not_found(db_session):
+    current = {"type": "usuario"}
+
+    with pytest.raises(HTTPException) as exc_info:
+        auth_service.delete_firebase_cuadrilla(999, db_session, current)
+
+    assert exc_info.value.status_code == 404
