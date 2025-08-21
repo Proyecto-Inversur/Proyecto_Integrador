@@ -43,7 +43,7 @@
   padding: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  max-height: 75vh;
+  max-height: 30rem;
 }
 
 .map-sidebar-rigth {
@@ -54,7 +54,7 @@
   padding: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  max-height: 75vh;
+  max-height: 30rem;
 }
 
 .hidden-routing-control {
@@ -97,9 +97,10 @@
 }
 
 .boton-brujula {
-  position: absolute;
-  bottom: 7.5rem;
-  right: 1rem;
+  position: relative;
+  bottom: 4rem;
+  left: 49rem;
+  color: #212529;
 }
 
 .boton-borrar {
@@ -177,6 +178,9 @@
   background-color: #c82333;
 }
 
+.leaflet-bottom.leaflet-right {
+  display: none !important;
+}
 
 /* Ajustes para pantallas pequeñas (móviles) */
 @media (max-width: 768px) {

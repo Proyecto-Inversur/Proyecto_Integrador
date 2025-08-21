@@ -460,7 +460,7 @@ return (
           </button>
           <button
             onClick={rotarNorte}
-            className="ruta-btn primary boton-brujula"
+            className="ruta-btn boton-brujula"
           >
             <FiCompass size={28} color="white" />
           </button>
