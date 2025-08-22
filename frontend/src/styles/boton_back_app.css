@@ -20,3 +20,9 @@
 .floating-back-btn-home:hover {
   background-color: #ff0505;
 }
+
+@media (max-width: 398px) {
+  .floating-back-btn-home {
+    margin-bottom: 1.3rem;
+  }
+}

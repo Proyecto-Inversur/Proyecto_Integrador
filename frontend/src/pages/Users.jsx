@@ -3,8 +3,18 @@ import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import UserForm from '../components/UserForm';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getUsers, deleteUser } from '../services/userService';
+import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
+import ColumnSelector from '../components/ColumnSelector';
 import { FaPlus } from 'react-icons/fa';
-import '../styles/botones_forms.css'; 
+import '../styles/botones_forms.css';
+
+const availableColumns = [
+  { key: 'id', label: 'ID' },
+  { key: 'nombre', label: 'Nombre' },
+  { key: 'email', label: 'Email' },
+  { key: 'rol', label: 'Rol' },
+  { key: 'acciones', label: 'Acciones' },
+];
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -12,6 +22,9 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedColumns, setSelectedColumns] = useState(
+    availableColumns.map((c) => c.key)
+  );
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -26,8 +39,22 @@ const Users = () => {
     }
   };
 
+  const loadPreferences = async () => {
+    try {
+      const response = await getColumnPreferences('users');
+      const cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (cols.length == 0) {
+        cols = ['id', 'nombre', 'email', 'rol', 'acciones'];
+      }
+      setSelectedColumns(cols);
+    } catch {
+      setSelectedColumns(availableColumns.map((c) => c.key));
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    loadPreferences();
   }, []);
 
   const handleDelete = async (id) => {
@@ -54,6 +81,15 @@ const Users = () => {
     fetchUsers();
   };
 
+  const handleSaveColumns = async (cols) => {
+    setSelectedColumns(cols);
+    try {
+      await saveColumnPreferences('users', cols);
+    } catch (e) {
+      /* empty */
+    }
+  };
+
   return (
     <Container className="custom-container">
       {isLoading ? (
@@ -69,6 +105,11 @@ const Users = () => {
               <h2>Gestión de Usuarios</h2>
             </Col>
             <Col className="text-end">
+              <ColumnSelector
+                availableColumns={availableColumns}
+                selectedColumns={selectedColumns}
+                onSave={handleSaveColumns}
+              />
               <Button className="custom-button" onClick={() => setShowForm(true)}>
                 <FaPlus />
                 Agregar
@@ -88,35 +129,38 @@ const Users = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Rol</th>
-                  <th className="acciones-col">Acciones</th>
-
+                  {selectedColumns.includes('id') && <th>ID</th>}
+                  {selectedColumns.includes('nombre') && <th>Nombre</th>}
+                  {selectedColumns.includes('email') && <th>Email</th>}
+                  {selectedColumns.includes('rol') && <th>Rol</th>}
+                  {selectedColumns.includes('acciones') && (
+                    <th className="acciones-col">Acciones</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td>{user.id}</td>
-                    <td>{user.nombre}</td>
-                    <td>{user.email}</td>
-                    <td>{user.rol}</td>
-                    <td className="action-cell">
-                    <button
-                      className="action-btn edit me-2"
-                      onClick={() => handleEdit(user)}
-                    >
-                      <FiEdit />
-                    </button>
-                    <button
-                      className="action-btn delete"
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </td>
+                    {selectedColumns.includes('id') && <td>{user.id}</td>}
+                    {selectedColumns.includes('nombre') && <td>{user.nombre}</td>}
+                    {selectedColumns.includes('email') && <td>{user.email}</td>}
+                    {selectedColumns.includes('rol') && <td>{user.rol}</td>}
+                    {selectedColumns.includes('acciones') && (
+                      <td className="action-cell">
+                        <button
+                          className="action-btn edit me-2"
+                          onClick={() => handleEdit(user)}
+                        >
+                          <FiEdit />
+                        </button>
+                        <button
+                          className="action-btn delete"
+                          onClick={() => handleDelete(user.id)}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

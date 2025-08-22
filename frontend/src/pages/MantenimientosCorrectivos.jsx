@@ -8,6 +8,8 @@ import { getMantenimientosCorrectivos, deleteMantenimientoCorrectivo } from '../
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getZonas } from '../services/zonaService';
+import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
+import ColumnSelector from '../components/ColumnSelector';
 import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
 import '../styles/botones_forms.css';
@@ -32,6 +34,31 @@ const MantenimientosCorrectivos = () => {
   });
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const availableColumns = currentEntity.type === 'usuario'
+    ? [
+        { key: 'id', label: 'ID' },
+        { key: 'sucursal', label: 'Sucursal' },
+        { key: 'cuadrilla', label: 'Cuadrilla' },
+        { key: 'zona', label: 'Zona' },
+        { key: 'rubro', label: 'Rubro' },
+        { key: 'numero_caso', label: 'Número de Caso' },
+        { key: 'fecha_apertura', label: 'Fecha Apertura' },
+        { key: 'fecha_cierre', label: 'Fecha Cierre' },
+        { key: 'incidente', label: 'Incidente' },
+        { key: 'estado', label: 'Estado' },
+        { key: 'prioridad', label: 'Prioridad' },
+        { key: 'acciones', label: 'Acciones' },
+      ]
+    : [
+        { key: 'sucursal', label: 'Sucursal' },
+        { key: 'rubro', label: 'Rubro' },
+        { key: 'fecha_apertura', label: 'Fecha Apertura' },
+        { key: 'estado', label: 'Estado' },
+        { key: 'prioridad', label: 'Prioridad' },
+      ];
+  const [selectedColumns, setSelectedColumns] = useState(
+    availableColumns.map((c) => c.key)
+  );
 
   const fetchMantenimientos = async () => {
     setIsLoading(true);
@@ -74,6 +101,7 @@ const MantenimientosCorrectivos = () => {
 
   useEffect(() => {
     fetchMantenimientos();
+    loadPreferences();
   }, []);
 
   useEffect(() => {
@@ -146,6 +174,31 @@ const MantenimientosCorrectivos = () => {
     fetchMantenimientos();
   };
 
+  const loadPreferences = async () => {
+    try {
+      const response = await getColumnPreferences('mantenimientos_correctivos');
+      const cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (currentEntity.type === 'usuario') {
+        cols = ['id', 'sucursal', 'cuadrilla', 'zona', 'rubro', 'numero_caso', 'fecha_apertura', 'fecha_cierre', 'incidente', 'estado', 'prioridad', 'acciones'];
+      }
+      else {
+        cols = ['sucursal', 'rubro', 'fecha_apertura', 'estado', 'prioridad'];
+      }
+      setSelectedColumns(cols);
+    } catch {
+      setSelectedColumns(availableColumns.map((c) => c.key));
+    }
+  };
+
+  const handleSaveColumns = async (cols) => {
+    setSelectedColumns(cols);
+    try {
+      await saveColumnPreferences('mantenimientos_correctivos', cols);
+    } catch (e) {
+      /* empty */
+    }
+  };
+
   const getSucursalNombre = (id_sucursal) => {
     const sucursal = sucursales.find((s) => s.id === id_sucursal);
     return sucursal ? sucursal.nombre : 'Desconocida';
@@ -177,6 +230,11 @@ const MantenimientosCorrectivos = () => {
               <h2>Gestión de Mantenimientos Correctivos</h2>
             </Col>
             <Col className="text-end">
+              <ColumnSelector
+                availableColumns={availableColumns}
+                selectedColumns={selectedColumns}
+                onSave={handleSaveColumns}
+              />
               {currentEntity.type === 'usuario' && (
                 <Button className="custom-button" onClick={() => setShowForm(true)}>
                   <FaPlus />
@@ -295,80 +353,103 @@ const MantenimientosCorrectivos = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  {currentEntity.type === 'usuario' && (
-                    <th>ID</th>
-                  )}
-                  <th>Sucursal</th>
-                  {currentEntity.type === 'usuario' && (
-                    <th>Cuadrilla</th>
-                  )}
-                  {currentEntity.type === 'usuario' && (
-                    <th>Zona</th>
-                  )}
-                  <th>Rubro</th>
-                  {currentEntity.type === 'usuario' && (
-                    <th>Número de Caso</th>
-                  )}
-                  <th>Fecha Apertura</th>
-                  {currentEntity.type === 'usuario' && (
-                    <th>Fecha Cierre</th>
-                  )}
-                  {currentEntity.type === 'usuario' && (
-                    <th>Incidente</th>
-                  )}
-                  <th>Estado</th>
-                  <th>Prioridad</th>
-                  {currentEntity.type === 'usuario' && (
-                    <th className="acciones-col">Acciones</th>
-                  )}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('id') && <th>ID</th>}
+                  {selectedColumns.includes('sucursal') && <th>Sucursal</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('cuadrilla') && <th>Cuadrilla</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('zona') && <th>Zona</th>}
+                  {selectedColumns.includes('rubro') && <th>Rubro</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('numero_caso') && (
+                      <th>Número de Caso</th>
+                    )}
+                  {selectedColumns.includes('fecha_apertura') && <th>Fecha Apertura</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('fecha_cierre') && <th>Fecha Cierre</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('incidente') && <th>Incidente</th>}
+                  {selectedColumns.includes('estado') && <th>Estado</th>}
+                  {selectedColumns.includes('prioridad') && <th>Prioridad</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('acciones') && (
+                      <th className="acciones-col">Acciones</th>
+                    )}
                 </tr>
               </thead>
               <tbody>
                 {filteredMantenimientos.map((mantenimiento) => (
-                  <tr 
+                  <tr
                     key={mantenimiento.id}
                     onClick={() => handleRowClick(mantenimiento.id)}
                     style={{ cursor: 'pointer' }}
                   >
-                    {currentEntity.type === 'usuario' && (
-                      <td>{mantenimiento.id}</td>
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('id') && (
+                        <td>{mantenimiento.id}</td>
+                      )}
+                    {selectedColumns.includes('sucursal') && (
+                      <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
                     )}
-                    <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
-                    {currentEntity.type === 'usuario' && (
-                      <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('cuadrilla') && (
+                        <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+                      )}
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('zona') && (
+                        <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                      )}
+                    {selectedColumns.includes('rubro') && (
+                      <td>{mantenimiento.rubro}</td>
                     )}
-                    {currentEntity.type === 'usuario' && (
-                      <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('numero_caso') && (
+                        <td>{mantenimiento.numero_caso}</td>
+                      )}
+                    {selectedColumns.includes('fecha_apertura') && (
+                      <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
                     )}
-                    <td>{mantenimiento.rubro}</td>
-                    {currentEntity.type === 'usuario' && (
-                      <td>{mantenimiento.numero_caso}</td>
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('fecha_cierre') && (
+                        <td>
+                          {mantenimiento.fecha_cierre
+                            ? mantenimiento.fecha_cierre?.split('T')[0]
+                            : 'No hay Fecha'}
+                        </td>
+                      )}
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('incidente') && (
+                        <td>{mantenimiento.incidente}</td>
+                      )}
+                    {selectedColumns.includes('estado') && (
+                      <td>{mantenimiento.estado}</td>
                     )}
-                    <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-                    {currentEntity.type === 'usuario' && (
-                      <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
+                    {selectedColumns.includes('prioridad') && (
+                      <td>{mantenimiento.prioridad}</td>
                     )}
-                    {currentEntity.type === 'usuario' && (
-                      <td>{mantenimiento.incidente}</td>
-                    )}
-                    <td>{mantenimiento.estado}</td>
-                    <td>{mantenimiento.prioridad}</td>
-                    {currentEntity.type === 'usuario' && (
-                      <td className="action-cell" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          className="action-btn edit me-2" aria-label="Editar"
-                          onClick={() => handleEdit(mantenimiento)}
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('acciones') && (
+                        <td
+                          className="action-cell"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <FiEdit />
-                        </button>
-                        <button
-                          className="action-btn delete" aria-label="Eliminar"
-                          onClick={() => handleDelete(mantenimiento.id)}
-                        >
-                          <FiTrash2 />
-                        </button>
-                      </td>
-                    )}
+                          <button
+                            className="action-btn edit me-2"
+                            aria-label="Editar"
+                            onClick={() => handleEdit(mantenimiento)}
+                          >
+                            <FiEdit />
+                          </button>
+                          <button
+                            className="action-btn delete"
+                            aria-label="Eliminar"
+                            onClick={() => handleDelete(mantenimiento.id)}
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </td>
+                      )}
                   </tr>
                 ))}
               </tbody>

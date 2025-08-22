@@ -8,6 +8,8 @@ import { getMantenimientosPreventivos, deleteMantenimientoPreventivo } from '../
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getSucursales } from '../services/sucursalService';
 import { getZonas } from '../services/zonaService';
+import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
+import ColumnSelector from '../components/ColumnSelector';
 import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
 import '../styles/botones_forms.css';
@@ -29,6 +31,23 @@ const MantenimientosPreventivos = () => {
     });
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const availableColumns = currentEntity.type === 'usuario'
+    ? [
+        { key: 'id', label: 'ID' },
+        { key: 'preventivo', label: 'Preventivo' },
+        { key: 'cuadrilla', label: 'Cuadrilla' },
+        { key: 'zona', label: 'Zona' },
+        { key: 'fecha_apertura', label: 'Fecha Apertura' },
+        { key: 'fecha_cierre', label: 'Fecha Cierre' },
+        { key: 'acciones', label: 'Acciones' },
+      ]
+    : [
+        { key: 'preventivo', label: 'Preventivo' },
+        { key: 'fecha_apertura', label: 'Fecha Apertura' },
+      ];
+  const [selectedColumns, setSelectedColumns] = useState(
+    availableColumns.map((c) => c.key)
+  );
 
   const fetchMantenimientos = async () => {
     setIsLoading(true);
@@ -71,6 +90,7 @@ const MantenimientosPreventivos = () => {
 
   useEffect(() => {
     fetchMantenimientos();
+    loadPreferences();
   }, []);
 
   useEffect(() => {
@@ -134,6 +154,33 @@ const MantenimientosPreventivos = () => {
     fetchMantenimientos();
   };
 
+  const loadPreferences = async () => {
+    try {
+      const response = await getColumnPreferences('mantenimientos_preventivos');
+      const cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (cols.length == 0) {
+        if (currentEntity.type === 'usuario') {
+          cols = ['id', 'preventivo', 'cuadrilla', 'zona', 'fecha_apertura', 'fecha_cierre', 'acciones'];
+        }
+        else {
+          cols = ['preventivo', 'fecha_apertura'];
+        }
+      }
+      setSelectedColumns(cols);
+    } catch {
+      setSelectedColumns(availableColumns.map((c) => c.key));
+    }
+  };
+
+  const handleSaveColumns = async (cols) => {
+    setSelectedColumns(cols);
+    try {
+      await saveColumnPreferences('mantenimientos_preventivos', cols);
+    } catch (e) {
+      /* empty */
+    }
+  };
+
   const getSucursalNombre = (id_sucursal) => {
     const sucursal = sucursales.find((s) => s.id === id_sucursal);
     return sucursal ? sucursal.nombre : 'Desconocida';
@@ -165,6 +212,11 @@ const MantenimientosPreventivos = () => {
               <h2>Gestión de Mantenimientos Preventivos</h2>
             </Col>
             <Col className="text-end">
+              <ColumnSelector
+                availableColumns={availableColumns}
+                selectedColumns={selectedColumns}
+                onSave={handleSaveColumns}
+              />
               {currentEntity.type === 'usuario' && (
                 <Button className="custom-button" onClick={() => setShowForm(true)}>
                   <FaPlus />
@@ -233,62 +285,78 @@ const MantenimientosPreventivos = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  {currentEntity.type === 'usuario' && (
-                    <th>ID</th>
-                  )}
-                  <th>Preventivo</th>
-                  {currentEntity.type === 'usuario' && (
-                    <th>Cuadrilla</th>
-                  )}
-                  {currentEntity.type === 'usuario' && (
-                    <th>Zona</th>
-                  )}
-                  <th>Fecha Apertura</th>
-                  {currentEntity.type === 'usuario' && (
-                    <th>Fecha Cierre</th>
-                  )}
-                  {currentEntity.type === 'usuario' && (
-                    <th className="acciones-col">Acciones</th>
-                  )}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('id') && <th>ID</th>}
+                  {selectedColumns.includes('preventivo') && <th>Preventivo</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('cuadrilla') && <th>Cuadrilla</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('zona') && <th>Zona</th>}
+                  {selectedColumns.includes('fecha_apertura') && <th>Fecha Apertura</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('fecha_cierre') && <th>Fecha Cierre</th>}
+                  {currentEntity.type === 'usuario' &&
+                    selectedColumns.includes('acciones') && (
+                      <th className="acciones-col">Acciones</th>
+                    )}
                 </tr>
               </thead>
               <tbody>
                 {filteredMantenimientos.map((mantenimiento) => (
-                  <tr 
-                    key={mantenimiento.id} 
+                  <tr
+                    key={mantenimiento.id}
                     onClick={() => handleRowClick(mantenimiento.id)}
                     style={{ cursor: 'pointer' }}
                   >
-                    {currentEntity.type === 'usuario' && (
-                      <td>{mantenimiento.id}</td>
-                    )}
-                    <td>{getSucursalNombre(mantenimiento.id_sucursal)} - {mantenimiento.frecuencia}</td>
-                    {currentEntity.type === 'usuario' && (
-                      <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
-                    )}
-                    {currentEntity.type === 'usuario' && (
-                      <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
-                    )}
-                    <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-                    {currentEntity.type === 'usuario' && (
-                      <td>{mantenimiento.fecha_cierre ? mantenimiento.fecha_cierre?.split('T')[0] : 'No hay Fecha'}</td>
-                    )}
-                    {currentEntity.type === 'usuario' && (
-                      <td className="action-cell" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          className="action-btn edit me-2"
-                          onClick={() => handleEdit(mantenimiento)}
-                        >
-                          <FiEdit />
-                        </button>
-                        <button
-                          className="action-btn delete"
-                          onClick={() => handleDelete(mantenimiento.id)}
-                        >
-                          <FiTrash2 />
-                        </button>
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('id') && (
+                        <td>{mantenimiento.id}</td>
+                      )}
+                    {selectedColumns.includes('preventivo') && (
+                      <td>
+                        {getSucursalNombre(mantenimiento.id_sucursal)} -{' '}
+                        {mantenimiento.frecuencia}
                       </td>
                     )}
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('cuadrilla') && (
+                        <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
+                      )}
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('zona') && (
+                        <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
+                      )}
+                    {selectedColumns.includes('fecha_apertura') && (
+                      <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
+                    )}
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('fecha_cierre') && (
+                        <td>
+                          {mantenimiento.fecha_cierre
+                            ? mantenimiento.fecha_cierre?.split('T')[0]
+                            : 'No hay Fecha'}
+                        </td>
+                      )}
+                    {currentEntity.type === 'usuario' &&
+                      selectedColumns.includes('acciones') && (
+                        <td
+                          className="action-cell"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            className="action-btn edit me-2"
+                            onClick={() => handleEdit(mantenimiento)}
+                          >
+                            <FiEdit />
+                          </button>
+                          <button
+                            className="action-btn delete"
+                            onClick={() => handleDelete(mantenimiento.id)}
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </td>
+                      )}
                   </tr>
                 ))}
               </tbody>

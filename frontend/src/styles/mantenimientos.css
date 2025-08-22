@@ -463,7 +463,7 @@ margin-top: 0.5rem;
 .floating-save-btn {
   position: fixed;
   right: 0.5rem;
-  bottom: 9.5rem;
+  bottom: 9.4rem;
   background-color: #ffc720;
   color: white;
   border: none;
@@ -524,9 +524,16 @@ margin-top: 0.5rem;
   .planilla-button {
     max-width: 100%;
   }
+}
 
+/* botones en pantallas de telefono */
+@media (max-width: 398px) {
   .floating-save-btn {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .floating-chat-btn {
+    margin-bottom: 1.6rem;
   }
 }
 
@@ -562,3 +569,58 @@ margin-top: 0.5rem;
   }
 }
 
+.floating-chat-btn {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 13.7rem;
+  background-color: #ffc720;
+  border: none;
+  border-radius: 50% !important;
+  width: 60px;
+  height: 60px;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+.floating-chat-btn:hover {
+  background-color: #ff0505;
+}
+
+.chat-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f8f9fa;
+  z-index: 2000;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.chat-overlay.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.close-chat-btn {
+  background: none;
+  border: none;
+  align-self: flex-start;
+  padding: 1rem;
+}
+
+.chat-overlay .chat-section {
+  flex: 1;
+  width: 100%;
+  box-shadow: none;
+}

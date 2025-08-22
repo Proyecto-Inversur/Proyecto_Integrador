@@ -185,7 +185,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleGoogleSignIn = async (isOnload) => {
+  const handleGoogleSignIn = async () => {
     try {
       const result = await retrySignIn();
       const user = result.user;
@@ -195,37 +195,27 @@ const AuthProvider = ({ children }) => {
         sessionStorage.setItem('authToken', firebaseToken);
         await verifyUser(user, firebaseToken);
       } else {
-        if (isOnload) {
-          await logOut();
-        }
-        else {
-          await logOut('No se pudo obtener el usuario.');
-        }
+        await logOut('No se pudo obtener el usuario.');
       }
     } catch (error) {
-      if (isOnload) {
-        await logOut();
-      }
-      else {
-        const userMessage = buildUserAuthError(error, 'No se pudo completar el inicio de sesión.');
-        await logOut(userMessage);
-      }
+      const userMessage = buildUserAuthError(error, 'No se pudo completar el inicio de sesión.');
+      await logOut(userMessage);
     }
   };
 
   // Ejecutar al cargar la página
   useEffect(() => {
-    handleGoogleSignIn(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!currentEntity) {
+      handleGoogleSignIn();
+    }
   }, []);
 
   // Ejecutar cuando se establece un nuevo token
   useEffect(() => {
     if (singingIn) {
       setSingingIn(false); // evitar loops
-      handleGoogleSignIn(false);
+      handleGoogleSignIn();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singingIn]);
 
   return (
