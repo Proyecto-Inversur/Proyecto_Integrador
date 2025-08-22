@@ -1,9 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
-import { ArrowLeft } from 'react-bootstrap-icons';
+import '../styles/boton_back_app.css';
+import { FiArrowLeft } from 'react-icons/fi';
 
-const BackButton = ({ to, label = '' }) => {
+
+const BackButton = ({ to }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -15,14 +16,9 @@ const BackButton = ({ to, label = '' }) => {
   };
 
   return (
-    <Button
-      variant="secondary"
-      onClick={handleClick}
-      className="mb-3 d-flex align-items-center gap-2"
-    >
-      <ArrowLeft />
-      {label}
-    </Button>
+    <button onClick={handleClick} className="floating-back-btn-home">
+      <FiArrowLeft size={28} color="white" />
+    </button>
   );
 };
 

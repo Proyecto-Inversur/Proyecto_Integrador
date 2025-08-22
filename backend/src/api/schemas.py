@@ -135,3 +135,10 @@ class MaintenanceNearInfo(BaseModel):
 
 class NearbyNotificationCreate(BaseModel):
     mantenimientos: list[MaintenanceNearInfo]
+
+class ColumnPreferenceRead(BaseModel):
+    page: str
+    columns: list[str]
+
+class ColumnPreferenceUpdate(BaseModel):
+    columns: list[str]

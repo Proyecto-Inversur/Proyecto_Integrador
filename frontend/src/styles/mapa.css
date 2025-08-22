@@ -25,6 +25,7 @@
 }
 
 .container-map {
+  position: relative;  /*Cambio*/
   width: 100%;
   max-width: 90rem;
   height: 30rem;
@@ -43,7 +44,7 @@
   padding: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  max-height: 75vh;
+  max-height: 30rem;
 }
 
 .map-sidebar-rigth {
@@ -54,7 +55,7 @@
   padding: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  max-height: 75vh;
+  max-height: 30rem;
 }
 
 .hidden-routing-control {
@@ -76,7 +77,7 @@
 }
 
 .container-ruta {
-  position: absolute;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -97,9 +98,10 @@
 }
 
 .boton-brujula {
-  position: absolute;
-  bottom: 7.5rem;
-  right: 1rem;
+  position: relative;
+  bottom: 4rem;
+  left: 49rem;
+  color: #212529;
 }
 
 .boton-borrar {
@@ -177,6 +179,108 @@
   background-color: #c82333;
 }
 
+.leaflet-bottom.leaflet-right {
+  display: none !important;
+}
+
+.compass {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.compass:hover { transform: translateY(-1px); }
+
+.compass.hidden {
+  opacity: 0;
+  transform: scale(.85);
+  pointer-events: none;
+}
+
+/* Aguja (icono) */
+.compass-needle {
+  color: #202124;  
+  transition: transform .12s linear;
+}
+
+/* Ruta: ubicarla más arriba para que no pise los botones de navegación */
+.compass-ruta {
+  right: 1rem;
+  bottom: 7.5rem;         
+  z-index: 1100;     
+}
+
+.cuadrillas {
+  position: absolute;
+  right: 7rem;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.encargados {
+  position: absolute;
+  right: 4rem;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.sucursales {
+  position: absolute;
+  right: 1rem;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.cuadrillas.active,
+.encargados.active,
+.sucursales.active {
+  background: #fff;
+  color: #2c2c2c;
+}
 
 /* Ajustes para pantallas pequeñas (móviles) */
 @media (max-width: 768px) {
@@ -194,6 +298,10 @@
     width: 100%;
     max-width: 600px;
     max-height: none;
+  }
+
+  .compass-ruta {
+    bottom: 7.5rem;
   }
 }
 
@@ -227,6 +335,10 @@
   .boton-navegar {
     bottom: 5.5rem;
     right: 0.5rem;
+  }
+
+  .compass-ruta {
+    bottom: 8.2rem;
   }
 }
 

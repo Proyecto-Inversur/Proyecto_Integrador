@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import CuadrillaForm from '../components/CuadrillaForm';
-import BackButton from '../components/BackButton';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getCuadrillas, deleteCuadrilla } from '../services/cuadrillaService';
+import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
+import ColumnSelector from '../components/ColumnSelector';
 import { FaPlus } from 'react-icons/fa';
 import '../styles/botones_forms.css';
+
+const availableColumns = [
+  { key: 'id', label: 'ID' },
+  { key: 'nombre', label: 'Nombre' },
+  { key: 'zona', label: 'Zona' },
+  { key: 'email', label: 'Email' },
+  { key: 'acciones', label: 'Acciones' },
+];
 
 const Cuadrillas = () => {
   const [cuadrillas, setCuadrillas] = useState([]);
@@ -13,6 +22,9 @@ const Cuadrillas = () => {
   const [selectedCuadrilla, setSelectedCuadrilla] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedColumns, setSelectedColumns] = useState(
+    availableColumns.map((c) => c.key)
+  );
 
   const fetchCuadrillas = async () => {
     setIsLoading(true);
@@ -27,8 +39,22 @@ const Cuadrillas = () => {
     }
   };
 
+  const loadPreferences = async () => {
+    try {
+      const response = await getColumnPreferences('cuadrillas');
+      const cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (cols.length == 0) {
+        cols = ['id', 'nombre', 'zona', 'email', 'acciones'];
+      }
+      setSelectedColumns(cols);
+    } catch {
+      setSelectedColumns(availableColumns.map((c) => c.key));
+    }
+  };
+
   useEffect(() => {
     fetchCuadrillas();
+    loadPreferences();
   }, []);
 
   const handleDelete = async (id) => {
@@ -55,6 +81,15 @@ const Cuadrillas = () => {
     fetchCuadrillas();
   };
 
+  const handleSaveColumns = async (cols) => {
+    setSelectedColumns(cols);
+    try {
+      await saveColumnPreferences('cuadrillas', cols);
+    } catch (e) {
+      setError(error.response?.data?.detail || 'Error al seleccionar columnas');
+    }
+  };
+
   return (
     <Container className="custom-container">
       {isLoading ? (
@@ -65,12 +100,16 @@ const Cuadrillas = () => {
         </div>
       ) : (
         <div className="contenido-wrapper">
-          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Cuadrillas</h2>
             </Col>
             <Col className="text-end">
+              <ColumnSelector
+                availableColumns={availableColumns}
+                selectedColumns={selectedColumns}
+                onSave={handleSaveColumns}
+              />
               <Button className="custom-button" onClick={() => setShowForm(true)}>
                 <FaPlus />
                 Agregar
@@ -90,34 +129,38 @@ const Cuadrillas = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Zona</th>
-                  <th>Email</th>
-                  <th className="acciones-col">Acciones</th>
+                  {selectedColumns.includes('id') && <th>ID</th>}
+                  {selectedColumns.includes('nombre') && <th>Nombre</th>}
+                  {selectedColumns.includes('zona') && <th>Zona</th>}
+                  {selectedColumns.includes('email') && <th>Email</th>}
+                  {selectedColumns.includes('acciones') && (
+                    <th className="acciones-col">Acciones</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {cuadrillas.map((cuadrilla) => (
                   <tr key={cuadrilla.id}>
-                    <td>{cuadrilla.id}</td>
-                    <td>{cuadrilla.nombre}</td>
-                    <td>{cuadrilla.zona}</td>
-                    <td>{cuadrilla.email}</td>
-                  <td className="action-cell">
-                    <button
-                      className="action-btn edit me-2"
-                      onClick={() => handleEdit(cuadrilla)}
-                    >
-                      <FiEdit />
-                    </button>
-                    <button
-                      className="action-btn delete"
-                      onClick={() => handleDelete(cuadrilla.id)}
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </td>
+                    {selectedColumns.includes('id') && <td>{cuadrilla.id}</td>}
+                    {selectedColumns.includes('nombre') && <td>{cuadrilla.nombre}</td>}
+                    {selectedColumns.includes('zona') && <td>{cuadrilla.zona}</td>}
+                    {selectedColumns.includes('email') && <td>{cuadrilla.email}</td>}
+                    {selectedColumns.includes('acciones') && (
+                      <td className="action-cell">
+                        <button
+                          className="action-btn edit me-2"
+                          onClick={() => handleEdit(cuadrilla)}
+                        >
+                          <FiEdit />
+                        </button>
+                        <button
+                          className="action-btn delete"
+                          onClick={() => handleDelete(cuadrilla.id)}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

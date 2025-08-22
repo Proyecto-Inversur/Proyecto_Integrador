@@ -17,6 +17,7 @@ import Login from './pages/Login';
 import Mapa from './pages/Mapa';
 import Ruta from './pages/Ruta';
 import Reportes from './pages/Reportes';
+import BackButton from './components/BackButton';
 import { mapsApiKey } from './config';
 import { LoadScript } from '@react-google-maps/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -59,6 +60,9 @@ const AppContent = () => {
   const navigate = useNavigate();
   const { currentEntity, loading, verifying } = useContext(AuthContext);
   const isLoginPage = location.pathname === '/login';
+  const isHomePage = location.pathname === '/';
+  const isCorrectivoPage = location.pathname === '/correctivo';
+  const isPreventivoPage = location.pathname === '/preventivo';
 
   useEffect(() => {
     if (currentEntity && !loading && !verifying && isLoginPage) {
@@ -72,6 +76,8 @@ const AppContent = () => {
       <div className="d-flex flex-column min-vh-100">
         {!isLoginPage && <Navbar />}
         <main className="flex-grow-1">
+          {!isLoginPage && !isHomePage && !isCorrectivoPage && !isPreventivoPage && (
+            <BackButton />)}
           <Routes>
             <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/mantenimiento" element={<ProtectedRoute><Mantenimiento /></ProtectedRoute>} />
