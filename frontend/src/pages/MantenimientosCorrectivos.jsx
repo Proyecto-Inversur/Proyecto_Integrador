@@ -178,11 +178,13 @@ const MantenimientosCorrectivos = () => {
     try {
       const response = await getColumnPreferences('mantenimientos_correctivos');
       const cols = response.data?.columns || availableColumns.map((c) => c.key);
-      if (currentEntity.type === 'usuario') {
-        cols = ['id', 'sucursal', 'cuadrilla', 'zona', 'rubro', 'numero_caso', 'fecha_apertura', 'fecha_cierre', 'incidente', 'estado', 'prioridad', 'acciones'];
-      }
-      else {
-        cols = ['sucursal', 'rubro', 'fecha_apertura', 'estado', 'prioridad'];
+      if (cols.length == 0) {
+        if (currentEntity.type === 'usuario') {
+          cols = ['id', 'sucursal', 'cuadrilla', 'zona', 'rubro', 'numero_caso', 'fecha_apertura', 'fecha_cierre', 'incidente', 'estado', 'prioridad', 'acciones'];
+        }
+        else {
+          cols = ['sucursal', 'rubro', 'fecha_apertura', 'estado', 'prioridad'];
+        }
       }
       setSelectedColumns(cols);
     } catch {
