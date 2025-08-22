@@ -5,7 +5,6 @@ import { getMantenimientosPreventivos } from '../services/mantenimientoPreventiv
 import { renderToString } from 'react-dom/server';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { FiCompass } from 'react-icons/fi';
-import BackButton from '../components/BackButton';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
@@ -494,7 +493,6 @@ const Mapa = () => {
   <div className="map-container">
     {error && <div className="alert alert-danger">{error}</div>}
     <div className="contenido-wrapper">
-      <BackButton />
       <div className="map-controls">
         <h2>Mapa de Usuarios y Sucursales</h2>
       </div>

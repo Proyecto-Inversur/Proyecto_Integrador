@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import CuadrillaForm from '../components/CuadrillaForm';
-import BackButton from '../components/BackButton';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getCuadrillas, deleteCuadrilla } from '../services/cuadrillaService';
 import { FaPlus } from 'react-icons/fa';
@@ -65,7 +64,6 @@ const Cuadrillas = () => {
         </div>
       ) : (
         <div className="contenido-wrapper">
-          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Cuadrillas</h2>

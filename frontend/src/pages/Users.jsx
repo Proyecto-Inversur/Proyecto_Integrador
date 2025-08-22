@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import UserForm from '../components/UserForm';
-import BackButton from '../components/BackButton';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getUsers, deleteUser } from '../services/userService';
 import { FaPlus } from 'react-icons/fa';
@@ -65,7 +64,6 @@ const Users = () => {
         </div>
       ) : (
         <div className="contenido-wrapper">
-          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Usuarios</h2>

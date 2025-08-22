@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import SucursalForm from '../components/SucursalForm';
-import BackButton from '../components/BackButton';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getSucursales, deleteSucursal } from '../services/sucursalService';
 import { FaPlus } from 'react-icons/fa';
@@ -62,7 +61,6 @@ const Sucursales = () => {
         </div>
       ) : (
         <div className="contenido-wrapper">
-          <BackButton />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Sucursales</h2>
