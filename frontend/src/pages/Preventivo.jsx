@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { FiArrowLeft } from 'react-icons/fi';
 import { BsUpload, BsTrashFill, BsPencilFill, BsX } from 'react-icons/bs';
 import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
 import { getCuadrillas } from '../services/cuadrillaService';
@@ -13,11 +12,11 @@ import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import { BsSave } from 'react-icons/bs';
 import { getChatPreventivo, sendMessagePreventivo } from '../services/chats';
 import { subscribeToChat } from '../services/chatWs';
+import BackButton from '../components/BackButton';
 import '../styles/mantenimientos.css';
 
 const Preventivo = () => {
   const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
   const location = useLocation();
   const mantenimientoId = location.state?.mantenimientoId;
   const [mantenimiento, setMantenimiento] = useState({});
@@ -686,13 +685,7 @@ const Preventivo = () => {
           </Modal>
         </div>
       )}
-      <button
-        type="button"
-        onClick={() => navigate('/mantenimientos-preventivos')}
-        className="floating-back-btn"
-      >
-        <FiArrowLeft size={28} color="white" />
-      </button>
+      <BackButton to="/mantenimientos-preventivos" />
     </Container>
   );
 };

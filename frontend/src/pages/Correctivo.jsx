@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { FiArrowLeft } from 'react-icons/fi';
 import { BsUpload, BsTrashFill, BsPencilFill, BsX } from 'react-icons/bs';
 import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
@@ -13,11 +12,11 @@ import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
 import { BsSave } from 'react-icons/bs';
 import { getChatCorrectivo, sendMessageCorrectivo } from '../services/chats';
 import { subscribeToChat } from '../services/chatWs';
+import BackButton from '../components/BackButton';
 import '../styles/mantenimientos.css';
 
 const Correctivo = () => {
   const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
   const location = useLocation();
   const mantenimientoId = location.state?.mantenimientoId;
   const [mantenimiento, setMantenimiento] = useState({});
@@ -791,13 +790,7 @@ const Correctivo = () => {
           </Modal>
         </div>
       )}
-      <button
-      type="button"
-      onClick={() => navigate('/mantenimientos-correctivos')}
-      className="floating-back-btn"
-    >
-      <FiArrowLeft size={28} color="white" />
-    </button>
+      <BackButton to="/mantenimientos-correctivos" />
     </Container>
   );
 };
