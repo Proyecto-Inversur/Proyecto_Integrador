@@ -45,6 +45,7 @@ const Ruta = () => {
   const lastSucursalIdsRef = useRef([]);
   const notifiedMaintenancesRef = useRef(new Set());
   const headingRef = useRef(null);
+const compassRutaRef = useRef(null);
 
   const fetchData = async () => {
     if (!currentEntity?.data?.id || !userLocation) return;
@@ -297,7 +298,7 @@ const Ruta = () => {
 
   const rotarNorte = () => {
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setBearing(0); // apunto al norte
+      mapInstanceRef.current.setBearing(0, { animate: true }); // apunto al norte
     }
     setHeading(0);
     headingRef.current = 0;
@@ -351,6 +352,29 @@ const Ruta = () => {
 
     return () => {
       map.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !compassRutaRef.current) return;
+    const map = mapInstanceRef.current;
+    const el = compassRutaRef.current;
+
+    const updateCompass = () => {
+      const angle = map.getBearing ? map.getBearing() : 0;
+
+      // girar la aguja al revés de la rotación del mapa
+      const needle = el.querySelector('.compass-needle');
+      if (needle) needle.style.transform = `rotate(${-angle}deg)`;
+    };
+
+    map.on('rotate', updateCompass);
+    map.on('moveend', updateCompass);
+    updateCompass();
+
+    return () => {
+      map.off('rotate', updateCompass);
+      map.off('moveend', updateCompass);
     };
   }, []);
 
@@ -458,12 +482,15 @@ return (
           >
             <FiArrowLeft size={28} color="white" />
           </button>
-          <button
+          <div
+            ref={compassRutaRef}
+            className="compass compass-ruta"
             onClick={rotarNorte}
-            className="ruta-btn primary boton-brujula"
+            aria-label="Orientar al norte"
+            title="Orientar al norte"
           >
-            <FiCompass size={28} color="white" />
-          </button>
+            <FiCompass className="compass-needle" size={22} />
+          </div>
           <button className="ruta-btn danger boton-borrar" onClick={borrarRuta}>
             ❌ Borrar ruta
           </button>

@@ -5,7 +5,8 @@ import { getMantenimientosPreventivos } from '../services/mantenimientoPreventiv
 import { renderToString } from 'react-dom/server';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { FiCompass } from 'react-icons/fi';
-import BackButton from '../components/BackButton';
+import { FaUserAlt, FaTruck } from "react-icons/fa";
+import { renderToStaticMarkup } from "react-dom/server";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
@@ -25,13 +26,20 @@ const Mapa = () => {
   const [preventivos, setPreventivos] = useState([]);
   const [error, setError] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const [selectedCuadrillaId, setSelectedCuadrillaId] = useState(null);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const routeLayersRef = useRef({});
   const usersMarkersRef = useRef([]);
   const cuadrillasMarkersRef = useRef([]);
   const sucursalMarkersRef = useRef([]);
+  const compassRef = useRef(null);
+  const [showEncargados, setShowEncargados] = useState(true);
+  const [showCuadrillas, setShowCuadrillas] = useState(true);
+  const [showSucursales, setShowSucursales] = useState(true);
+
+  const toggleEncargados = () => setShowEncargados(prev => !prev);
+  const toggleCuadrillas = () => setShowCuadrillas(prev => !prev);
+  const toggleSucursales = () => setShowSucursales(prev => !prev);
 
   const fetchData = async () => {
     try {
@@ -315,7 +323,6 @@ const Mapa = () => {
   };
 
   const handleCuadrillaSelection = (cuadrilla) => {
-    setSelectedCuadrillaId(cuadrilla.id);
     clearRoutes();
     generarRutas(cuadrilla);
     if (mapInstanceRef.current) {
@@ -335,7 +342,7 @@ const Mapa = () => {
 
   const rotarNorte = () => {
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setBearing(0); // apunto al norte
+      mapInstanceRef.current.setBearing(0, { animate: true });
     }
   };
 
@@ -383,13 +390,12 @@ const Mapa = () => {
 
   useEffect(() => {
     if (!mapInstanceRef.current || !sucursales.length) return;
-    if (users.length) {
-      // Add user markers
-      usersMarkersRef.current.forEach(marker => marker?.remove());
+    usersMarkersRef.current.forEach(marker => marker?.remove());
+    if (users.length && showEncargados) {
       users.map(user => {
         const marker = L.marker([user.lat, user.lng], {
           icon: L.divIcon({
-            html: `<div style="width: 15px; height: 20px; background:#2c2c2c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
+            html: renderToStaticMarkup(<FaUserAlt size={22} color="#2c2c2c" />),
             className: '',
             iconSize: [20, 20],
             iconAnchor: [10, 20],
@@ -398,7 +404,6 @@ const Mapa = () => {
         }).addTo(mapInstanceRef.current);
 
         marker.on('click', () => {
-          setSelectedCuadrillaId(null);
           clearRoutes();
           showPopup(
             {
@@ -413,13 +418,12 @@ const Mapa = () => {
       });
     }
 
-    if (cuadrillas.length) {
-      // Add cuadrilla markers
-      cuadrillasMarkersRef.current.forEach(marker => marker?.remove());
+    cuadrillasMarkersRef.current.forEach(marker => marker?.remove());
+    if (cuadrillas.length && showCuadrillas) {
       cuadrillas.map(cuadrilla => {
         const marker = L.marker([cuadrilla.lat, cuadrilla.lng], {
           icon: L.divIcon({
-            html: `<div style="width: 15px; height: 20px; background:#2c2c2c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>`,
+            html: renderToStaticMarkup(<FaTruck size={22} color="#2c2c2c" />),
             className: '',
             iconSize: [20, 20],
             iconAnchor: [10, 20],
@@ -433,48 +437,66 @@ const Mapa = () => {
       });
     }
 
-    // Add sucursal markers
     sucursalMarkersRef.current.forEach(marker => marker?.remove());
-    sucursales.map(sucursal => {
-      const marker = L.marker([sucursal.lat, sucursal.lng], {
-        icon: L.divIcon({
-          html: renderToString(<FaMapMarkerAlt style={{ color: '#2c2c2c', fontSize: '24px' }} />),
-          className: 'sucursal-marker',
-          iconSize: [20, 20],
-          iconAnchor: [10, 20],
-        }),
-        title: sucursal.name
-      }).addTo(mapInstanceRef.current);
+    if (sucursales.length && showSucursales) {
+      sucursales.map(sucursal => {
+        const marker = L.marker([sucursal.lat, sucursal.lng], {
+          icon: L.divIcon({
+            html: renderToString(<FaMapMarkerAlt size={22} color="#2c2c2c" />),
+            className: 'sucursal-marker',
+            iconSize: [20, 20],
+            iconAnchor: [10, 20],
+          }),
+          title: sucursal.name
+        }).addTo(mapInstanceRef.current);
 
-      marker.on('click', () => {
-        setSelectedCuadrillaId(null);
-        clearRoutes();
-        showPopup(
-          {
-            type: 'sucursal',
-            name: sucursal.name,
-            Correctivos: sucursal.Correctivos,
-            Preventivos: sucursal.Preventivos
-          },
-          [sucursal.lat, sucursal.lng]
-        )
+        marker.on('click', () => {
+          clearRoutes();
+          showPopup(
+            {
+              type: 'sucursal',
+              name: sucursal.name,
+              Correctivos: sucursal.Correctivos,
+              Preventivos: sucursal.Preventivos
+            },
+            [sucursal.lat, sucursal.lng]
+          )
+        });
+
+        sucursalMarkersRef.current.push(marker);
       });
-
-      sucursalMarkersRef.current.push(marker);
-    });
+    }
 
     return () => {
       usersMarkersRef.current.forEach(marker => marker?.remove());
       cuadrillasMarkersRef.current.forEach(marker => marker?.remove());
       sucursalMarkersRef.current.forEach(marker => marker?.remove());
     };
-  }, [cuadrillas, users, sucursales]);
+  }, [cuadrillas, users, sucursales, showEncargados, showCuadrillas, showSucursales]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !compassRef.current) return;
+
+    const map = mapInstanceRef.current;
+
+    const updateCompass = () => {
+      const angle = map.getBearing ? map.getBearing() : 0; // leaflet-rotate
+      // Aguja compensa la rotación del mapa
+      const needle = compassRef.current.querySelector('.compass-needle');
+      if (needle) needle.style.transform = `rotate(${-angle}deg)`;
+    };
+
+    map.on('rotate', updateCompass);
+    updateCompass();
+
+    return () => map.off('rotate', updateCompass);
+  }, []);
+
 
   return (
   <div className="map-container">
     {error && <div className="alert alert-danger">{error}</div>}
     <div className="contenido-wrapper">
-      <BackButton />
       <div className="map-controls">
         <h2>Mapa de Usuarios y Sucursales</h2>
       </div>
@@ -551,12 +573,24 @@ const Mapa = () => {
 
         <div className="container-map">
           <div ref={mapRef} className="ruta-map"></div>
-          <button
-            onClick={rotarNorte}
-            className="ruta-btn primary boton-brujula"
-          >
-            <FiCompass size={28} color="white" />
+          <button onClick={toggleCuadrillas} className={`cuadrillas ${showCuadrillas ? "active" : ""}`}>
+            <FaTruck size={20} color="currentColor" />
           </button>
+          <button onClick={toggleEncargados} className={`encargados ${showEncargados ? "active" : ""}`}>
+            <FaUserAlt size={20} color="currentColor" />
+          </button>
+          <button onClick={toggleSucursales} className={`sucursales ${showSucursales ? "active" : ""}`}>
+            <FaMapMarkerAlt size={20} color="currentColor" />
+          </button>
+          <div
+            ref={compassRef}
+            className="compass"
+            onClick={rotarNorte}
+            aria-label="Orientar al norte"
+            title="Orientar al norte"
+          >
+            <FiCompass className="compass-needle" size={22} />
+          </div>
         </div>
       </div>
     </div>

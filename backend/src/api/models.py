@@ -188,3 +188,11 @@ class MensajePreventivo(Base):
     texto = Column(String, nullable=True)
     archivo = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("America/Argentina/Buenos_Aires")))
+
+class ColumnPreference(Base):
+    __tablename__ = "column_preference"
+
+    id = Column(Integer, primary_key=True)
+    firebase_uid = Column(String, nullable=False, index=True)
+    page = Column(String, nullable=False)
+    columns = Column(Text, nullable=False)

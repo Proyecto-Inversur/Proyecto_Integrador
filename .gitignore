@@ -12,3 +12,4 @@ dist
 coverage
 credentials
 osrm-data
+__mocks__

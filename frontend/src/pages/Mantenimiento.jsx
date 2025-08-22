@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import BackButton from '../components/BackButton';
 import { AuthContext } from '../context/AuthContext';
 import { FaTruck, FaHome, FaWrench, FaTools } from 'react-icons/fa';
 import '../styles/mantenimiento.css'; 
@@ -11,9 +10,6 @@ const Mantenimiento = () => {
 
   return (
     <Container>
-    <div className="back-button-wrapper">
-      <BackButton to="/" />
-    </div>
       <div className="page-content">
         <div className="button-obras-container">
           {currentEntity && currentEntity.type === 'usuario' && (

@@ -1,23 +1,22 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Container, Row, Col, Button, Form, Alert, Modal } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { FiArrowLeft } from 'react-icons/fi';
 import { BsUpload, BsTrashFill, BsPencilFill, BsX } from 'react-icons/bs';
 import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, deleteMantenimientoPlanilla, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { selectCorrectivo, deleteCorrectivo } from '../services/maps';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { FiSend, FiPlusCircle, FiCheckCircle } from "react-icons/fi";
+import { FiSend, FiPlusCircle, FiCheckCircle, FiArrowLeft, FiMessageSquare } from "react-icons/fi";
 import { BsSave } from 'react-icons/bs';
 import { getChatCorrectivo, sendMessageCorrectivo } from '../services/chats';
 import { subscribeToChat } from '../services/chatWs';
+import BackButton from '../components/BackButton';
 import '../styles/mantenimientos.css';
 
 const Correctivo = () => {
   const { currentEntity } = useContext(AuthContext);
-  const navigate = useNavigate();
   const location = useLocation();
   const mantenimientoId = location.state?.mantenimientoId;
   const [mantenimiento, setMantenimiento] = useState({});
@@ -47,6 +46,14 @@ const Correctivo = () => {
   const [archivoAdjunto, setArchivoAdjunto] = useState(null);
   const [previewArchivoAdjunto, setPreviewArchivoAdjunto] = useState(null);
   const chatBoxRef = React.useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchMantenimiento = async () => {
     setIsLoading(true);
@@ -369,6 +376,82 @@ const Correctivo = () => {
     }, 100);
   };
 
+  const renderChatContent = () => (
+    <>
+      <div className="chat-box" ref={chatBoxRef}>
+        {mensajes.map((msg, index) => {
+          const esPropio = msg.firebase_uid === currentEntity.data.uid;
+          const esImagen = msg.archivo?.match(/\.(jpeg|jpg|png|gif)$/i);
+          return (
+            <div key={index} className={`chat-message ${esPropio ? 'chat-message-sent' : 'chat-message-received'}`}>
+              {msg.texto && <p className="chat-message-text">{msg.texto}</p>}
+              {msg.archivo && (
+                esImagen ? (
+                  <img src={msg.archivo} alt="Adjunto" className="chat-image-preview" />
+                ) : (
+                  <a href={msg.archivo} target="_blank" rel="noopener noreferrer" className="chat-file-link">
+                    Archivo adjunto
+                  </a>
+                )
+              )}
+              <span className="chat-info">
+                {msg.nombre_usuario} · {new Date(msg.fecha).toLocaleString()}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      {archivoAdjunto && (
+        <div style={{ marginTop: '0.5rem' }}>
+          <strong>Archivo a enviar:</strong><br />
+          {archivoAdjunto.type.startsWith('image/') && (
+            <img src={previewArchivoAdjunto} alt="preview" style={{ maxWidth: '100px', borderRadius: '8px' }} />
+          )}
+          {archivoAdjunto.type.startsWith('video/') && (
+            <video controls style={{ maxWidth: '120px', borderRadius: '8px' }}>
+              <source src={previewArchivoAdjunto} type={archivoAdjunto.type} />
+              Tu navegador no soporta videos.
+            </video>
+          )}
+          {!archivoAdjunto.type.startsWith('image/') && !archivoAdjunto.type.startsWith('video/') && (
+            <span>{archivoAdjunto.name}</span>
+          )}
+        </div>
+      )}
+      <div className="chat-input-form">
+        <input
+          type="text"
+          placeholder="Escribe un mensaje..."
+          className="chat-input"
+          value={nuevoMensaje}
+          onChange={(e) => setNuevoMensaje(e.target.value)}
+        />
+        <input
+          type="file"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setArchivoAdjunto(file);
+            if (file && file.type.startsWith('image/')) {
+              setPreviewArchivoAdjunto(URL.createObjectURL(file));
+            } else if (file && file.type.startsWith('video/')) {
+              setPreviewArchivoAdjunto(URL.createObjectURL(file));
+            } else {
+              setPreviewArchivoAdjunto(file ? file.name : null);
+            }
+          }}
+          style={{ display: 'none' }}
+          id="archivoAdjunto"
+        />
+        <label htmlFor="archivoAdjunto" className="chat-attach-btn">
+          📎
+        </label>
+        <Button variant="light" className="chat-send-btn" onClick={handleEnviarMensaje}>
+          <FiSend size={20} color="black" />
+        </Button>
+      </div>
+    </>
+  );
+
   return (
     <Container fluid className="mantenimiento-container">
       {isLoading ? (
@@ -488,81 +571,11 @@ const Correctivo = () => {
                 <BsSave size={28} />
               </button>
             </Col>
-
-            <Col className="chat-section">
-              <div className="chat-box" ref={chatBoxRef}>
-                {mensajes.map((msg, index) => {
-                  const esPropio = msg.firebase_uid === currentEntity.data.uid;
-                  const esImagen = msg.archivo?.match(/\.(jpeg|jpg|png|gif)$/i);
-                  return (
-                    <div key={index} className={`chat-message ${esPropio ? 'chat-message-sent' : 'chat-message-received'}`}>
-                      {msg.texto && <p className="chat-message-text">{msg.texto}</p>}
-                      {msg.archivo && (
-                        esImagen ? (
-                          <img src={msg.archivo} alt="Adjunto" className="chat-image-preview" />
-                        ) : (
-                          <a href={msg.archivo} target="_blank" rel="noopener noreferrer" className="chat-file-link">
-                            Archivo adjunto
-                          </a>
-                        )
-                      )}
-                      <span className="chat-info">
-                        {msg.nombre_usuario} · {new Date(msg.fecha).toLocaleString()}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              {archivoAdjunto && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <strong>Archivo a enviar:</strong><br />
-                    {archivoAdjunto.type.startsWith("image/") && (
-                      <img src={previewArchivoAdjunto} alt="preview" style={{ maxWidth: '100px', borderRadius: '8px' }} />
-                    )}
-                    {archivoAdjunto.type.startsWith("video/") && (
-                      <video controls style={{ maxWidth: '120px', borderRadius: '8px' }}>
-                        <source src={previewArchivoAdjunto} type={archivoAdjunto.type} />
-                        Tu navegador no soporta videos.
-                      </video>
-                    )}
-                    {!archivoAdjunto.type.startsWith("image/") && !archivoAdjunto.type.startsWith("video/") && (
-                      <span>{archivoAdjunto.name}</span>
-                    )}
-                  </div>
-                )}
-              <div className="chat-input-form">
-                <input
-                  type="text"
-                  placeholder="Escribe un mensaje..."
-                  className="chat-input"
-                  value={nuevoMensaje}
-                  onChange={(e) => setNuevoMensaje(e.target.value)}
-                />
-                <input
-                  type="file"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    setArchivoAdjunto(file);
-                    if (file && file.type.startsWith("image/")) {
-                      setPreviewArchivoAdjunto(URL.createObjectURL(file));
-                    } else if (file && file.type.startsWith("video/")) {
-                      setPreviewArchivoAdjunto(URL.createObjectURL(file));
-                    } else {
-                      setPreviewArchivoAdjunto(file.name); // solo el nombre si no se puede previsualizar
-                    }
-                  }}
-                  style={{ display: 'none' }}
-                  id="archivoAdjunto"
-                />
-                <label htmlFor="archivoAdjunto" className="chat-attach-btn">
-                  📎
-                </label>
-                <Button variant="light" className="chat-send-btn" onClick={handleEnviarMensaje}>
-                  <FiSend size={20} color="black" />
-                </Button>
-              </div>
-            </Col>
-
+            {!isMobile && (
+              <Col className="chat-section">
+                {renderChatContent()}
+              </Col>
+            )}
             <Col xs={12} md={4} className="planilla-section">
               <h4 className="planilla-section-title">Planilla</h4>
             <Form.Group>
@@ -776,7 +789,6 @@ const Correctivo = () => {
               <p className="mt-3 text-center">No hay fotos cargadas.</p>
             )}
           </Row>
-
           <Modal show={showModal} onHide={handleCloseModal} centered>
             <Modal.Body>
               {selectedImage && (
@@ -789,15 +801,34 @@ const Correctivo = () => {
               </Button>
             </Modal.Footer>
           </Modal>
+          {isMobile && (
+            <>
+              {!isChatOpen && (
+                <button
+                  type="button"
+                  className="floating-chat-btn"
+                  onClick={() => setIsChatOpen(true)}
+                >
+                  <FiMessageSquare size={28} color="white" />
+                </button>
+              )}
+              <div className={`chat-overlay ${isChatOpen ? 'open' : ''}`}>
+                <button
+                  type="button"
+                  className="close-chat-btn"
+                  onClick={() => setIsChatOpen(false)}
+                >
+                  <FiArrowLeft size={28} color="black" />
+                </button>
+                <div className="chat-section">
+                  {renderChatContent()}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
-      <button
-      type="button"
-      onClick={() => navigate('/mantenimientos-correctivos')}
-      className="floating-back-btn"
-    >
-      <FiArrowLeft size={28} color="white" />
-    </button>
+      <BackButton to="/mantenimientos-correctivos" />
     </Container>
   );
 };

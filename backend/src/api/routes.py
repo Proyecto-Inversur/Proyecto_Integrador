@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos, maps, notificaciones, push, chats
+from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos, maps, notificaciones, push, chats, preferences
 from config.database import get_db
 from services.auth import verify_user_token
 from services.chat_ws import chat_manager
@@ -128,3 +128,4 @@ app.include_router(maps.router)
 app.include_router(notificaciones.router)
 app.include_router(push.router)
 app.include_router(chats.router)
+app.include_router(preferences.router)
