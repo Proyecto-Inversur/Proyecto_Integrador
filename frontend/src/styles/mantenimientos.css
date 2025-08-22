@@ -215,6 +215,7 @@ margin-top: 0.5rem;
   border-radius: 0.5rem;
   border: 1px solid #ccc;
   font-size: 0.95rem;
+  background-color: #f1f3f5;
 }
 
 /* Botón de enviar */
@@ -497,6 +498,64 @@ margin-top: 0.5rem;
   background-color: #f0f0f0;
 }
 
+.floating-chat-btn {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 13.7rem;
+  background-color: #ffc720;
+  border: none;
+  border-radius: 50% !important;
+  width: 60px;
+  height: 60px;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+.floating-chat-btn:hover {
+  background-color: #ff0505;
+}
+
+.chat-overlay {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 47rem;
+  background: #fff;
+  z-index: 1050;             /* por debajo del navbar */
+  transform: translateX(100%);
+  transition: transform .25s ease;
+  display: flex; flex-direction: column;
+}
+
+.chat-overlay.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.close-chat-btn {
+  background: none;
+  border: none;
+  align-self: flex-start;
+  padding: 1rem;
+}
+
+.chat-overlay .chat-section {
+  flex: 1;
+  width: 100%;
+  box-shadow: none;
+}
+
+.navbar{
+  position: sticky; 
+  top: 0;
+  z-index: 1100;
+}
+
 /* Pantallas pequeñas: móviles (hasta 768px) */
 @media (max-width: 768px) {
   .main-row {
@@ -567,60 +626,4 @@ margin-top: 0.5rem;
   .grid-item {
     height: 180px;
   }
-}
-
-.floating-chat-btn {
-  position: fixed;
-  right: 0.5rem;
-  bottom: 13.7rem;
-  background-color: #ffc720;
-  border: none;
-  border-radius: 50% !important;
-  width: 60px;
-  height: 60px;
-  font-size: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  cursor: pointer;
-  z-index: 1000;
-  transition: background-color 0.3s ease;
-}
-
-.floating-chat-btn:hover {
-  background-color: #ff0505;
-}
-
-.chat-overlay {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #f8f9fa;
-  z-index: 2000;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  pointer-events: none;
-}
-
-.chat-overlay.open {
-  transform: translateX(0);
-  pointer-events: auto;
-}
-
-.close-chat-btn {
-  background: none;
-  border: none;
-  align-self: flex-start;
-  padding: 1rem;
-}
-
-.chat-overlay .chat-section {
-  flex: 1;
-  width: 100%;
-  box-shadow: none;
 }
