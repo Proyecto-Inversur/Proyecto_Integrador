@@ -221,6 +221,67 @@
   z-index: 1100;     
 }
 
+.cuadrillas {
+  position: absolute;
+  right: 7rem;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.encargados {
+  position: absolute;
+  right: 4rem;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.sucursales {
+  position: absolute;
+  right: 1rem;
+  top: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.cuadrillas.active,
+.encargados.active,
+.sucursales.active {
+  background: #fff;
+  color: #2c2c2c;
+}
+
 /* Ajustes para pantallas pequeñas (móviles) */
 @media (max-width: 768px) {
   .map-main {
