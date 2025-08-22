@@ -25,6 +25,7 @@
 }
 
 .container-map {
+  position: relative;  /*Cambio*/
   width: 100%;
   max-width: 90rem;
   height: 30rem;
@@ -76,7 +77,7 @@
 }
 
 .container-ruta {
-  position: absolute;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -182,6 +183,44 @@
   display: none !important;
 }
 
+.compass {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, opacity .18s ease;
+  z-index: 1000;
+}
+
+.compass:hover { transform: translateY(-1px); }
+
+.compass.hidden {
+  opacity: 0;
+  transform: scale(.85);
+  pointer-events: none;
+}
+
+/* Aguja (icono) */
+.compass-needle {
+  color: #202124;  
+  transition: transform .12s linear;
+}
+
+/* Ruta: ubicarla más arriba para que no pise los botones de navegación */
+.compass-ruta {
+  right: 1rem;
+  bottom: 7.5rem;         
+  z-index: 1100;     
+}
+
 /* Ajustes para pantallas pequeñas (móviles) */
 @media (max-width: 768px) {
   .map-main {
@@ -198,6 +237,10 @@
     width: 100%;
     max-width: 600px;
     max-height: none;
+  }
+
+  .compass-ruta {
+    bottom: 7.5rem;
   }
 }
 
@@ -231,6 +274,10 @@
   .boton-navegar {
     bottom: 5.5rem;
     right: 0.5rem;
+  }
+
+  .compass-ruta {
+    bottom: 8.2rem;
   }
 }
 

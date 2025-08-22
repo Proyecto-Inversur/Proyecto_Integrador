@@ -32,6 +32,7 @@ const Mapa = () => {
   const usersMarkersRef = useRef([]);
   const cuadrillasMarkersRef = useRef([]);
   const sucursalMarkersRef = useRef([]);
+  const compassRef = useRef(null);
 
   const fetchData = async () => {
     try {
@@ -335,7 +336,7 @@ const Mapa = () => {
 
   const rotarNorte = () => {
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setBearing(0); // apunto al norte
+      mapInstanceRef.current.setBearing(0, { animate: true });
     }
   };
 
@@ -470,6 +471,25 @@ const Mapa = () => {
     };
   }, [cuadrillas, users, sucursales]);
 
+  useEffect(() => {
+    if (!mapInstanceRef.current || !compassRef.current) return;
+
+    const map = mapInstanceRef.current;
+
+    const updateCompass = () => {
+      const angle = map.getBearing ? map.getBearing() : 0; // leaflet-rotate
+      // Aguja compensa la rotación del mapa
+      const needle = compassRef.current.querySelector('.compass-needle');
+      if (needle) needle.style.transform = `rotate(${-angle}deg)`;
+    };
+
+    map.on('rotate', updateCompass);
+    updateCompass();
+
+    return () => map.off('rotate', updateCompass);
+  }, []);
+
+
   return (
   <div className="map-container">
     {error && <div className="alert alert-danger">{error}</div>}
@@ -551,12 +571,15 @@ const Mapa = () => {
 
         <div className="container-map">
           <div ref={mapRef} className="ruta-map"></div>
-          <button
+          <div
+            ref={compassRef}
+            className="compass"
             onClick={rotarNorte}
-            className="ruta-btn boton-brujula"
+            aria-label="Orientar al norte"
+            title="Orientar al norte"
           >
-            <FiCompass size={28} color="white" />
-          </button>
+            <FiCompass className="compass-needle" size={22} />
+          </div>
         </div>
       </div>
     </div>
