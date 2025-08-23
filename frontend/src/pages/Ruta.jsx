@@ -45,7 +45,7 @@ const Ruta = () => {
   const lastSucursalIdsRef = useRef([]);
   const notifiedMaintenancesRef = useRef(new Set());
   const headingRef = useRef(null);
-const compassRutaRef = useRef(null);
+  const compassRutaRef = useRef(null);
 
   const fetchData = async () => {
     if (!currentEntity?.data?.id || !userLocation) return;
