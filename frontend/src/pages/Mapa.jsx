@@ -155,7 +155,7 @@ const Mapa = () => {
         user => !isNaN(user.lat) && !isNaN(user.lng) && user.lat !== 0 && user.lng !== 0
       );
       const correctivosFiltrados = (correctivosResponse.data || []).filter(
-        c => c.estado === "Pendiente"
+        c => c.fecha_cierre === null
       );
       const preventivosFiltrados = (preventivosResponse.data || []).filter(
         c => c.fecha_cierre === null
@@ -566,7 +566,7 @@ const Mapa = () => {
             >
               <strong>- {cuadrilla.name}</strong>
               <br />
-              <small>{cuadrilla.sucursales?.length || 0} obras asignadas</small>
+              <small>{cuadrilla.correctivos?.length + cuadrilla.preventivos?.length || 0} obras asignadas</small>
             </div>
           ))}
           <h4>Encargados</h4>

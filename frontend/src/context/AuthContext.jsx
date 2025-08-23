@@ -31,7 +31,6 @@ function buildUserAuthError(error, fallback = 'Ocurrió un problema. Intentá de
 
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [currentEntity, setCurrentEntity] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -39,6 +38,17 @@ const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const isVerifyingRef = useRef(false);
   const isVerifiedRef = useRef(false);
+  const [currentEntity, setCurrentEntity] = useState(() => {
+    try {
+      const stored =
+        sessionStorage.getItem('currentEntity') ||
+        localStorage.getItem('currentEntity');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      console.error("Error parsing currentEntity from storage:", e);
+      return null;
+    }
+  });
 
   const verifyUser = async (user, idToken) => {
     isVerifyingRef.current = true;
@@ -58,6 +68,10 @@ const AuthProvider = ({ children }) => {
         isVerifiedRef.current = true;
         setCurrentUser(user);
         setCurrentEntity(response.data);
+        localStorage.setItem('authToken', idToken);
+        sessionStorage.setItem('authToken', idToken);
+        localStorage.setItem('currentEntity', JSON.stringify(response.data));
+        sessionStorage.setItem('currentEntity', JSON.stringify(response.data));
 
         const push_subscription = await getPushSubscription();
         if (push_subscription) {
@@ -167,8 +181,7 @@ const AuthProvider = ({ children }) => {
   const retrySignIn = async (retries = 3, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
       try {
-        const idToken =
-        sessionStorage.getItem('googleIdToken') || localStorage.getItem('googleIdToken');
+        const idToken = sessionStorage.getItem('googleIdToken') || localStorage.getItem('googleIdToken');
         if (!idToken) {
           return; // no hay token; no se hace nada
         }
@@ -191,8 +204,6 @@ const AuthProvider = ({ children }) => {
       const user = result.user;
       if (user) {
         const firebaseToken = await user.getIdToken();
-        localStorage.setItem('authToken', firebaseToken);
-        sessionStorage.setItem('authToken', firebaseToken);
         await verifyUser(user, firebaseToken);
       } else {
         await logOut('No se pudo obtener el usuario.');
@@ -205,6 +216,7 @@ const AuthProvider = ({ children }) => {
 
   // Ejecutar al cargar la página
   useEffect(() => {
+    console.log(currentEntity);
     if (!currentEntity) {
       handleGoogleSignIn();
     }

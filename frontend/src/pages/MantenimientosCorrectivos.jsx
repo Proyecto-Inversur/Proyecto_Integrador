@@ -77,7 +77,6 @@ const MantenimientosCorrectivos = () => {
   };
 
   const fetchData = async () => {
-    setIsLoading(true);
     try {
       const [sucursalesResponse, cuadrillasResponse, zonasResponse] = await Promise.all([
         getSucursales(),
@@ -94,8 +93,6 @@ const MantenimientosCorrectivos = () => {
       setZonas(zonasResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -177,8 +174,8 @@ const MantenimientosCorrectivos = () => {
   const loadPreferences = async () => {
     try {
       const response = await getColumnPreferences('mantenimientos_correctivos');
-      const cols = response.data?.columns || availableColumns.map((c) => c.key);
-      if (cols.length == 0) {
+      let cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (cols.length === 0) {
         if (currentEntity.type === 'usuario') {
           cols = ['id', 'sucursal', 'cuadrilla', 'zona', 'rubro', 'numero_caso', 'fecha_apertura', 'fecha_cierre', 'incidente', 'estado', 'prioridad', 'acciones'];
         }
@@ -197,7 +194,7 @@ const MantenimientosCorrectivos = () => {
     try {
       await saveColumnPreferences('mantenimientos_correctivos', cols);
     } catch (e) {
-      /* empty */
+      setError(error.response?.data?.detail || 'Error al seleccionar columnas');
     }
   };
 

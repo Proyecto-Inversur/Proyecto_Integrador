@@ -42,8 +42,8 @@ const Users = () => {
   const loadPreferences = async () => {
     try {
       const response = await getColumnPreferences('users');
-      const cols = response.data?.columns || availableColumns.map((c) => c.key);
-      if (cols.length == 0) {
+      let cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (cols.length === 0) {
         cols = ['id', 'nombre', 'email', 'rol', 'acciones'];
       }
       setSelectedColumns(cols);
@@ -86,7 +86,7 @@ const Users = () => {
     try {
       await saveColumnPreferences('users', cols);
     } catch (e) {
-      /* empty */
+      setError(error.response?.data?.detail || 'Error al seleccionar columnas');
     }
   };
 

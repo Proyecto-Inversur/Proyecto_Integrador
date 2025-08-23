@@ -66,7 +66,6 @@ const MantenimientosPreventivos = () => {
   };
 
   const fetchData = async () => {
-    setIsLoading(true);
     try {
       const [cuadrillasResponse, sucursalesResponse, zonasResponse] = await Promise.all([
         getCuadrillas(),
@@ -83,8 +82,6 @@ const MantenimientosPreventivos = () => {
       setZonas(zonasResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -157,8 +154,8 @@ const MantenimientosPreventivos = () => {
   const loadPreferences = async () => {
     try {
       const response = await getColumnPreferences('mantenimientos_preventivos');
-      const cols = response.data?.columns || availableColumns.map((c) => c.key);
-      if (cols.length == 0) {
+      let cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (cols.length === 0) {
         if (currentEntity.type === 'usuario') {
           cols = ['id', 'preventivo', 'cuadrilla', 'zona', 'fecha_apertura', 'fecha_cierre', 'acciones'];
         }
@@ -177,7 +174,7 @@ const MantenimientosPreventivos = () => {
     try {
       await saveColumnPreferences('mantenimientos_preventivos', cols);
     } catch (e) {
-      /* empty */
+      setError(error.response?.data?.detail || 'Error al seleccionar columnas');
     }
   };
 

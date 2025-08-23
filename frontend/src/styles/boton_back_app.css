@@ -1,7 +1,7 @@
 .floating-back-btn-home {
   position: fixed;
   right: 0.5rem;
-  bottom: 5rem;
+  bottom: 4rem;
   background-color: #ffc720;
   border: none;
   border-radius: 50% !important;
@@ -23,6 +23,6 @@
 
 @media (max-width: 398px) {
   .floating-back-btn-home {
-    margin-bottom: 1.3rem;
+    margin-bottom: 1.5rem;
   }
 }

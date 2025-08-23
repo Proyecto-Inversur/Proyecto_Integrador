@@ -42,8 +42,8 @@ const Cuadrillas = () => {
   const loadPreferences = async () => {
     try {
       const response = await getColumnPreferences('cuadrillas');
-      const cols = response.data?.columns || availableColumns.map((c) => c.key);
-      if (cols.length == 0) {
+      let cols = response.data?.columns || availableColumns.map((c) => c.key);
+      if (cols.length === 0) {
         cols = ['id', 'nombre', 'zona', 'email', 'acciones'];
       }
       setSelectedColumns(cols);
