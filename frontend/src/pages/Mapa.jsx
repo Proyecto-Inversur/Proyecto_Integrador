@@ -17,6 +17,102 @@ import '../styles/botones_forms.css';
 
 const defaultCenter = { lat: -31.4167, lng: -64.1833 };
 
+const badge = (text) => `<span class="inv-badge">${text ?? ''}</span>`;
+
+const itemLine = (label, value) => `
+  <div class="inv-line">
+    <span class="inv-label">${label}</span>
+    <span class="inv-value">${value ?? '—'}</span>
+  </div>
+`;
+
+const list = (arr) => (arr?.length
+  ? `<ul class="inv-list">${arr.map(li => `<li>${li}</li>`).join('')}</ul>`
+  : `<div class="inv-empty">Sin datos</div>`
+);
+
+const buildCuadrillaPopup = (d) => `
+  <div class="inv-card">
+    <div class="inv-header">
+      <div class="inv-title">Cuadrilla ${d.name}</div>
+      ${badge('Ruta')}
+    </div>
+
+    <div class="inv-section">
+      <div class="inv-section-title">Sucursales</div>
+      ${list(d.sucursales?.map(s => s.name))}
+    </div>
+
+    <div class="inv-section">
+      <div class="inv-section-title">Mantenimientos</div>
+
+      <div class="inv-subtitle">Correctivos seleccionados</div>
+      ${list((d.correctivos||[]).map(c => `
+        <div class="inv-box">
+          ${itemLine('Mantenimiento', c.id)}
+          ${itemLine('Sucursal', c.nombre_sucursal)}
+          ${itemLine('Fecha', c.fecha_apertura)}
+          ${itemLine('N° Caso', c.numero_caso)}
+          ${itemLine('Estado', c.estado)}
+        </div>
+      `))}
+
+      <div class="inv-subtitle mt-8">Preventivos seleccionados</div>
+      ${list((d.preventivos||[]).map(p => `
+        <div class="inv-box">
+          ${itemLine('Mantenimiento', p.id)}
+          ${itemLine('Sucursal', p.nombre_sucursal)}
+          ${itemLine('Fecha', p.fecha_apertura)}
+          ${itemLine('Frecuencia', p.frecuencia)}
+        </div>
+      `))}
+    </div>
+  </div>
+`;
+
+const buildEncargadoPopup = (d) => `
+  <div class="inv-card">
+    <div class="inv-header">
+      <div class="inv-title">${d.name}</div>
+      ${badge('Encargado')}
+    </div>
+  </div>
+`;
+
+const buildSucursalPopup = (d) => `
+  <div class="inv-card">
+    <div class="inv-header">
+      <div class="inv-title">${d.name}</div>
+      ${badge('Sucursal')}
+    </div>
+
+    <div class="inv-section">
+      <div class="inv-subtitle">Correctivos</div>
+      ${list((d.Correctivos||[]).map(c => `
+        <div class="inv-box">
+          ${itemLine('Mantenimiento', c.id)}
+          ${itemLine('Cuadrilla', c.cuadrilla_name)}
+          ${itemLine('Fecha', c.fecha_apertura)}
+          ${itemLine('N° Caso', c.numero_caso)}
+          ${itemLine('Estado', c.estado)}
+        </div>
+      `))}
+    </div>
+
+    <div class="inv-section">
+      <div class="inv-subtitle mt-8">Preventivos</div>
+      ${list((d.Preventivos||[]).map(p => `
+        <div class="inv-box">
+          ${itemLine('Mantenimiento', p.id)}
+          ${itemLine('Cuadrilla', p.cuadrilla_name)}
+          ${itemLine('Fecha', p.fecha_apertura)}
+          ${itemLine('Frecuencia', p.frecuencia)}
+        </div>
+      `))}
+    </div>
+  </div>
+`;
+
 const Mapa = () => {
   const [users, setUsers] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
@@ -230,84 +326,42 @@ const Mapa = () => {
   const showPopup = (data, latlng) => {
     if (!mapInstanceRef.current) return;
 
-    const content =
-      data.type === 'cuadrilla'
-        ? 
-          `
-            <div style="max-height: 200px; overflow-y: auto;">
-              <h3>${data.name}</h3>
-              <h4>Ruta</h4>
-              <ul>
-                ${data.sucursales?.map(s => `<li>${s.name}</li>`).join('') || '<li>Sin sucursales seleccionadas</li>'}
-              </ul>
-              <h4>Mantenimientos</h4>
-              <h5>Correctivos Seleccionados</h5>
-              <ul>
-                ${(data.correctivos && Array.isArray(data.correctivos) ? data.correctivos : []).map(c => `
-                  <li>
-                    Mantenimiento: ${c.id}<br/>
-                    Sucursal: ${c.nombre_sucursal}<br/>
-                    Fecha Apertura: ${c.fecha_apertura}<br/>
-                    Número de Caso: ${c.numero_caso}<br/>
-                    Estado: ${c.estado}
-                  </li>
-                `).join('') || '<li>Sin correctivos seleccionados</li>'}
-              </ul>
-              <h5>Preventivos Seleccionados</h5>
-              <ul>
-                ${(data.preventivos && Array.isArray(data.preventivos) ? data.preventivos : []).map(p => `
-                  <li>
-                    Mantenimiento: ${p.id}<br/>
-                    Sucursal: ${p.nombre_sucursal}<br/>
-                    Fecha Apertura: ${p.fecha_apertura}<br/>
-                    Frecuencia: ${p.frecuencia}
-                  </li>
-                `).join('') || '<li>Sin preventivos seleccionados</li>'}
-              </ul>
-            </div>
-          `
-        : 
-          data.type === 'encargado'
-            ? 
-              `
-                <div style="max-height: 200px; overflow-y: auto;">
-                  <h3>${data.name}</h3>
-                </div>
-              `
-            :
-              `
-                <div style="max-height: 200px; overflow-y: auto;">
-                  <h3>${data.name || 'Unknown'}</h3>
-                  <h4>Mantenimientos</h4>
-                  <h5>Correctivos</h5>
-                  <ul>
-                    ${(data.Correctivos && Array.isArray(data.Correctivos) ? data.Correctivos : []).map(c => `
-                      <li>
-                        Mantenimiento: ${c.id}<br/>
-                        Cuadrilla: ${c.cuadrilla_name}<br/>
-                        Fecha Apertura: ${c.fecha_apertura}<br/>
-                        Número de Caso: ${c.numero_caso}<br/>
-                        Estado: ${c.estado}
-                      </li>
-                    `).join('') || '<li>Sin correctivos</li>'}
-                  </ul>
-                  <h5>Preventivos</h5>
-                  <ul>
-                    ${(data.Preventivos && Array.isArray(data.Preventivos) ? data.Preventivos : []).map(p => `
-                      <li>
-                        Mantenimiento: ${p.id}<br/>
-                        Cuadrilla: ${p.cuadrilla_name}<br/>
-                        Fecha Apertura: ${p.fecha_apertura}<br/>
-                        Frecuencia: ${p.frecuencia}
-                      </li>
-                    `).join('') || '<li>Sin preventivos</li>'}
-                  </ul>
-                </div>
-              `;
-    L.popup()
+    const html =
+      data.type === 'cuadrilla' ? buildCuadrillaPopup(data)
+      : data.type === 'encargado' ? buildEncargadoPopup(data)
+      : buildSucursalPopup(data);
+
+    const isMobile = window.innerWidth < 768;
+
+    const popup = L.popup({
+      className: 'inversur-popup',
+      maxWidth: isMobile ? 280 : 420,
+      minWidth: 0,
+      closeButton: true,
+      autoPan: false,   
+      keepInView: false,
+      offset: L.point(0, -10), 
+    })
       .setLatLng(latlng)
-      .setContent(content)
+      .setContent(html)
       .openOn(mapInstanceRef.current);
+
+    
+    const el = popup.getElement ? popup.getElement() : popup._container;
+    if (el) {
+      L.DomEvent.disableScrollPropagation(el);
+      L.DomEvent.disableClickPropagation(el);
+    }
+
+    if (isMobile) {
+      const map = mapInstanceRef.current;
+      const p = map.latLngToContainerPoint(latlng);
+      const target = L.point(map.getSize().x / 2, (map.getSize().y / 2) + 60);
+      const delta = target.subtract(p);
+      const newCenterPoint = map.latLngToContainerPoint(map.getCenter()).subtract(delta);
+      const newCenter = map.containerPointToLatLng(newCenterPoint);
+      map.panTo(newCenter, { animate: true });
+    }
   };
 
   const clearRoutes = () => {
