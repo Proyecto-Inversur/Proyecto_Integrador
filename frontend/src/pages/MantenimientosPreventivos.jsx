@@ -198,6 +198,7 @@ const MantenimientosPreventivos = () => {
 
   return (
     <Container className="custom-container">
+      <BackButton to="/mantenimiento" />
       {isLoading ? (
         <div className="custom-div">
           <div className="spinner-border" role="status">
@@ -206,17 +207,11 @@ const MantenimientosPreventivos = () => {
         </div>
       ) : (
         <div className="contenido-wrapper">
-          <BackButton to="/mantenimiento" />
           <Row className="align-items-center mb-2">
             <Col>
               <h2>Gestión de Mantenimientos Preventivos</h2>
             </Col>
             <Col className="text-end">
-              <ColumnSelector
-                availableColumns={availableColumns}
-                selectedColumns={selectedColumns}
-                onSave={handleSaveColumns}
-              />
               {currentEntity.type === 'usuario' && (
                 <Button className="custom-button" onClick={() => setShowForm(true)}>
                   <FaPlus />
@@ -282,6 +277,11 @@ const MantenimientosPreventivos = () => {
             />
           )}
           <div className="table-responsive">
+            <ColumnSelector
+              availableColumns={availableColumns}
+              selectedColumns={selectedColumns}
+              onSave={handleSaveColumns}
+            />
             <Table striped bordered hover>
               <thead>
                 <tr>
@@ -290,11 +290,9 @@ const MantenimientosPreventivos = () => {
                   {selectedColumns.includes('preventivo') && <th>Preventivo</th>}
                   {currentEntity.type === 'usuario' &&
                     selectedColumns.includes('cuadrilla') && <th>Cuadrilla</th>}
-                  {currentEntity.type === 'usuario' &&
-                    selectedColumns.includes('zona') && <th>Zona</th>}
+                  {selectedColumns.includes('zona') && <th>Zona</th>}
                   {selectedColumns.includes('fecha_apertura') && <th>Fecha Apertura</th>}
-                  {currentEntity.type === 'usuario' &&
-                    selectedColumns.includes('fecha_cierre') && <th>Fecha Cierre</th>}
+                  {selectedColumns.includes('fecha_cierre') && <th>Fecha Cierre</th>}
                   {currentEntity.type === 'usuario' &&
                     selectedColumns.includes('acciones') && (
                       <th className="acciones-col">Acciones</th>
@@ -322,15 +320,13 @@ const MantenimientosPreventivos = () => {
                       selectedColumns.includes('cuadrilla') && (
                         <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
                       )}
-                    {currentEntity.type === 'usuario' &&
-                      selectedColumns.includes('zona') && (
+                    {selectedColumns.includes('zona') && (
                         <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
                       )}
                     {selectedColumns.includes('fecha_apertura') && (
                       <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
                     )}
-                    {currentEntity.type === 'usuario' &&
-                      selectedColumns.includes('fecha_cierre') && (
+                    {selectedColumns.includes('fecha_cierre') && (
                         <td>
                           {mantenimiento.fecha_cierre
                             ? mantenimiento.fecha_cierre?.split('T')[0]

@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FaTruck, FaHome, FaWrench, FaTools } from 'react-icons/fa';
+import BackButton from '../components/BackButton';
 import '../styles/mantenimiento.css'; 
 
 const Mantenimiento = () => {
@@ -11,6 +12,7 @@ const Mantenimiento = () => {
   return (
     <Container>
       <div className="page-content">
+        <BackButton to="/home" />
         <div className="button-obras-container">
           {currentEntity && currentEntity.type === 'usuario' && (
             <Link to="/cuadrillas" className="obras-button">

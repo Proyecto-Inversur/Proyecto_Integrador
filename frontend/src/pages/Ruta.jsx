@@ -495,15 +495,15 @@ return (
             ❌ Borrar ruta
           </button>
           {!isCenter && !isNavigating && (
-            <button className="ruta-btn primary boton-centrar" onClick={centerOnUser}>
-              📍 Centrar
+            <button className="ruta-btn success boton-centrar" onClick={centerOnUser}>
+              Centrar
             </button>
           )}
           <button
             className={`ruta-btn ${isNavigating ? 'danger' : 'success'} boton-navegar`}
             onClick={toggleNavegacion}
           >
-            {isNavigating ? '🛑 Detener' : '🚗 Iniciar'}
+            {isNavigating ? 'Detener' : 'Iniciar'}
           </button>
         </div>
       </div>

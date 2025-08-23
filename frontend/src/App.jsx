@@ -61,8 +61,10 @@ const AppContent = () => {
   const { currentEntity, loading, verifying } = useContext(AuthContext);
   const isLoginPage = location.pathname === '/login';
   const isHomePage = location.pathname === '/';
-  const isCorrectivoPage = location.pathname === '/correctivo';
-  const isPreventivoPage = location.pathname === '/preventivo';
+  const isCorrectivoPage = location.pathname === '/correctivo' || location.pathname === '/mantenimientos-correctivos';
+  const isPreventivoPage = location.pathname === '/preventivo' || location.pathname === '/mantenimientos-preventivos';
+  const isMantenimientoPage = location.pathname === '/mantenimiento';
+  const isRutaPage = location.pathname === '/ruta';
 
   useEffect(() => {
     if (currentEntity && !loading && !verifying && isLoginPage) {
@@ -76,7 +78,7 @@ const AppContent = () => {
       <div className="d-flex flex-column min-vh-100">
         {!isLoginPage && <Navbar />}
         <main className="flex-grow-1">
-          {!isLoginPage && !isHomePage && !isCorrectivoPage && !isPreventivoPage && (
+          {!isLoginPage && !isHomePage && !isCorrectivoPage && !isPreventivoPage && !isMantenimientoPage && !isRutaPage &&(
             <BackButton />)}
           <Routes>
             <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />

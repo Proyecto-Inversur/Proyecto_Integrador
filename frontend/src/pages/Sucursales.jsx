@@ -103,11 +103,6 @@ const Sucursales = () => {
               <h2>Gestión de Sucursales</h2>
             </Col>
             <Col className="text-end">
-              <ColumnSelector
-                availableColumns={availableColumns}
-                selectedColumns={selectedColumns}
-                onSave={handleSaveColumns}
-              />
               <Button className="custom-button" onClick={() => setShowForm(true)}>
                 <FaPlus />
                 Agregar
@@ -123,6 +118,11 @@ const Sucursales = () => {
           )}
 
           <div className="table-responsive">
+            <ColumnSelector
+              availableColumns={availableColumns}
+              selectedColumns={selectedColumns}
+              onSave={handleSaveColumns}
+            />
             <Table striped bordered hover>
               <thead>
                 <tr>

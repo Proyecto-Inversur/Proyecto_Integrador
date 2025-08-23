@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Form } from 'react-bootstrap';
+import { FiEdit } from 'react-icons/fi';
 import '../styles/formularios.css';
 
 const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
@@ -23,9 +24,9 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
   };
 
   return (
-    <>
+    <div className='columnas'>
       <Button variant="secondary" onClick={handleOpen} className="me-2">
-        Columnas
+        <FiEdit />
       </Button>
       <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
@@ -48,7 +49,7 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </div>
   );
 };
 

@@ -131,3 +131,11 @@
 .form-select:hover {
   color: #2c2c2c !important;
 }
+
+.columnas {
+  padding-bottom: 1rem;
+}
+
+.modal-content {
+  top: 6rem;
+}
