@@ -198,7 +198,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (isOnload) => {
     try {
       const result = await retrySignIn();
       const user = result.user;
@@ -206,11 +206,21 @@ const AuthProvider = ({ children }) => {
         const firebaseToken = await user.getIdToken();
         await verifyUser(user, firebaseToken);
       } else {
-        await logOut('No se pudo obtener el usuario.');
+        if (isOnload) {
+          await logOut();
+        }
+        else {
+          await logOut('No se pudo obtener el usuario.');
+        }
       }
     } catch (error) {
-      const userMessage = buildUserAuthError(error, 'No se pudo completar el inicio de sesión.');
-      await logOut(userMessage);
+      if (isOnload) {
+        await logOut();
+      }
+      else {
+        const userMessage = buildUserAuthError(error, 'No se pudo completar el inicio de sesión.');
+        await logOut(userMessage);
+      }
     }
   };
 
@@ -226,7 +236,7 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (singingIn) {
       setSingingIn(false); // evitar loops
-      handleGoogleSignIn();
+      handleGoogleSignIn(false);
     }
   }, [singingIn]);
 
