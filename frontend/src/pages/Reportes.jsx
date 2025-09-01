@@ -1,16 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { getCuadrillas } from '../services/cuadrillaService';
-import { getMantenimientosCorrectivos } from '../services/mantenimientoCorrectivoService';
-import { getMantenimientosPreventivos } from '../services/mantenimientoPreventivoService';
-import { getSucursales } from '../services/sucursalService';
-import { getZonas } from '../services/zonaService';
+import React from 'react';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import useReportes from '../hooks/useReportes';
 import '../styles/reportes.css';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import logoImg from '../assets/logo_inversur.png';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
