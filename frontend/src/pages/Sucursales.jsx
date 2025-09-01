@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import SucursalForm from '../components/SucursalForm';
-import { getSucursales, deleteSucursal } from '../services/sucursalService';
 import { FaPlus } from 'react-icons/fa';
+import useSucursales from '../hooks/useSucursales';
 import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/botones_forms.css';
@@ -17,49 +17,16 @@ const availableColumns = [
 ];
 
 const Sucursales = () => {
-  const [sucursales, setSucursales] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedSucursal, setSelectedSucursal] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchSucursales = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getSucursales();
-      setSucursales(response.data);
-    } catch (error) {
-      console.error('Error fetching sucursales:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSucursales();
-  }, []);
-
-  const handleDelete = async (id) => {
-    setIsLoading(true);
-    try {
-      await deleteSucursal(id);
-      fetchSucursales();
-    } catch (error) {
-      console.error('Error deleting sucursal:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleEdit = (sucursal) => {
-    setSelectedSucursal(sucursal);
-    setShowForm(true);
-  };
-
-  const handleFormClose = () => {
-    setShowForm(false);
-    setSelectedSucursal(null);
-    fetchSucursales();
-  };
+  const {
+    sucursales, 
+    showForm,
+    setShowForm,
+    selectedSucursal, 
+    isLoading, 
+    handleDelete, 
+    handleEdit, 
+    handleFormClose
+  } = useSucursales();
 
   return (
     <Container className="custom-container">
