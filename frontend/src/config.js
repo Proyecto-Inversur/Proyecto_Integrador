@@ -1,5 +1,6 @@
+const isProd = window.location.host.includes('nice-rock');
+
 const getApiUrl = () => {
-  const isProd = window.location.host.includes('nice-rock');
   const apiUrl = import.meta.env[`VITE_API_URL_${isProd ? 'PROD' : 'QA'}`];
 
   if (!apiUrl) {
@@ -11,7 +12,6 @@ const getApiUrl = () => {
 };
 
 const getFirebaseConfig = () => {
-  const isProd = window.location.host.includes('nice-rock');
   const config = import.meta.env[`VITE_FIREBASE_CONFIG_${isProd ? 'PROD' : 'QA'}`];
 
   if (!config) {
@@ -23,7 +23,6 @@ const getFirebaseConfig = () => {
 };
 
 const getMapsApiKey = () => {
-  const isProd = window.location.host.includes('nice-rock');
   const config = import.meta.env[`VITE_GOOGLE_MAPS_API_KEY_${isProd ? 'PROD' : 'QA'}`];
 
   if (!config) {
@@ -35,7 +34,6 @@ const getMapsApiKey = () => {
 };
 
 const getWebPushPublicKey = () => {
-  const isProd = window.location.host.includes('nice-rock');
   const key = import.meta.env[`VITE_WEB_PUSH_PUBLIC_KEY_${isProd ? 'PROD' : 'QA'}`];
 
   if (!key) {
@@ -47,7 +45,6 @@ const getWebPushPublicKey = () => {
 };
 
 const getGoogleClient = () => {
-  const isProd = window.location.host.includes('nice-rock');
   const clientId = import.meta.env[`VITE_GOOGLE_CLIENT_ID_${isProd ? 'PROD' : 'QA'}`];
 
   if (!clientId) {
@@ -58,8 +55,10 @@ const getGoogleClient = () => {
   return clientId;
 };
 
-export const API_URL = getApiUrl();
-export const firebaseConfig = getFirebaseConfig();
-export const mapsApiKey = getMapsApiKey();
-export const googleClientId = getGoogleClient();
-export const webPushPublicKey = getWebPushPublicKey();
+export const config = {
+  API_URL: getApiUrl(),
+  firebaseConfig: getFirebaseConfig(),
+  mapsApiKey: getMapsApiKey(),
+  googleClientId: getGoogleClient(),
+  webPushPublicKey: getWebPushPublicKey(),
+};

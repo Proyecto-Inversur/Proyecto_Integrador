@@ -1,43 +1,28 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Container } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
 import { FaTruck, FaHome, FaWrench, FaTools } from 'react-icons/fa';
+import HomeButton from '../components/HomeButton';
 import BackButton from '../components/BackButton';
 import '../styles/mantenimiento.css'; 
 
 const Mantenimiento = () => {
-  const { currentEntity } = useContext(AuthContext);
-
   return (
     <Container>
       <div className="page-content">
-        <BackButton to="/home" />
+        <BackButton to="/" />
         <div className="button-obras-container">
-          {currentEntity && currentEntity.type === 'usuario' && (
-            <Link to="/cuadrillas" className="obras-button">
-              <FaTruck />
-              Cuadrillas
-            </Link>
-          )}
-          {currentEntity && currentEntity.type === 'usuario' && (
-            <Link to="/sucursales" className="obras-button">
-              <FaHome />
-              Sucursales
-            </Link>
-          )}
-          {currentEntity && (
-            <Link to="/mantenimientos-correctivos" className="obras-button">
-              <FaWrench />
-              Mantenimiento Correctivo
-            </Link>
-          )}
-          {currentEntity && (
-            <Link to="/mantenimientos-preventivos" className="obras-button">
-              <FaTools />
-              Mantenimiento Preventivo
-            </Link>
-          )}
+          <HomeButton to="/cuadrillas" icon={FaTruck} requiredRoles="user">
+            Cuadrillas
+          </HomeButton>
+          <HomeButton to="/sucursales" icon={FaHome} requiredRoles="user">
+            Sucursales
+          </HomeButton>
+          <HomeButton to="/mantenimientos-correctivos" icon={FaWrench}>
+            Mantenimiento Correctivo
+          </HomeButton>
+          <HomeButton to="/mantenimientos-preventivos" icon={FaTools}>
+            Mantenimiento Preventivo
+          </HomeButton>
         </div>
       </div>
     </Container>

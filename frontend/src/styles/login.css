@@ -37,11 +37,11 @@ html, body {
 }
 
 .container-content {
-  padding: 20px;
+  padding: 10px;
 }
 
 .margin-t {
-  margin-top: 20px;
+  margin-bottom: 0px;
 }
 
 .form-group {
@@ -89,7 +89,6 @@ html, body {
 .margin-b {
   margin-bottom: 20px;
 }
-
 
 .custom-login-btn {
   color: #ffffff !important;
