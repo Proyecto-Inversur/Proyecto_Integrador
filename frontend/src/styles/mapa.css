@@ -217,6 +217,28 @@
   z-index: 1100;     
 }
 
+.compass-map {
+  right: 1rem;
+  bottom: 6rem;         
+  z-index: 1100;     
+}
+
+.sidebar-toggle {
+  display: none;
+  position: absolute;
+  bottom: 6rem;
+  left: 1rem;
+  z-index: 1000;
+  background: #2c2c2c;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.map-mobile-sidebar {
+  display: none;
+}
+
 .cuadrillas {
   right: 7rem;
 }
@@ -417,13 +439,42 @@
 
   .map-sidebar-left,
   .map-sidebar-rigth {
-    width: 100%;
-    max-width: 600px;
-    max-height: none;
+    display: none;
+  }
+
+  .map-mobile-sidebar {
+    display: block;
+    position: fixed;
+    top: 5.7rem;
+    left: 0;
+    height: 38.9rem;
+    width: 80%;
+    max-width: 300px;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 2000;
+  }
+
+  .map-mobile-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: block;
   }
 
   .compass-ruta {
     bottom: 7.5rem;
+  }
+
+  .cuadrillas,
+  .encargados,
+  .sucursales {
+    top: 6.5rem;
   }
 
   .inversur-popup .leaflet-popup-content-wrapper {
@@ -472,6 +523,10 @@
   .ruta-btn {
     padding: 0.5rem 1rem; 
     font-size: 0.9rem;
+  }
+
+  .map-mobile-sidebar {
+    height: 37.4rem;
   }
 
   .boton-volver {
