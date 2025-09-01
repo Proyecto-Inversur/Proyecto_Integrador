@@ -1,4 +1,20 @@
-/* Estilo para el navbar */
+/* ===== VARIABLES CSS ===== */
+:root {
+  --theme-primary: #ffc720;
+  --theme-secondary: #e6b31d;
+  --theme-tertiary: #f90000;
+  --theme-text: #333;
+  --danger-color: red;
+  --border-radius: 8px;
+  --border-radius-small: 4px;
+  --border-radius-large: 12px;
+  --box-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --box-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --box-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.2);
+  --transition: all 0.2s ease;
+}
+
+/* ===== NAVBAR STYLES ===== */
 .custom-navbar {
   position: fixed !important;
   top: 0;
@@ -13,7 +29,7 @@
 
 /* Estilo para la imagen del logo */
 .custom-logo {
-  object-fit: contain;
+  height: 65px;
 }
 
 /* Estilo para los enlaces del nav */
@@ -22,6 +38,7 @@
   margin-left: 2rem;
 }
 
+/* ===== NOTIFICATION STYLES ===== */
 .notification-icon {
   position: relative;
   display: inline-block;
@@ -31,7 +48,7 @@
   position: absolute;
   top: -6px;
   right: -6px;
-  background-color: #ffc107; 
+  background-color: #ffc107;
   color: #000;
   border-radius: 50%;
   padding: 2px 6px;
@@ -41,13 +58,172 @@
   text-align: center;
 }
 
-.mark-read-btn {
-  border-radius: 20px;
-  font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 6px 14px;
-  font-size: 14px;
+.notification-item {
+  transition: var(--transition);
+  cursor: pointer;
+  margin-bottom: 0.5rem !important;
+  padding: 0.75rem !important;
 }
+
+.notification-item:hover {
+  background-color: #f8f9fa !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rounded-circle{
+  width: 8px;
+  height: 8px;
+  background-color: #f39c12;
+}
+
+
+/* ===== THEME BUTTONS ===== */
+/* Botones del tema principal */
+.btn-theme-primary,
+.btn-theme-secondary,
+.btn-outline-theme-primary,
+.btn-outline-theme-secondary,
+.mark-read-btn {
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  box-shadow: var(--box-shadow-sm);
+  padding: 8px 16px;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+/* Primary theme buttons */
+.btn-theme-primary {
+  background-color: var(--theme-primary);
+  border-color: var(--theme-primary);
+  color: var(--theme-text);
+}
+
+.btn-theme-primary:hover,
+.btn-theme-primary:active,
+.btn-theme-primary:focus,
+.btn-theme-primary.active {
+  background-color: var(--theme-secondary) !important;
+  border-color: var(--theme-secondary) !important;
+  color: var(--theme-text) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 199, 32, 0.25) !important;
+}
+
+/* Outline primary theme buttons */
+.btn-outline-theme-primary {
+  background-color: transparent;
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+}
+
+.btn-outline-theme-primary:hover,
+.btn-outline-theme-primary:active,
+.btn-outline-theme-primary:focus,
+.btn-outline-theme-primary.active {
+  background-color: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
+  color: var(--theme-text) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 199, 32, 0.25) !important;
+}
+
+/* Secondary theme buttons */
+.btn-theme-secondary {
+  background-color: var(--theme-secondary);
+  border-color: var(--theme-secondary);
+  color: var(--theme-text);
+}
+
+.btn-theme-secondary:hover,
+.btn-theme-secondary:active,
+.btn-theme-secondary:focus,
+.btn-theme-secondary.active {
+  background-color: var(--theme-tertiary) !important;
+  border-color: var(--theme-tertiary) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Outline secondary theme buttons */
+.btn-outline-theme-secondary {
+  background-color: transparent;
+  border-color: var(--theme-secondary);
+  color: var(--theme-secondary);
+}
+
+.btn-outline-theme-secondary:hover,
+.btn-outline-theme-secondary:active,
+.btn-outline-theme-secondary:focus,
+.btn-outline-theme-secondary.active {
+  background-color: var(--theme-secondary) !important;
+  border-color: var(--theme-secondary) !important;
+  color: var(--theme-text) !important;
+  box-shadow: 0 0 0 0.2rem rgba(230, 179, 29, 0.25) !important;
+}
+
+/* Mark read button */
+.mark-read-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--box-shadow-md);
+}
+
+/* Delete button */
+.btn-delete-theme {
+  background-color: transparent;
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  border-radius: var(--border-radius-small);
+  padding: 4px 8px;
+  font-size: 12px;
+  transition: var(--transition);
+}
+
+.btn-delete-theme:hover {
+  background-color: var(--danger-color) !important;
+  color: white;
+  border-color: var(--danger-color) !important;   
+  transform: scale(1.05);
+}
+
+/* ===== BADGES & BORDERS ===== */
+.badge-theme-primary {
+  background-color: var(--theme-primary) !important;
+  color: var(--theme-text) !important;
+}
+
+.badge-theme-secondary {
+  background-color: var(--theme-secondary) !important;
+  color: var(--theme-text) !important;
+}
+
+.border-theme-primary {
+  border-left: 4px solid var(--theme-primary) !important;
+}
+
+.border-theme-secondary {
+  border-left: 4px solid var(--theme-secondary) !important;
+}
+
+/* ===== MODAL STYLES ===== */
+.modal-dialog {
+  margin: 10vh auto !important; 
+  max-width: 480px !important; 
+  transform: translateY(-20vh) !important;
+}
+
+.modal-content {
+  max-height: 70vh !important;
+  overflow: hidden !important;
+  border-radius: var(--border-radius-large) !important;
+  box-shadow: var(--box-shadow-lg) !important;
+}
+
+.modal-body {
+  max-height: 50vh !important;
+  overflow-y: auto !important;
+  padding: 1rem !important;
+}
+
+/* ===== RESPONSIVE ===== */
+/* Ajustes responsivos para el modal en diferentes tamaños de pantalla */
 
 @media (max-width: 991px) {
   .custom-nav-links {
@@ -59,13 +235,34 @@
   }
 
   .custom-navbar {
-  position: fixed !important;
+    position: fixed !important;
   }
-
 }
 
- /* Pantallas grandes (PC) */
-  @media (min-width: 768px) {
+/* Ajustes para pantallas pequeñas (móviles) */
+@media (max-width: 768px) {
+  .modal-dialog {
+    top: 8vh !important;
+    width: 95% !important;
+    max-width: none !important;
+  }
+
+  .modal-content {
+    max-height: 75vh !important;
+  }
+
+  .modal-body {
+    max-height: 55vh !important;
+  }
+
+  .modal-dialog {
+  margin: 0vh auto !important; 
+  }
+}
+
+
+/* Pantallas grandes (PC) */
+@media (min-width: 768px) {
   .custom-nav-links {
     display: none !important;
   }
@@ -75,12 +272,13 @@
   }
 
   .custom-navbar {
-  position: fixed !important;
+    position: fixed !important;
   }
 }
-  
-  /* Ajustes para pantallas pequeñas (móviles) */
-  @media (max-width: 767px) {
+
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 400px) {
   .custom-nav-links {
     display: none !important;
   }
@@ -90,21 +288,6 @@
   }
 
   .custom-navbar {
-  position: fixed !important;
-  }
-}
-  
-  /* Ajustes para pantallas muy pequeñas */
-  @media (max-width: 400px) {
-  .custom-nav-links {
-    display: none !important;
-  }
-
-  .icon-container {
-    margin-left: auto;
-  }
-
-  .custom-navbar {
-  position: fixed !important;
+    position: fixed !important;
   }
 }
