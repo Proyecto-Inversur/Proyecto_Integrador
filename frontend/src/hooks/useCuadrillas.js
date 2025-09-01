@@ -51,7 +51,8 @@ const useCuadrillas = () => {
 
   return { 
     cuadrillas, 
-    showForm, 
+    showForm,
+    setShowForm,
     selectedCuadrilla, 
     error, 
     isLoading, 

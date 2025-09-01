@@ -1,36 +1,36 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { Button, Container, Row, Col, Form } from 'react-bootstrap';
 import MantenimientoPreventivoForm from '../components/MantenimientoPreventivoForm';
 import BackButton from '../components/BackButton';
-import { getMantenimientosPreventivos, deleteMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
-import { getCuadrillas } from '../services/cuadrillaService';
-import { getSucursales } from '../services/sucursalService';
-import { getZonas } from '../services/zonaService';
-import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
+import useMantenimientoPreventivo from '../hooks/useMantenimientoPreventivo';
 import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/botones_forms.css';
 
 const MantenimientosPreventivos = () => {
-  const { currentEntity } = useContext(AuthContext);
-  const [mantenimientos, setMantenimientos] = useState([]);
-  const [filteredMantenimientos, setFilteredMantenimientos] = useState([]);
-  const [cuadrillas, setCuadrillas] = useState([]);
-  const [sucursales, setSucursales] = useState([]);
-  const [zonas, setZonas] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
-  const [filters, setFilters] = useState({
-      cuadrilla: '',
-      sucursal: '',
-      zona: '',
-      sortByDate: 'desc',
-    });
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const availableColumns = currentEntity.type === 'usuario'
+  const {
+    filteredMantenimientos,
+    sucursales,
+    cuadrillas,
+    zonas,
+    showForm,
+    setShowForm,
+    selectedMantenimiento,
+    filters,
+    isLoading,
+    handleFilterChange,
+    handleDelete,
+    handleEdit,
+    handleRowClick,
+    handleFormClose,
+    getSucursalNombre,
+    getCuadrillaNombre,
+    getZonaNombre,
+    isUser
+  } = useMantenimientoPreventivo();
+
+  const availableColumns = isUser
     ? [
         { key: 'id', label: 'ID' },
         { key: 'preventivo', label: 'Preventivo' },
@@ -46,121 +46,6 @@ const MantenimientosPreventivos = () => {
         { key: 'fecha_apertura', label: 'Fecha Apertura' },
         { key: 'fecha_cierre', label: 'Fecha Cierre' },
       ];
-
-  const fetchMantenimientos = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getMantenimientosPreventivos();
-      const mantenimientoArray = currentEntity.type === 'cuadrilla'
-        ? response.data.filter(m => m.id_cuadrilla === currentEntity.data.id && m.fecha_cierre === null)
-        : response.data;
-      setMantenimientos(mantenimientoArray);
-      setFilteredMantenimientos(mantenimientoArray);
-    } catch (error) {
-      console.error('Error fetching mantenimientos:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchData = async () => {
-    try {
-      const [cuadrillasResponse, sucursalesResponse, zonasResponse] = await Promise.all([
-        getCuadrillas(),
-        getSucursales(),
-        getZonas(),
-      ]);
-      const sucursalesConMantenimientos = sucursalesResponse.data.filter(sucursal =>
-        mantenimientos.some(m => m.id_sucursal === sucursal.id)
-      );
-
-      setSucursales(sucursalesConMantenimientos);
-      setCuadrillas(cuadrillasResponse.data);
-      setZonas(zonasResponse.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchMantenimientos();
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [mantenimientos]);
-
-  const handleFilterChange = (e) => {
-    const newFilters = { ...filters, [e.target.name]: e.target.value };
-    setFilters(newFilters);
-
-    let filtered = [...mantenimientos];
-
-    if (newFilters.cuadrilla) {
-      filtered = filtered.filter(m => m.id_cuadrilla === parseInt(newFilters.cuadrilla));
-    }
-    if (newFilters.sucursal) {
-      filtered = filtered.filter(m => m.id_sucursal === parseInt(newFilters.sucursal));
-    }
-    if (newFilters.zona) {
-      filtered = filtered.filter(m => {
-        const sucursal = sucursales.find(s => s.id === m.id_sucursal);
-        return sucursal?.zona?.toLowerCase() === newFilters.zona.toLowerCase();
-      });
-    }
-
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.fecha_apertura);
-      const dateB = new Date(b.fecha_apertura);
-      return newFilters.sortByDate === 'asc' ? dateA - dateB : dateB - dateA;
-    });
-
-    setFilteredMantenimientos(filtered);
-  };
-
-  const handleDelete = async (id) => {
-    setIsLoading(true);
-    if (currentEntity.type === 'usuario') {
-      try {
-        await deleteMantenimientoPreventivo(id);
-        fetchMantenimientos();
-      } catch (error) {
-        console.error('Error deleting mantenimiento:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleEdit = (mantenimiento) => {
-    setSelectedMantenimiento(mantenimiento);
-    setShowForm(true);
-  };
-
-  const handleRowClick = (mantenimientoId) => {
-    navigate('/preventivo', { state: { mantenimientoId } });
-  };
-
-  const handleFormClose = () => {
-    setShowForm(false);
-    setSelectedMantenimiento(null);
-    fetchMantenimientos();
-  };
-
-  const getSucursalNombre = (id_sucursal) => {
-    const sucursal = sucursales.find((s) => s.id === id_sucursal);
-    return sucursal ? sucursal.nombre : 'Desconocida';
-  };
-
-  const getCuadrillaNombre = (id_cuadrilla) => {
-    const cuadrilla = cuadrillas.find((c) => c.id === id_cuadrilla);
-    return cuadrilla ? cuadrilla.nombre : 'Desconocida';
-  };
-
-  const getZonaNombre = (id_sucursal) => {
-    const sucursal = sucursales.find((s) => s.id === id_sucursal);
-    return sucursal ? sucursal.zona : 'Desconocida';
-  };
 
   const tableData = filteredMantenimientos.map((m) => ({
     ...m,
@@ -183,7 +68,7 @@ const MantenimientosPreventivos = () => {
               <h2>Gestión de Mantenimientos Preventivos</h2>
             </Col>
             <Col className="text-end">
-              {currentEntity.type === 'usuario' && (
+              {isUser && (
                 <Button className="custom-button" onClick={() => setShowForm(true)}>
                   <FaPlus />
                   Agregar
@@ -192,7 +77,7 @@ const MantenimientosPreventivos = () => {
             </Col>
           </Row>
           <Row className="mb-3 justify-content-center">
-            {currentEntity.type === 'usuario' && (
+            {isUser && (
               <Col xs={12} sm={6} md={3} lg={2}>
                 <Form.Group>
                   <Form.Label>Cuadrilla</Form.Label>
@@ -216,7 +101,7 @@ const MantenimientosPreventivos = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            {currentEntity.type === 'usuario' && (
+            {isUser && (
               <Col xs={12} sm={6} md={3} lg={2}>
                 <Form.Group>
                   <Form.Label>Zona</Form.Label>
@@ -249,8 +134,8 @@ const MantenimientosPreventivos = () => {
             columns={availableColumns}
             data={tableData}
             entityKey="mantenimientos_preventivos"
-            onEdit={currentEntity.type === 'usuario' ? handleEdit : undefined}
-            onDelete={currentEntity.type === 'usuario' ? handleDelete : undefined}
+            onEdit={isUser ? handleEdit : undefined}
+            onDelete={isUser ? handleDelete : undefined}
             onRowClick={(row) => handleRowClick(row.id)}
           />
         </div>

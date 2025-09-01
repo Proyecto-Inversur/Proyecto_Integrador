@@ -18,7 +18,8 @@ const availableColumns = [
 const Cuadrillas = () => {
   const {
     cuadrillas, 
-    showForm, 
+    showForm,
+    setShowForm,
     selectedCuadrilla, 
     error, 
     isLoading, 
