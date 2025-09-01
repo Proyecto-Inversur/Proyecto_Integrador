@@ -1,17 +1,16 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Container, Row, Col, Form } from 'react-bootstrap';
+import { Button, Container, Row, Col, Form } from 'react-bootstrap';
 import MantenimientoCorrectivoForm from '../components/MantenimientoCorrectivoForm';
 import BackButton from '../components/BackButton';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getMantenimientosCorrectivos, deleteMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
 import { getSucursales } from '../services/sucursalService';
 import { getCuadrillas } from '../services/cuadrillaService';
 import { getZonas } from '../services/zonaService';
-import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
-import ColumnSelector from '../components/ColumnSelector';
 import { AuthContext } from '../context/AuthContext';
 import { FaPlus } from 'react-icons/fa';
+import DataTable from '../components/DataTable';
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/botones_forms.css';
 
 const MantenimientosCorrectivos = () => {
@@ -51,14 +50,15 @@ const MantenimientosCorrectivos = () => {
       ]
     : [
         { key: 'sucursal', label: 'Sucursal' },
+        { key: 'zona', label: 'Zona' },
         { key: 'rubro', label: 'Rubro' },
+        { key: 'numero_caso', label: 'Número de Caso' },
         { key: 'fecha_apertura', label: 'Fecha Apertura' },
+        { key: 'fecha_cierre', label: 'Fecha Cierre' },
+        { key: 'incidente', label: 'Incidente' },
         { key: 'estado', label: 'Estado' },
         { key: 'prioridad', label: 'Prioridad' },
       ];
-  const [selectedColumns, setSelectedColumns] = useState(
-    availableColumns.map((c) => c.key)
-  );
 
   const fetchMantenimientos = async () => {
     setIsLoading(true);
@@ -98,7 +98,6 @@ const MantenimientosCorrectivos = () => {
 
   useEffect(() => {
     fetchMantenimientos();
-    loadPreferences();
   }, []);
 
   useEffect(() => {
@@ -171,33 +170,6 @@ const MantenimientosCorrectivos = () => {
     fetchMantenimientos();
   };
 
-  const loadPreferences = async () => {
-    try {
-      const response = await getColumnPreferences('mantenimientos_correctivos');
-      let cols = response.data?.columns || availableColumns.map((c) => c.key);
-      if (cols.length === 0) {
-        if (currentEntity.type === 'usuario') {
-          cols = ['id', 'sucursal', 'cuadrilla', 'zona', 'rubro', 'numero_caso', 'fecha_apertura', 'fecha_cierre', 'incidente', 'estado', 'prioridad', 'acciones'];
-        }
-        else {
-          cols = ['sucursal', 'rubro', 'fecha_apertura', 'estado', 'prioridad'];
-        }
-      }
-      setSelectedColumns(cols);
-    } catch {
-      setSelectedColumns(availableColumns.map((c) => c.key));
-    }
-  };
-
-  const handleSaveColumns = async (cols) => {
-    setSelectedColumns(cols);
-    try {
-      await saveColumnPreferences('mantenimientos_correctivos', cols);
-    } catch (e) {
-      setError(error.response?.data?.detail || 'Error al seleccionar columnas');
-    }
-  };
-
   const getSucursalNombre = (id_sucursal) => {
     const sucursal = sucursales.find((s) => s.id === id_sucursal);
     return sucursal ? sucursal.nombre : 'Desconocida';
@@ -213,15 +185,20 @@ const MantenimientosCorrectivos = () => {
     return sucursal ? sucursal.zona : 'Desconocida';
   };
 
+  const tableData = filteredMantenimientos.map((m) => ({
+    ...m,
+    sucursal: getSucursalNombre(m.id_sucursal),
+    cuadrilla: getCuadrillaNombre(m.id_cuadrilla),
+    zona: getZonaNombre(m.id_sucursal),
+    fecha_apertura: m.fecha_apertura?.split('T')[0],
+    fecha_cierre: m.fecha_cierre ? m.fecha_cierre?.split('T')[0] : 'No hay Fecha',
+  }));
+
   return (
     <Container className="custom-container">
       <BackButton to="/mantenimiento" />
       {isLoading ? (
-        <div className="custom-div">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Cargando...</span>
-          </div>
-        </div>
+        <LoadingSpinner />
       ) : (
         <div className="contenido-wrapper">
           <Row className="align-items-center mb-2">
@@ -335,115 +312,20 @@ const MantenimientosCorrectivos = () => {
               </Form.Group>
             </Col>
           </Row>
-
           {showForm && (
             <MantenimientoCorrectivoForm
               mantenimiento={selectedMantenimiento}
               onClose={handleFormClose}
             />
           )}
-
-          <div className="table-responsive">
-            <ColumnSelector
-              availableColumns={availableColumns}
-              selectedColumns={selectedColumns}
-              onSave={handleSaveColumns}
-            />
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  {currentEntity.type === 'usuario' &&
-                    selectedColumns.includes('id') && <th>ID</th>}
-                  {selectedColumns.includes('sucursal') && <th>Sucursal</th>}
-                  {currentEntity.type === 'usuario' &&
-                    selectedColumns.includes('cuadrilla') && <th>Cuadrilla</th>}
-                  {selectedColumns.includes('zona') && <th>Zona</th>}
-                  {selectedColumns.includes('rubro') && <th>Rubro</th>}
-                  {selectedColumns.includes('numero_caso') && <th>Número de Caso</th>}
-                  {selectedColumns.includes('fecha_apertura') && <th>Fecha Apertura</th>}
-                  {selectedColumns.includes('fecha_cierre') && <th>Fecha Cierre</th>}
-                  {selectedColumns.includes('incidente') && <th>Incidente</th>}
-                  {selectedColumns.includes('estado') && <th>Estado</th>}
-                  {selectedColumns.includes('prioridad') && <th>Prioridad</th>}
-                  {currentEntity.type === 'usuario' &&
-                    selectedColumns.includes('acciones') && (
-                      <th className="acciones-col">Acciones</th>
-                    )}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMantenimientos.map((mantenimiento) => (
-                  <tr
-                    key={mantenimiento.id}
-                    onClick={() => handleRowClick(mantenimiento.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {currentEntity.type === 'usuario' &&
-                      selectedColumns.includes('id') && (
-                        <td>{mantenimiento.id}</td>
-                      )}
-                    {selectedColumns.includes('sucursal') && (
-                      <td>{getSucursalNombre(mantenimiento.id_sucursal)}</td>
-                    )}
-                    {currentEntity.type === 'usuario' &&
-                      selectedColumns.includes('cuadrilla') && (
-                        <td>{getCuadrillaNombre(mantenimiento.id_cuadrilla)}</td>
-                      )}
-                    {selectedColumns.includes('zona') && (
-                        <td>{getZonaNombre(mantenimiento.id_sucursal)}</td>
-                      )}
-                    {selectedColumns.includes('rubro') && (
-                      <td>{mantenimiento.rubro}</td>
-                    )}
-                    {selectedColumns.includes('numero_caso') && (
-                        <td>{mantenimiento.numero_caso}</td>
-                      )}
-                    {selectedColumns.includes('fecha_apertura') && (
-                      <td>{mantenimiento.fecha_apertura?.split('T')[0]}</td>
-                    )}
-                    {selectedColumns.includes('fecha_cierre') && (
-                        <td>
-                          {mantenimiento.fecha_cierre
-                            ? mantenimiento.fecha_cierre?.split('T')[0]
-                            : 'No hay Fecha'}
-                        </td>
-                      )}
-                    {selectedColumns.includes('incidente') && (
-                        <td>{mantenimiento.incidente}</td>
-                      )}
-                    {selectedColumns.includes('estado') && (
-                      <td>{mantenimiento.estado}</td>
-                    )}
-                    {selectedColumns.includes('prioridad') && (
-                      <td>{mantenimiento.prioridad}</td>
-                    )}
-                    {currentEntity.type === 'usuario' &&
-                      selectedColumns.includes('acciones') && (
-                        <td
-                          className="action-cell"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            className="action-btn edit me-2"
-                            aria-label="Editar"
-                            onClick={() => handleEdit(mantenimiento)}
-                          >
-                            <FiEdit />
-                          </button>
-                          <button
-                            className="action-btn delete"
-                            aria-label="Eliminar"
-                            onClick={() => handleDelete(mantenimiento.id)}
-                          >
-                            <FiTrash2 />
-                          </button>
-                        </td>
-                      )}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+          <DataTable
+            columns={availableColumns}
+            data={tableData}
+            entityKey="mantenimientos_correctivos"
+            onEdit={currentEntity.type === 'usuario' ? handleEdit : undefined}
+            onDelete={currentEntity.type === 'usuario' ? handleDelete : undefined}
+            onRowClick={(row) => handleRowClick(row.id)}
+          />
         </div>
       )}
     </Container>

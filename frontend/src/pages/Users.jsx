@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import UserForm from '../components/UserForm';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getUsers, deleteUser } from '../services/userService';
-import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
-import ColumnSelector from '../components/ColumnSelector';
 import { FaPlus } from 'react-icons/fa';
+import DataTable from '../components/DataTable';
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/botones_forms.css';
 
 const availableColumns = [
@@ -22,9 +21,6 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedColumns, setSelectedColumns] = useState(
-    availableColumns.map((c) => c.key)
-  );
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -39,22 +35,8 @@ const Users = () => {
     }
   };
 
-  const loadPreferences = async () => {
-    try {
-      const response = await getColumnPreferences('users');
-      let cols = response.data?.columns || availableColumns.map((c) => c.key);
-      if (cols.length === 0) {
-        cols = ['id', 'nombre', 'email', 'rol', 'acciones'];
-      }
-      setSelectedColumns(cols);
-    } catch {
-      setSelectedColumns(availableColumns.map((c) => c.key));
-    }
-  };
-
   useEffect(() => {
     fetchUsers();
-    loadPreferences();
   }, []);
 
   const handleDelete = async (id) => {
@@ -81,23 +63,10 @@ const Users = () => {
     fetchUsers();
   };
 
-  const handleSaveColumns = async (cols) => {
-    setSelectedColumns(cols);
-    try {
-      await saveColumnPreferences('users', cols);
-    } catch (e) {
-      setError(error.response?.data?.detail || 'Error al seleccionar columnas');
-    }
-  };
-
   return (
     <Container className="custom-container">
       {isLoading ? (
-        <div className="custom-div">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Cargando...</span>
-          </div>
-        </div>
+        <LoadingSpinner />
       ) : (
         <div className="contenido-wrapper">
           <Row className="align-items-center mb-2">
@@ -111,61 +80,20 @@ const Users = () => {
               </Button>
             </Col>
           </Row>
-
           {error && <Alert variant="danger">{error}</Alert>}
-
           {showForm && (
             <UserForm
               user={selectedUser}
               onClose={handleFormClose}
             />
           )}
-          <div className="table-responsive">
-            <ColumnSelector
-              availableColumns={availableColumns}
-              selectedColumns={selectedColumns}
-              onSave={handleSaveColumns}
-            />
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  {selectedColumns.includes('id') && <th>ID</th>}
-                  {selectedColumns.includes('nombre') && <th>Nombre</th>}
-                  {selectedColumns.includes('email') && <th>Email</th>}
-                  {selectedColumns.includes('rol') && <th>Rol</th>}
-                  {selectedColumns.includes('acciones') && (
-                    <th className="acciones-col">Acciones</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    {selectedColumns.includes('id') && <td>{user.id}</td>}
-                    {selectedColumns.includes('nombre') && <td>{user.nombre}</td>}
-                    {selectedColumns.includes('email') && <td>{user.email}</td>}
-                    {selectedColumns.includes('rol') && <td>{user.rol}</td>}
-                    {selectedColumns.includes('acciones') && (
-                      <td className="action-cell">
-                        <button
-                          className="action-btn edit me-2"
-                          onClick={() => handleEdit(user)}
-                        >
-                          <FiEdit />
-                        </button>
-                        <button
-                          className="action-btn delete"
-                          onClick={() => handleDelete(user.id)}
-                        >
-                          <FiTrash2 />
-                        </button>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+          <DataTable
+            columns={availableColumns}
+            data={users}
+            entityKey="users"
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </div>
       )}
     </Container>

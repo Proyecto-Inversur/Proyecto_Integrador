@@ -25,7 +25,12 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
 
   return (
     <div className='columnas'>
-      <Button variant="secondary" onClick={handleOpen} className="me-2">
+      <Button
+        variant="secondary"
+        onClick={handleOpen}
+        className="me-2"
+        aria-label="Seleccionar columnas"
+      >
         <FiEdit />
       </Button>
       <Modal show={show} onHide={() => setShow(false)}>
@@ -36,6 +41,7 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
           {availableColumns.map((col) => (
             <Form.Check
               key={col.key}
+              id={`col-${col.key}`}
               type="checkbox"
               label={col.label}
               checked={localSelection.includes(col.key)}

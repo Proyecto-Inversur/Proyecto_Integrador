@@ -3,7 +3,7 @@ import { Modal, Button, Form, InputGroup, Dropdown } from 'react-bootstrap';
 import { createSucursal, updateSucursal } from '../services/sucursalService';
 import { getZonas, createZona, deleteZona } from '../services/zonaService';
 import { FaPlus } from 'react-icons/fa';
-import DireccionAutocomplete from './DirreccionAutocomplete';
+import DireccionAutocomplete from './DireccionAutocomplete';
 import '../styles/formularios.css';
 
 const SucursalForm = ({ sucursal, onClose }) => {

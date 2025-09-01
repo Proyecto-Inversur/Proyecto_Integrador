@@ -1,5 +1,6 @@
 import React from 'react';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
+import '../styles/direccion-autocomplete.css';
 
 const DireccionAutocomplete = ({ onSelect }) => {
   const {
@@ -28,34 +29,21 @@ const DireccionAutocomplete = ({ onSelect }) => {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="direccion-autocomplete">
       <input
         value={value}
         onChange={handleInput}
         disabled={!ready}
         placeholder="Escriba una dirección"
-        style={{ width: '100%', padding: '8px' }}
+        className="direccion-autocomplete-input"
       />
       {status === 'OK' && (
-        <ul
-          style={{
-            position: 'absolute',
-            zIndex: 1000,
-            backgroundColor: 'white',
-            width: '100%',
-            border: '1px solid #ccc',
-            marginTop: '4px',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            listStyle: 'none',
-            padding: 0,
-          }}
-        >
+        <ul className="direccion-autocomplete-suggestions">
           {data.map(({ place_id, description }) => (
             <li
               key={place_id}
               onClick={() => handleSelect(description)}
-              style={{ padding: '8px', cursor: 'pointer' }}
+              className="direccion-autocomplete-item"
             >
               {description}
             </li>
