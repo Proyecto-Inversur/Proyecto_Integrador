@@ -11,7 +11,7 @@ import * as sucursalService from '../../src/services/sucursalService';
 vi.mock('../../src/services/zonaService');
 vi.mock('../../src/services/sucursalService');
 vi.mock('../../src/services/api');
-vi.mock('../../src/components/DirreccionAutocomplete', () => ({
+vi.mock('../../src/components/DireccionAutocomplete', () => ({
   default: ({ onSelect }) => (
     <input
       placeholder="Escriba una dirección"

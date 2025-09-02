@@ -223,6 +223,7 @@
   z-index: 1100;     
 }
 
+/* Botón hamburguesa (desktop: oculto) */
 .sidebar-toggle {
   display: none;
   position: absolute;
@@ -235,6 +236,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+/* Sidebar móvil (desktop: oculto) */
 .map-mobile-sidebar {
   display: none;
 }
@@ -426,65 +428,162 @@
   border-radius: 6px;
 }
 
-/* Ajustes para pantallas pequeñas (móviles) */
+/* MOBILE: drawer y fixes */
 @media (max-width: 768px) {
+
+  .map-mobile-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #2c2c2c;
+    color: white;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .map-mobile-sidebar-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 00;
+  }
+
+  .sidebar-close {
+    background: transparent;
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: background 0.2s ease;
+  }
+
+  .sidebar-close:hover {
+    background: rgba(255,255,255,0.15);
+  }
+
   .map-main {
     flex-direction: column;
     align-items: center;
   }
 
-  .container-map {
-    height: 70vh;
-  }
+  .container-map { height: 70vh; }
 
   .map-sidebar-left,
-  .map-sidebar-rigth {
-    display: none;
-  }
+  .map-sidebar-rigth { display: none; }
 
+  /* Drawer móvil: off-canvas + backdrop integrado */
   .map-mobile-sidebar {
     display: block;
     position: fixed;
-    top: 5.7rem;
+    top: 0;                 /* se apoya contra el top del viewport */
     left: 0;
-    height: 38.9rem;
-    width: 80%;
-    max-width: 300px;
-    background: #fff;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
-    padding: 1rem;
-    overflow-y: auto;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 2000;
+    height: 100dvh;         /* considera barras del SO */
+    width: 84vw;
+    max-width: 320px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    box-shadow: 4px 0 24px rgba(0,0,0,.18);
+    padding: 0;             /* el padding lo maneja el contenido */
+    overflow: hidden;       /* scrollea dentro de .sidebar-content */
+    border-radius: 0 16px 16px 0;
+    transform: translateX(-102%);
+    transition: transform .32s cubic-bezier(0.4,0,0.2,1);
+    z-index: 3000;
+    pointer-events: none;   /* cerrado: no intercepta clics */
   }
-
   .map-mobile-sidebar.open {
     transform: translateX(0);
+    pointer-events: auto;   /* abierto: vuelve interactivo */
   }
 
+  /* Backdrop que no requiere nodos extras */
+  .map-mobile-sidebar::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    left: clamp(84vw, 0px, 320px);  /* arranca en el borde del panel */
+    background: rgba(0,0,0,.45);
+    opacity: 0;
+    pointer-events: none;           /* cerrado: no tapa el toggle */
+    transition: opacity .28s ease;
+    z-index: -1;                    /* detrás del panel */
+  }
+  .map-mobile-sidebar.open::after {
+    opacity: 1;
+    pointer-events: auto;           /* abierto: bloquea clics al mapa */
+  }
+
+  /* Contenido scrolleable del panel */
+  .sidebar-content {
+    height: calc(100dvh - 72px);
+    overflow-y: auto;
+    padding: 1.25rem 1rem 1rem;
+    background: #fff;
+  }
+  .sidebar-content::-webkit-scrollbar { width: 6px; }
+  .sidebar-content::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+  .sidebar-content::-webkit-scrollbar-thumb { background: #c9c9c9; border-radius: 3px; }
+
+  .sidebar-section { margin: 0 0 1.25rem 0; }
+  .sidebar-section:last-child { margin-bottom: .5rem; }
+  .sidebar-section h4 {
+    margin: 0 0 .75rem 0;
+    padding-bottom: .45rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #1f1f1f;
+    border-bottom: 2px solid #dfa700;
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .sidebar-content .obra-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: .9rem .85rem;
+    margin-bottom: .65rem;
+    cursor: pointer;
+    transition: transform .18s cubic-bezier(0.4,0,0.2,1), box-shadow .18s, background .18s, border-color .18s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .sidebar-content .obra-item:hover {
+    background: #fff;
+    border-color: #dfa700;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.16);
+  }
+  .sidebar-content .obra-item strong {
+    display: block; margin-bottom: .18rem;
+    color: #222; font-weight: 700; font-size: .95rem; letter-spacing: -.01em;
+  }
+  .sidebar-content .obra-item small { color: #6c757d; font-size: .8rem; font-weight: 500; }
+
+  /* Botón hamburguesa: FIX de stacking */
   .sidebar-toggle {
-    display: block;
+    display: block !important;
+    position: fixed !important;   /* clave: no queda debajo del drawer */
+    bottom: 6rem !important;
+    left: 0.9rem !important;
+    z-index: 2900 !important;     /* > panel (3000), > leaflet */
+    background: #2c2c2c;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
-  .compass-ruta {
-    bottom: 7.5rem;
-  }
+  /* Reposición de controles superiores para no chocar con header */
+  .cuadrillas, .encargados, .sucursales { top: 6.5rem; z-index: 2000; }
 
-  .cuadrillas,
-  .encargados,
-  .sucursales {
-    top: 6.5rem;
-  }
-
+  .compass-ruta { bottom: 7.5rem; }
   .inversur-popup .leaflet-popup-content-wrapper {
     width: clamp(200px, 72vw, 270px) !important;
     border-radius: 10px;
   }
-
   .inversur-popup .leaflet-popup-content {
-    max-height: 14.5rem;                
-    font-size: 0.72rem;                
+    max-height: 14.5rem;
+    font-size: 0.72rem;
     line-height: 1.15;
   }
 
@@ -495,87 +594,39 @@
 
   /* secciones y listas más apretadas */
   .inv-section { padding: 6px 10px 8px; }
-  .inv-section + .inv-section {
-    border-top: 1px dashed #eee;
-    margin-top: 4px;      /* antes sin margen */
-    padding-top: 6px;     /* antes más grande */
-  }
-  .inv-section-title,
-  .inv-subtitle { font-size: 0.78rem; margin: 4px 0; }
+  .inv-section + .inv-section { border-top: 1px dashed #eee; margin-top: 4px; padding-top: 6px; }
+  .inv-section-title, .inv-subtitle { font-size: 0.78rem; margin: 4px 0; }
 
-  /* cajas de datos y filas */
   .inv-box { padding: 6px 8px; gap: 4px; font-size: 0.72rem; }
+  .inv-line { grid-template-columns: 1fr !important; gap: 3px; font-size: 0.7rem; }
 
-  /* Una columna para que no empuje el ancho */
-  .inv-line {
-    grid-template-columns: 1fr !important;
-    gap: 3px;
-    font-size: 0.7rem;
-  }
-
-  .inv-card {
-    min-width: 0 !important;       
-    width: 100% !important;
-  }
+  .inv-card { min-width: 0 !important; width: 100% !important; }
 }
 
 @media (max-width: 397px) {
-  .ruta-btn {
-    padding: 0.5rem 1rem; 
-    font-size: 0.9rem;
-  }
+  .ruta-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
 
-  .map-mobile-sidebar {
-    height: 37.4rem;
-  }
+  /* Panel un poco más corto para iPhone SE/mini */
+  .map-mobile-sidebar { max-width: 300px; width: 90vw; }
 
-  .boton-volver {
-    top: 6.5rem;
-    left: 0.5rem;
-  }
+  .boton-volver { top: 6.5rem; left: 0.5rem; }
+  .boton-brujula { position: absolute; bottom: 9rem; right: 0.5rem; }
+  .boton-borrar { top: 6.5rem; right: 0.5rem; }
+  .boton-centrar { bottom: 5.5rem; left: 0.5rem; }
+  .boton-navegar { bottom: 5.5rem; right: 0.5rem; }
 
-  .boton-brujula {
-    position: absolute;
-    bottom: 9rem;
-    right: 0.5rem;
-  }
-
-  .boton-borrar {
-    top: 6.5rem;
-    right: 0.5rem;
-  }
-
-  .boton-centrar {
-    bottom: 5.5rem; 
-    left: 0.5rem;
-  }
-
-  .boton-navegar {
-    bottom: 5.5rem;
-    right: 0.5rem;
-  }
-
-  .compass-ruta {
-    bottom: 8.2rem;
-  }
-
+  .compass-ruta { bottom: 8.2rem; }
   .inv-line { grid-template-columns: 1fr; }
   .inv-label { color: #888; }
 }
 
 /* Ajustes para monitores grandes */
 @media (min-width: 1710px) {
-  .map-main {
-    max-width: 1600px;
-  }
-
+  .map-main { max-width: 1600px; }
   .container-map {
     max-width: 100%;
     height: 45rem;
   }
-
   .map-sidebar-left,
-  .map-sidebar-rigth {
-    max-height: 45rem;
-  }
+  .map-sidebar-rigth { max-height: 45rem; }
 }

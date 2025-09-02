@@ -396,7 +396,7 @@ const Mapa = () => {
       },
       [cuadrilla.lat, cuadrilla.lng]
     );
-    if (isMobile) toggleSidebar();
+    if (isMobile) setIsSidebarOpen(false);
   };
 
   const handleEncargadoSelection = (user) => {
@@ -411,7 +411,7 @@ const Mapa = () => {
       },
       [user.lat, user.lng]
     );
-    if (isMobile) toggleSidebar();
+    if (isMobile) setIsSidebarOpen(false);
   };
 
   const handleSucursalSelection = (sucursal) => {
@@ -428,7 +428,7 @@ const Mapa = () => {
       },
       [sucursal.lat, sucursal.lng]
     );
-    if (isMobile) toggleSidebar();
+    if (isMobile) setIsSidebarOpen(false);
   };
 
   const rotarNorte = () => {
@@ -581,6 +581,7 @@ return (
               onSelectCuadrilla={handleCuadrillaSelection}
               onSelectEncargado={handleEncargadoSelection}
               onSelectSucursal={handleSucursalSelection}
+              onClose={() => setIsSidebarOpen(false)}
             />
             <div className="container-map">
               <div ref={mapRef} className="ruta-map"></div>
@@ -620,6 +621,7 @@ return (
                 onSelectCuadrilla={handleCuadrillaSelection}
                 onSelectEncargado={handleEncargadoSelection}
                 onSelectSucursal={handleSucursalSelection}
+                onClose={() => setIsSidebarOpen(false)}
               />
             </div>
             <button
