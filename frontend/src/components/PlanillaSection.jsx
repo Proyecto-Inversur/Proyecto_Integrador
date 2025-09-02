@@ -165,7 +165,7 @@ const PlanillaSection = ({
 
       {planillaPreviews.length > 0 && (
         <div className="planilla-carousel">
-          {planillaPreviews.length > 3 && (
+          {planillaPreviews.length >= 2 && (
             <>
               <button className="planilla-nav prev" type="button" onClick={() => scrollByRef(previewsRef, -1)}>‹</button>
               <button className="planilla-nav next" type="button" onClick={() => scrollByRef(previewsRef, +1)}>›</button>
@@ -219,7 +219,7 @@ const PlanillaSection = ({
       {existingPlanillas.length > 0 ? (
         <>
           <div className="planilla-carousel">
-            {existingPlanillas.length > 3 && (
+            {existingPlanillas.length >= 2 && (
               <>
                 <button className="planilla-nav prev" type="button" onClick={() => scrollByRef(existingRef, -1)}>‹</button>
                 <button className="planilla-nav next" type="button" onClick={() => scrollByRef(existingRef, +1)}>›</button>

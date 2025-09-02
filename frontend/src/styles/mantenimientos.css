@@ -1,3 +1,8 @@
+:root {
+  --thumb-w: 180px;
+  --thumb-h: 200px;
+}
+
 /* Contenedor principal de la página Preventivo */
 .mantenimiento-container {
   padding-top: 8rem;
@@ -153,9 +158,9 @@ margin-top: 0.5rem;
 
 /* Contenedor del historial de mensajes */
 .chat-box {
-  flex-grow: 1;
+  flex: 1 1 auto;         
   overflow-y: auto;
-  max-height: 21rem; 
+  max-height: 36rem; 
   margin-bottom: 1rem;
   width: 100%;
   display: flex;
