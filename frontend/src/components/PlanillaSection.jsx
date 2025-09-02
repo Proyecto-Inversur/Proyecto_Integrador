@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Row, Col, Button, Form } from 'react-bootstrap';
 import { BsUpload, BsTrashFill, BsPencilFill, BsX, BsSave } from 'react-icons/bs';
 
@@ -19,6 +19,13 @@ const PlanillaSection = ({
   const [planillaPreviews, setPlanillaPreviews] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selected, setSelected] = useState(multiple ? [] : null);
+  const previewsRef = useRef(null);
+  const existingRef = useRef(null);
+  const SLIDE = 200; 
+  const scrollByRef = (ref, dir = 1) => {
+    if (!ref.current) return;
+    ref.current.scrollBy({ left: dir * SLIDE, behavior: 'smooth' });
+  };
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -157,20 +164,30 @@ const PlanillaSection = ({
       </Form.Group>
 
       {planillaPreviews.length > 0 && (
-        <Row className="gallery-section mt-3">
-          {planillaPreviews.map((preview, index) => (
-            <Col md={3} key={index} className="gallery-item">
-              <div className="photo-container">
-                <img
-                  src={preview}
-                  alt={multiple ? `Nueva planilla ${index + 1}` : 'Nueva planilla'}
-                  className="gallery-thumbnail"
-                  onClick={() => handleImageClick(preview)}
-                />
-              </div>
-            </Col>
-          ))}
-        </Row>
+        <div className="planilla-carousel">
+          {planillaPreviews.length > 3 && (
+            <>
+              <button className="planilla-nav prev" type="button" onClick={() => scrollByRef(previewsRef, -1)}>‹</button>
+              <button className="planilla-nav next" type="button" onClick={() => scrollByRef(previewsRef, +1)}>›</button>
+            </>
+          )}
+          <div className="planilla-viewport" ref={previewsRef}>
+            <div className="planilla-track">
+              {planillaPreviews.map((preview, index) => (
+                <div className="planilla-slide" key={`preview-${index}`}>
+                  <div className="photo-container">
+                    <img
+                      src={preview}
+                      alt={multiple ? `Nueva planilla ${index + 1}` : 'Nueva planilla'}
+                      className="gallery-thumbnail"
+                      onClick={() => handleImageClick(preview)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {existingPlanillas.length > 0 && (
@@ -200,36 +217,43 @@ const PlanillaSection = ({
       )}
 
       {existingPlanillas.length > 0 ? (
-        <Row className="gallery-section mt-3">
-          {existingPlanillas.map((planilla, index) => (
-            <Col md={3} key={index} className="gallery-item">
-              <div
-                className={`photo-container ${isSelecting ? 'selectable' : ''} ${
-                  multiple
-                    ? selected.includes(planilla)
-                      ? 'selected'
-                      : ''
-                    : selected === planilla
-                    ? 'selected'
-                    : ''
-                }`}
-                onClick={() => {
-                  if (isSelecting) {
-                    handleSelect(planilla);
-                  } else {
-                    handleImageClick(planilla);
-                  }
-                }}
-              >
-                <img
-                  src={planilla}
-                  alt={multiple ? `Planilla ${index + 1}` : 'Planilla existente'}
-                  className="gallery-thumbnail"
-                />
+        <>
+          <div className="planilla-carousel">
+            {existingPlanillas.length > 3 && (
+              <>
+                <button className="planilla-nav prev" type="button" onClick={() => scrollByRef(existingRef, -1)}>‹</button>
+                <button className="planilla-nav next" type="button" onClick={() => scrollByRef(existingRef, +1)}>›</button>
+              </>
+            )}
+            <div className="planilla-viewport" ref={existingRef}>
+              <div className="planilla-track">
+                {existingPlanillas.map((planilla, index) => {
+                  const isSel = multiple ? selected.includes(planilla) : selected === planilla;
+                  return (
+                    <div className="planilla-slide" key={`existente-${index}`}>
+                      <div
+                        className={`photo-container ${isSelecting ? 'selectable' : ''} ${isSel ? 'selected' : ''}`}
+                        onClick={() => {
+                          if (isSelecting) {
+                            handleSelect(planilla);
+                          } else {
+                            handleImageClick(planilla);
+                          }
+                        }}
+                      >
+                        <img
+                          src={planilla}
+                          alt={multiple ? `Planilla ${index + 1}` : 'Planilla existente'}
+                          className="gallery-thumbnail"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </Col>
-          ))}
-        </Row>
+            </div>
+          </div>
+        </>
       ) : (
         <p className={`mt-3 ${multiple ? '' : 'text-center'}`}>
           {multiple ? 'No hay planillas cargadas.' : 'No hay planilla cargada.'}

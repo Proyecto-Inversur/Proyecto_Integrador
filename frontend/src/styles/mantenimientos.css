@@ -290,10 +290,10 @@ margin-top: 0.5rem;
 .planilla-section .btn-primary {
   background-color: #ffc720;
   border-color: #ffc720;
-  color: #000000; /* Texto negro para contraste */
-  display: block; /* Asegura que el botón ocupe su propio espacio */
-  margin: 0 auto; /* Centra el botón horizontalmente */
-  width: fit-content; /* Ajusta el ancho al contenido */
+  color: #000000; 
+  display: block;
+  margin: 0 auto; 
+  width: fit-content; 
 }
 
 .planilla-section .btn-primary:hover {
@@ -304,7 +304,7 @@ margin-top: 0.5rem;
 
 .planilla-section .btn-primary:focus,
 .planilla-section .btn-primary:active {
-  background-color: #ffc720 !important; /* Mantiene el color original al presionar */
+  background-color: #ffc720 !important; 
   border-color: #ffc720 !important;
   color: #000000 !important;
 }
@@ -341,6 +341,56 @@ margin-top: 0.5rem;
   max-width: 300px;
 }
 
+/* Carrusel horizontal de Planillas */
+.planilla-carousel {
+  width: 100%;
+  position: relative;
+  margin-top: .85rem;
+}
+
+.planilla-viewport {
+  overflow-x: hidden; 
+  overflow-y: hidden; 
+  width: 100%;
+  height: 15.6rem;
+}
+
+.planilla-track {
+  display: flex;
+  gap: 12px;
+  padding: 20px 1px;
+}
+
+.planilla-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planilla-slide {
+  max-width: 180px;
+  max-height: 200px;
+}
+
+/* Flechas */
+.planilla-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  z-index: 2; 
+}
+
+.planilla-nav:hover { background: #fff; }
+.planilla-nav:disabled { opacity: .35; cursor: default; }
+
+.planilla-nav.prev { left: -2.2rem; }
+.planilla-nav.next { right: -2.2rem; }
+
 /* Estilos para la sección de fotos */
 .photos-section {
   width: 100%;
@@ -356,14 +406,14 @@ margin-top: 0.5rem;
   text-align: center;
 }
 
-/* Estilo personalizado para el botón Cargar Fotos */
+/* Estilo botón Cargar Fotos */
 .photos-section .btn-primary {
   background-color: #ffc720;
   border-color: #ffc720;
-  color: #000000; /* Texto negro para contraste */
-  display: block; /* Asegura que el botón ocupe su propio espacio */
-  margin: 0 auto; /* Centra el botón horizontalmente */
-  width: fit-content; /* Ajusta el ancho al contenido */
+  color: #000000; 
+  display: block; 
+  margin: 0 auto; 
+  width: fit-content; 
 }
 
 .photos-section .btn-primary:hover {
@@ -614,6 +664,9 @@ margin-top: 0.5rem;
   .planilla-button {
     max-width: 100%;
   }
+
+  .planilla-nav.prev { left: -1.5rem; }
+  .planilla-nav.next { right: -1.5rem; }
 
   .chat-box {
     max-height: 73.6dvh; 
