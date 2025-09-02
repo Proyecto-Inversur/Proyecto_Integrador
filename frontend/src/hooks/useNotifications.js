@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom"
 import { useAuthRoles } from "../hooks/useAuthRoles"
-import { get_notificaciones_correctivos, get_notificaciones_preventivos } from '../services/notificaciones';
-import { correctivo_leido, preventivo_leido, delete_notificacion, subscribeToNotifications } from '../services/notificationWs';
+import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificacion } from '../services/notificaciones';
+import { subscribeToNotifications } from '../services/notificationWs';
 
 const useNotifications = () => {
   const { uid } = useAuthRoles()
