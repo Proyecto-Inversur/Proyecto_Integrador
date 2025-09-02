@@ -68,7 +68,7 @@ const MantenimientoInfo = ({
         {mantenimiento.prioridad}
       </div>
     )}
-    {mantenimiento.estado && (
+    {mantenimiento.estado && mantenimiento.numero_caso && (
       <div className="info-field">
         <strong className="info-label">Estado:</strong>{' '}
         {mantenimiento.estado}

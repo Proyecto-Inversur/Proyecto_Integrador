@@ -107,7 +107,6 @@ export default function useAuth() {
       isVerifyingRef.current = false;
       isVerifiedRef.current = false;
       setCurrentEntity(null);
-
       await unsubscribe();
       await signOut(auth);
     } catch (e) {

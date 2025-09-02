@@ -56,6 +56,7 @@ class MantenimientoPreventivo(Base):
     fecha_apertura = Column(Date)
     fecha_cierre = Column(Date)
     extendido = Column(DateTime, nullable=True)
+    estado = Column(String)
 
     sucursal = relationship("Sucursal", back_populates="mantenimientos_preventivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_preventivos")

@@ -21,7 +21,8 @@ def mantenimientos_preventivos_get(db: Session = Depends(get_db)):
             "fecha_cierre": m.fecha_cierre,
             "planillas": [planilla.url for planilla in m.planillas],
             "fotos": [foto.url for foto in m.fotos],
-            "extendido": m.extendido
+            "extendido": m.extendido,
+            "estado": m.estado
         }
         for m in mantenimientos
     ]
@@ -38,7 +39,8 @@ def mantenimiento_preventivo_get(mantenimiento_id: int, db: Session = Depends(ge
         "fecha_cierre": mantenimiento.fecha_cierre,
         "planillas": [planilla.url for planilla in mantenimiento.planillas],
         "fotos": [foto.url for foto in mantenimiento.fotos],
-        "extendido": mantenimiento.extendido
+        "extendido": mantenimiento.extendido,
+        "estado": mantenimiento.estado
     }
 
 @router.post("/", response_model=dict)
@@ -50,6 +52,7 @@ async def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivo
         mantenimiento.frecuencia,
         mantenimiento.id_cuadrilla,
         mantenimiento.fecha_apertura,
+        mantenimiento.estado,
         current_entity
     )
     return {
@@ -57,7 +60,8 @@ async def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivo
         "id_sucursal": new_mantenimiento.id_sucursal,
         "frecuencia": new_mantenimiento.frecuencia,
         "id_cuadrilla": new_mantenimiento.id_cuadrilla,
-        "fecha_apertura": new_mantenimiento.fecha_apertura
+        "fecha_apertura": new_mantenimiento.fecha_apertura,
+        "estado": new_mantenimiento.estado
     }
 
 @router.put("/{mantenimiento_id}", response_model=dict)
@@ -72,6 +76,7 @@ async def mantenimiento_preventivo_update(
     planillas: Optional[List[UploadFile]] = None,
     fotos: Optional[List[UploadFile]] = None,
     extendido: Optional[datetime] = Form(None),
+    estado: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     current_entity = request.state.current_entity
@@ -86,7 +91,8 @@ async def mantenimiento_preventivo_update(
         fecha_cierre,
         planillas,
         fotos,
-        extendido
+        extendido,
+        estado
     )
     return {
         "id": updated_mantenimiento.id,
@@ -97,7 +103,8 @@ async def mantenimiento_preventivo_update(
         "fecha_cierre": updated_mantenimiento.fecha_cierre,
         "planillas": [planilla.url for planilla in updated_mantenimiento.planillas],
         "fotos": [foto.url for foto in updated_mantenimiento.fotos],
-        "extendido": updated_mantenimiento.extendido
+        "extendido": updated_mantenimiento.extendido,
+        "estado": updated_mantenimiento.estado
     }
 
 @router.delete("/{mantenimiento_id}", response_model=dict)

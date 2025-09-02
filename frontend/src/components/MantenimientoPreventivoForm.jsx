@@ -14,6 +14,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
     frecuencia: null,
     id_cuadrilla: null,
     fecha_apertura: null,
+    estado: 'Pendiente',
   });
   const [preventivos, setPreventivos] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
@@ -59,6 +60,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
         frecuencia: mantenimiento.frecuencia || null,
         id_cuadrilla: mantenimiento.id_cuadrilla || null,
         fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || null,
+        estado: mantenimiento.estado || 'Pendiente',
       });
     }
   }, [mantenimiento]);
@@ -192,6 +194,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
         frecuencia: formData.frecuencia,
         id_cuadrilla: parseInt(formData.id_cuadrilla),
         fecha_apertura: formData.fecha_apertura,
+        estado: formData.estado,
       };
 
       if (mantenimiento) {

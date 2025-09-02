@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from "react-router-dom"
+import { AuthContext } from '../context/AuthContext';
 import { useAuthRoles } from "../hooks/useAuthRoles"
 import { get_notificaciones_correctivos, get_notificaciones_preventivos, correctivo_leido, preventivo_leido, delete_notificacion } from '../services/notificaciones';
 import { subscribeToNotifications } from '../services/notificationWs';
 
 const useNotifications = () => {
+  const { logOut } = useContext(AuthContext);
   const { uid } = useAuthRoles()
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -87,7 +89,6 @@ const useNotifications = () => {
       await logOut()
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
-      navigate("/login", { state: { error: "Error al cerrar sesión." } })
     }
   }
 

@@ -1,6 +1,8 @@
 import React, { createContext, useEffect } from 'react';
 import { config } from '../config';
 import { loadGoogleSDK } from '../utils/googleSignIn';
+import { auth } from '../services/firebase';
+import { onAuthStateChanged } from "firebase/auth";
 import useAuth, { buildUserAuthError } from '../hooks/useAuth';
 
 const AuthContext = createContext();
@@ -60,7 +62,9 @@ const AuthProvider = ({ children }) => {
       const result = await retrySignIn();
       const user = result?.user;
       if (user) {
-        const firebaseToken = await user.getIdToken();
+        const firebaseToken = await auth.currentUser.getIdToken(true);
+        localStorage.setItem('authToken', firebaseToken);
+        sessionStorage.setItem('authToken', firebaseToken);
         await verifyUser(firebaseToken);
       } else {
         await logOut('No se pudo obtener el usuario.');
@@ -73,22 +77,20 @@ const AuthProvider = ({ children }) => {
 
   // Ejecutar al cargar la página
   useEffect(() => {
-    const validateSession = async () => {
-      if (currentEntity) {
-        const token =
-          sessionStorage.getItem('authToken') ||
-          localStorage.getItem('authToken');
-        if (token) {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user && currentEntity) {
+        try {
+          const token = await user.getIdToken(true);
           await verifyUser(token);
-        } else {
+        } catch (err) {
           await logOut();
         }
-      } else {
+      } else if (!user) {
         await handleGoogleSignIn();
       }
-    };
+    });
 
-    validateSession();
+    return () => unsubscribe();
   }, []);
 
   // Ejecutar cuando se establece un nuevo token
