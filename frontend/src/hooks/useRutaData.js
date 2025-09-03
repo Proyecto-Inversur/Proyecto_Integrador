@@ -1,35 +1,27 @@
 import { useState, useContext, useRef } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAuthRoles } from '../hooks/useAuthRoles';
 import { LocationContext } from "../context/LocationContext";
-import {
-  getSucursalesLocations,
-  getCorrectivos,
-  getPreventivos,
-} from "../services/maps";
-import {
-  getMantenimientosCorrectivos,
-  getMantenimientosPreventivos,
-} from "../services/mantenimientoCorrectivoService";
+import { getSucursalesLocations, getCorrectivos, getPreventivos } from "../services/maps";
+import { getMantenimientosCorrectivos } from '../services/mantenimientoCorrectivoService';
+import { getMantenimientosPreventivos } from '../services/mantenimientoPreventivoService';
 import { notify_nearby_maintenances } from "../services/notificaciones";
 import L from "leaflet";
 
 const NOTIFY_DISTANCE = 10000;
 
 export const useRutaData = (isNavigating) => {
-  const { currentEntity } = useContext(AuthContext);
+  const { id } = useAuthRoles();
   const { userLocation } = useContext(LocationContext);
-
   const [sucursales, setSucursales] = useState([]);
   const notifiedMaintenancesRef = useRef(new Set());
 
-  // 🔹 Fetch sucursales y ordenarlas por cercanía
   const fetchData = async () => {
-    if (!currentEntity?.data?.id || !userLocation) return;
+    if (!id || !userLocation) return;
     try {
       const [sucursalesRes, correctivosRes, preventivosRes] = await Promise.all([
         getSucursalesLocations(),
-        getCorrectivos(parseInt(currentEntity.data.id)),
-        getPreventivos(parseInt(currentEntity.data.id)),
+        getCorrectivos(parseInt(id)),
+        getPreventivos(parseInt(id)),
       ]);
 
       const allSucursales = sucursalesRes.data;
@@ -63,9 +55,8 @@ export const useRutaData = (isNavigating) => {
     }
   };
 
-  // 🔹 Notificaciones cercanas
   const checkNearbyMaintenances = async (currentLatLng) => {
-    if (!currentEntity?.data?.id || !isNavigating) return;
+    if (!id || !isNavigating) return;
 
     try {
       const [
@@ -78,8 +69,8 @@ export const useRutaData = (isNavigating) => {
         getSucursalesLocations(),
         getMantenimientosCorrectivos(),
         getMantenimientosPreventivos(),
-        getCorrectivos(parseInt(currentEntity.data.id)),
-        getPreventivos(parseInt(currentEntity.data.id)),
+        getCorrectivos(parseInt(id)),
+        getPreventivos(parseInt(id)),
       ]);
 
       const selectedIds = new Set([
@@ -101,13 +92,13 @@ export const useRutaData = (isNavigating) => {
           .filter((m) => m.estado === "Pendiente")
           .map((m) => ({ ...m, tipo: "correctivo" })),
         ...allPreventivosRes.data
-          .filter((m) => !m.fechaCierre)
+          .filter((m) => m.estado === "Pendiente")
           .map((m) => ({ ...m, tipo: "preventivo" })),
       ];
 
       const nearMaintenances = allMaintenances.filter(
         (m) =>
-          m.id_cuadrilla === parseInt(currentEntity.data.id) &&
+          m.id_cuadrilla === parseInt(id) &&
           nearbySucursalIds.has(m.id_sucursal) &&
           !selectedIds.has(m.id)
       );
