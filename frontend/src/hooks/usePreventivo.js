@@ -19,6 +19,7 @@ const usePreventivo = (mantenimientoId) => {
     fotos: [],
     fecha_cierre: null,
     extendido: null,
+    estado: 'Pendiente',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -32,9 +33,16 @@ const usePreventivo = (mantenimientoId) => {
   const { chatBoxRef, scrollToBottom } = useChat(mantenimiento.id, setMensajes);
   const isMobile = useIsMobile();
 
-  const handleAddToRoute = () => {
+  const handleAddToRoute = async () => {
     const seleccion = { id_mantenimiento: mantenimiento.id, id_sucursal: mantenimiento.id_sucursal };
     selectPreventivo(seleccion);
+    if (formData.estado === 'Pendiente') {
+      const updatedFormData = {
+        ...formData,
+        estado: 'En Progreso',
+      };
+      await handleSubmit({ preventDefault: () => {} }, updatedFormData);
+    }
     setSuccess('Mantenimiento agregado a la ruta.');
   };
 
@@ -55,6 +63,7 @@ const usePreventivo = (mantenimientoId) => {
         fotos: [],
         fecha_cierre: response.data.fecha_cierre?.split('T')[0] || null,
         extendido: response.data.extendido || null,
+        estado: response.data.estado || 'Pendiente',
       });
       await cargarMensajes(response.data.id);
     } catch (error) {
@@ -133,6 +142,7 @@ const usePreventivo = (mantenimientoId) => {
     if (data.extendido) {
       formDataToSend.append('extendido', data.extendido);
     }
+    formDataToSend.append('estado', data.estado);
 
     try {
       await updateMantenimientoPreventivo(mantenimiento.id, formDataToSend);

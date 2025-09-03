@@ -33,9 +33,16 @@ const useCorrectivo = (mantenimientoId) => {
   const { chatBoxRef, scrollToBottom } = useChat(mantenimiento.id, setMensajes);
   const isMobile = useIsMobile();
 
-  const handleAddToRoute = () => {
+  const handleAddToRoute = async () => {
     const seleccion = { id_mantenimiento: mantenimiento.id, id_sucursal: mantenimiento.id_sucursal };
     selectCorrectivo(seleccion);
+    if (formData.estado === 'Pendiente') {
+      const updatedFormData = {
+        ...formData,
+        estado: 'En Progreso',
+      };
+      await handleSubmit({ preventDefault: () => {} }, updatedFormData);
+    }
     setSuccess('Mantenimiento agregado a la ruta.');
   };
 
