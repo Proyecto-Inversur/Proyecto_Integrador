@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import MapaDesktop from '../components/maps/MapaDesktop';
+import MapaMobile from '../components/maps/MapaMobile';
 import useIsMobile from '../hooks/useIsMobile';
-import useLeafletMap from '../hooks/useLeafletMap';
-import useMapa from '../hooks/useMapa';
-import MapaDesktop from '../components/MapaDesktop';
-import MapaMobile from '../components/MapaMobile';
+import useLeafletMap from '../hooks/maps/useLeafletMap';
+import useMapa from '../hooks/maps/useMapa';
 import '../styles/mapa.css';
 import '../styles/botones_forms.css';
 
@@ -15,8 +15,8 @@ const Mapa = () => {
   const navigate = useNavigate();
   const { mapRef, mapInstanceRef, createRoutingControl, rotarNorte } = useLeafletMap(defaultCenter);
   const {
-    cuadrillas,
     users,
+    cuadrillas,
     sucursales,
     compassRef,
     showEncargados,

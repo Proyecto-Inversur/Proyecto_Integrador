@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getSucursales, deleteSucursal } from '../services/sucursalService';
+import { getSucursales, deleteSucursal } from '../../services/sucursalService';
 
 const useSucursales = () => {
   const [sucursales, setSucursales] = useState([]);

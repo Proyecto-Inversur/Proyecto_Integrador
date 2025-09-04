@@ -1,11 +1,11 @@
 import React from 'react';
 import { Button, Container, Row, Col, Form } from 'react-bootstrap';
-import MantenimientoCorrectivoForm from '../components/MantenimientoCorrectivoForm';
-import BackButton from '../components/BackButton';
 import { FaPlus } from 'react-icons/fa';
-import useMantenimientoCorrectivo from '../hooks/useMantenimientoCorrectivo';
+import BackButton from '../components/BackButton';
 import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
+import MantenimientoCorrectivoForm from '../components/forms/MantenimientoCorrectivoForm';
+import useMantenimientoCorrectivo from '../hooks/forms/useMantenimientoCorrectivo';
 import '../styles/botones_forms.css';
 
 const MantenimientosCorrectivos = () => {

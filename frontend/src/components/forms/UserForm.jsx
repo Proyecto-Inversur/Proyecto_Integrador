@@ -1,10 +1,10 @@
 import React from 'react';
 import { useState, useEffect, useContext } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { createUser, updateUser } from '../services/userService';
-import { AuthContext } from '../context/AuthContext';
+import { createUser, updateUser } from '../../services/userService';
+import { AuthContext } from '../../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
-import '../styles/formularios.css';
+import '../../styles/formularios.css';
 
 const UserForm = ({ user, onClose }) => {
   const [formData, setFormData] = useState({

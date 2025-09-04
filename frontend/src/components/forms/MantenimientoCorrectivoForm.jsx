@@ -1,19 +1,19 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { createMantenimientoCorrectivo, updateMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
-import { getSucursales } from '../services/sucursalService';
-import { getCuadrillas } from '../services/cuadrillaService';
-import '../styles/formularios.css';
+import { createMantenimientoCorrectivo, updateMantenimientoCorrectivo } from '../../services/mantenimientoCorrectivoService';
+import { getSucursales } from '../../services/sucursalService';
+import { getCuadrillas } from '../../services/cuadrillaService';
+import '../../styles/formularios.css';
 
 const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
   const [formData, setFormData] = useState({
-    id_sucursal: null,
-    id_cuadrilla: null,
-    fecha_apertura: null,
-    numero_caso: null,
-    incidente: null,
-    rubro: null,
+    id_sucursal: '',
+    id_cuadrilla: '',
+    fecha_apertura: '',
+    numero_caso: '',
+    incidente: '',
+    rubro: '',
     estado: 'Pendiente',
     prioridad: 'Media',
   });
@@ -43,12 +43,12 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
 
     if (mantenimiento) {
       setFormData({
-        id_sucursal: mantenimiento.id_sucursal || null,
-        id_cuadrilla: mantenimiento.id_cuadrilla || null,
-        fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || null,
-        numero_caso: mantenimiento.numero_caso || null,
-        incidente: mantenimiento.incidente || null,
-        rubro: mantenimiento.rubro || null,
+        id_sucursal: mantenimiento.id_sucursal || '',
+        id_cuadrilla: mantenimiento.id_cuadrilla || '',
+        fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || '',
+        numero_caso: mantenimiento.numero_caso || '',
+        incidente: mantenimiento.incidente || '',
+        rubro: mantenimiento.rubro || '',
         estado: mantenimiento.estado || 'Pendiente',
         prioridad: mantenimiento.prioridad || 'Media',
       });

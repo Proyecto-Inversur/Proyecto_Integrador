@@ -44,5 +44,5 @@ export function useMapRoutes(mapInstanceRef, createRoutingControl) {
     routeLayersRef.current = {};
   };
 
-  return { generarRutas, clearRoutes, routeLayersRef };
+  return { generarRutas, clearRoutes };
 }

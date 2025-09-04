@@ -16,7 +16,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import UserForm from '@/components/UserForm'
+import UserForm from '@/components/forms/UserForm'
 import { AuthContext } from '@/context/AuthContext'
 import * as userSvc from '@/services/userService'
 

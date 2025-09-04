@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import SucursalForm from '../components/SucursalForm';
 import { FaPlus } from 'react-icons/fa';
-import useSucursales from '../hooks/useSucursales';
 import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SucursalForm from '../components/forms/SucursalForm';
+import useSucursales from '../hooks/forms/useSucursales';
 import '../styles/botones_forms.css';
 
 const availableColumns = [

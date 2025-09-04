@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { waitForElementToBeRemoved } from '@testing-library/react'
-import SucursalForm from '../../src/components/SucursalForm';
+import SucursalForm from '../../src/components/forms/SucursalForm';
 import * as zonaService from '../../src/services/zonaService';
 import * as sucursalService from '../../src/services/sucursalService';
 

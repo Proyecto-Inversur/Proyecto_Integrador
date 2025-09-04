@@ -1,8 +1,8 @@
 import L from "leaflet";
 import { renderToString } from "react-dom/server";
-import CuadrillaPopup from "../components/CuadrillaPopup";
-import EncargadoPopup from "../components/EncargadoPopup";
-import SucursalPopup from "../components/SucursalPopup";
+import CuadrillaPopup from "../../components/maps/CuadrillaPopup";
+import EncargadoPopup from "../../components/maps/EncargadoPopup";
+import SucursalPopup from "../../components/maps/SucursalPopup";
 
 export function usePopups(mapInstanceRef, isMobile) {
   const showPopup = (data, latlng) => {

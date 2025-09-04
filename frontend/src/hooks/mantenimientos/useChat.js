@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { subscribeToChat } from '../services/chatWs';
+import { subscribeToChat } from '../../services/chatWs';
 
 const useChat = (chatId, setMensajes) => {
   const chatBoxRef = useRef(null);

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
-import CuadrillaForm from '../components/CuadrillaForm';
 import { FaPlus } from 'react-icons/fa';
-import useCuadrillas from '../hooks/useCuadrillas';
 import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CuadrillaForm from '../components/forms/CuadrillaForm';
+import useCuadrillas from '../hooks/forms/useCuadrillas';
 import '../styles/botones_forms.css';
 
 const availableColumns = [

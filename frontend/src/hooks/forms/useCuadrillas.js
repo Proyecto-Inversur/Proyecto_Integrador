@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCuadrillas, deleteCuadrilla } from '../services/cuadrillaService';
+import { getCuadrillas, deleteCuadrilla } from '../../services/cuadrillaService';
 
 const useCuadrillas = () => {
   const [cuadrillas, setCuadrillas] = useState([]);

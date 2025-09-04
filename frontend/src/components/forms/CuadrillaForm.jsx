@@ -1,25 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { Modal, Button, Form, InputGroup, Dropdown } from 'react-bootstrap';
-import { createSucursal, updateSucursal } from '../services/sucursalService';
-import { getZonas, createZona, deleteZona } from '../services/zonaService';
+import { createCuadrilla, updateCuadrilla } from '../../services/cuadrillaService';
+import { getZonas, createZona, deleteZona } from '../../services/zonaService';
+import { AuthContext } from '../../context/AuthContext';
+import { FcGoogle } from 'react-icons/fc';
 import { FaPlus } from 'react-icons/fa';
-import DireccionAutocomplete from './DireccionAutocomplete';
-import '../styles/formularios.css';
+import '../../styles/formularios.css';
 
-const SucursalForm = ({ sucursal, onClose }) => {
+const CuadrillaForm = ({ cuadrilla, onClose }) => {
   const [formData, setFormData] = useState({
-    nombre: null,
-    zona: null,
-    direccion: { address: '', lat: null, lng: null },
-    superficie: null,
+    nombre: '',
+    zona: '',
   });
   const [zonas, setZonas] = useState([]);
   const [newZona, setNewZona] = useState('');
   const [showNewZonaInput, setShowNewZonaInput] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
+  const { signInWithGoogle } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchZonas = async () => {
@@ -36,32 +37,22 @@ const SucursalForm = ({ sucursal, onClose }) => {
     };
     fetchZonas();
 
-    if (sucursal) {
+    if (cuadrilla) {
       setFormData({
-        nombre: sucursal.nombre || null,
-        zona: sucursal.zona || null,
-        direccion: sucursal.direccion || { address: '', lat: null, lng: null },
-        superficie: sucursal.superficie || null,
+        nombre: cuadrilla.nombre || '',
+        zona: cuadrilla.zona || '',
       });
     }
-  }, [sucursal]);
+  }, [cuadrilla]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleDireccionSelect = ({ address, lat, lng }) => {
-    setFormData((prev) => ({
-      ...prev,
-      direccion: { address, lat, lng },
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleZonaSelect = (zonaNombre) => {
     if (zonaNombre === 'new') {
       setShowNewZonaInput(true);
-      setFormData({ ...formData, zona: null });
+      setFormData({ ...formData, zona: '' });
     } else {
       setShowNewZonaInput(false);
       setFormData({ ...formData, zona: zonaNombre });
@@ -94,7 +85,7 @@ const SucursalForm = ({ sucursal, onClose }) => {
       await deleteZona(id);
       setZonas(zonas.filter((zona) => zona.id !== id));
       if (formData.zona === zonas.find((z) => z.id === id)?.nombre) {
-        setFormData({ ...formData, zona: null });
+        setFormData({ ...formData, zona: '' });
       }
       setError(null);
     } catch (error) {
@@ -107,34 +98,27 @@ const SucursalForm = ({ sucursal, onClose }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
     setIsLoading(true);
-    if (!formData.direccion.lat || !formData.direccion.lng) {
-      setError('Debe proporcionar coordenadas válidas.');
-      setIsLoading(false);
-      return;
-    }
+    e.preventDefault();
     try {
-      const submitData = {
-        ...formData,
-        direccion: {
-          address: formData.direccion.address,
-          lat: formData.direccion.lat,
-          lng: formData.direccion.lng,
-        },
-      };
-      if (sucursal) {
-        await updateSucursal(sucursal.id, submitData);
+      if (cuadrilla) {
+        await updateCuadrilla(cuadrilla.id, formData);
       } else {
-        await createSucursal(submitData);
+        const { idToken, email } = await signInWithGoogle(false);
+        const payload = { ...formData, email: email, id_token: idToken };
+        await createCuadrilla(payload);
       }
       onClose();
     } catch (error) {
-      console.error('Error saving sucursal:', error);
-      setError('Error al guardar la sucursal.');
+      console.error('Error saving cuadrilla:', error);
+      setError(error.message || 'Error al guardar la cuadrilla.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const isFormValid = () => {
+    return formData.nombre.trim() && formData.zona.trim();
   };
 
   const toggleDropdown = () => {
@@ -144,7 +128,7 @@ const SucursalForm = ({ sucursal, onClose }) => {
   return (
     <Modal show onHide={onClose}>
       <Modal.Header closeButton>
-        <Modal.Title>{sucursal ? 'Editar Sucursal' : 'Crear Sucursal'}</Modal.Title>
+        <Modal.Title>{cuadrilla ? 'Editar Cuadrilla' : 'Crear Cuadrilla'}</Modal.Title>
       </Modal.Header>
         <Modal.Body>
           {isLoading ? (
@@ -166,7 +150,7 @@ const SucursalForm = ({ sucursal, onClose }) => {
                   <Form.Control
                     type="text"
                     name="nombre"
-                    value={formData.nombre || ''}
+                    value={formData.nombre}
                     onChange={handleChange}
                     required
                   />
@@ -231,24 +215,13 @@ const SucursalForm = ({ sucursal, onClose }) => {
                     </InputGroup>
                   )}
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="direccion">
-                  <Form.Label className="required required-asterisk">Dirección</Form.Label>
-                  <DireccionAutocomplete onSelect={handleDireccionSelect} />
-                  {formData.direccion.address && (
-                    <small className="text-muted">Seleccionado: {formData.direccion.address}</small>
-                  )}
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="superficie">
-                  <Form.Label>Superficie</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="superficie"
-                    value={formData.superficie || ''}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-                <Button className="custom-save-button" type="submit">
-                  Guardar
+                <Button
+                  className="custom-save-button"
+                  type="submit"
+                  disabled={!isFormValid()}
+                >
+                  <FcGoogle size={20} />
+                  {cuadrilla ? 'Guardar' : 'Registrar con Google'}
                 </Button>
               </Form>
             </div>
@@ -258,4 +231,4 @@ const SucursalForm = ({ sucursal, onClose }) => {
   );
 };
 
-export default SucursalForm;
+export default CuadrillaForm;

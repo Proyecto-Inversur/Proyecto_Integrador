@@ -1,35 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMantenimientosPreventivos, deleteMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
-import { getCuadrillas } from '../services/cuadrillaService';
-import { getSucursales } from '../services/sucursalService';
-import { getZonas } from '../services/zonaService';
-import { useAuthRoles } from '../hooks/useAuthRoles';
+import { getMantenimientosCorrectivos, deleteMantenimientoCorrectivo } from '../../services/mantenimientoCorrectivoService';
+import { getSucursales } from '../../services/sucursalService';
+import { getCuadrillas } from '../../services/cuadrillaService';
+import { getZonas } from '../../services/zonaService';
+import { useAuthRoles } from '../useAuthRoles';
 
-const useMantenimientoPreventivo = () => {
+const useMantenimientoCorrectivo = () => {
   const { id, isUser, isCuadrilla } = useAuthRoles();
   const [mantenimientos, setMantenimientos] = useState([]);
   const [filteredMantenimientos, setFilteredMantenimientos] = useState([]);
-  const [cuadrillas, setCuadrillas] = useState([]);
   const [sucursales, setSucursales] = useState([]);
+  const [cuadrillas, setCuadrillas] = useState([]);
   const [zonas, setZonas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
   const [filters, setFilters] = useState({
-      cuadrilla: '',
-      sucursal: '',
-      zona: '',
-      sortByDate: 'desc',
-    });
+    cuadrilla: '',
+    sucursal: '',
+    zona: '',
+    rubro: '',
+    estado: '',
+    prioridad: '',
+    sortByDate: 'desc',
+  });
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchMantenimientos = async () => {
     setIsLoading(true);
     try {
-      const response = await getMantenimientosPreventivos();
+      const response = await getMantenimientosCorrectivos();
       const mantenimientoArray = isCuadrilla
-        ? response.data.filter(m => m.id_cuadrilla === id && m.fecha_cierre === null)
+        ? response.data.filter(m => m.id_cuadrilla === id && m.estado !== 'Finalizado')
         : response.data;
       setMantenimientos(mantenimientoArray);
       setFilteredMantenimientos(mantenimientoArray);
@@ -42,11 +45,12 @@ const useMantenimientoPreventivo = () => {
 
   const fetchData = async () => {
     try {
-      const [cuadrillasResponse, sucursalesResponse, zonasResponse] = await Promise.all([
-        getCuadrillas(),
+      const [sucursalesResponse, cuadrillasResponse, zonasResponse] = await Promise.all([
         getSucursales(),
+        getCuadrillas(),
         getZonas(),
       ]);
+      
       const sucursalesConMantenimientos = sucursalesResponse.data.filter(sucursal =>
         mantenimientos.some(m => m.id_sucursal === sucursal.id)
       );
@@ -85,6 +89,15 @@ const useMantenimientoPreventivo = () => {
         return sucursal?.zona?.toLowerCase() === newFilters.zona.toLowerCase();
       });
     }
+    if (newFilters.rubro) {
+      filtered = filtered.filter(m => m.rubro.toLowerCase() === newFilters.rubro.toLowerCase());
+    }
+    if (newFilters.estado) {
+      filtered = filtered.filter(m => m.estado.toLowerCase() === newFilters.estado.toLowerCase());
+    }
+    if (newFilters.prioridad) {
+      filtered = filtered.filter(m => m.prioridad.toLowerCase() === newFilters.prioridad.toLowerCase());
+    }
 
     filtered.sort((a, b) => {
       const dateA = new Date(a.fecha_apertura);
@@ -99,10 +112,10 @@ const useMantenimientoPreventivo = () => {
     setIsLoading(true);
     if (isUser) {
       try {
-        await deleteMantenimientoPreventivo(id);
+        await deleteMantenimientoCorrectivo(id);
         fetchMantenimientos();
       } catch (error) {
-        console.error('Error deleting mantenimiento:', error);
+        console.error('Error deleting mantenimiento correctivo:', error);
       } finally {
         setIsLoading(false);
       }
@@ -115,7 +128,7 @@ const useMantenimientoPreventivo = () => {
   };
 
   const handleRowClick = (mantenimientoId) => {
-    navigate('/preventivo', { state: { mantenimientoId } });
+    navigate('/correctivo', { state: { mantenimientoId } });
   };
 
   const handleFormClose = () => {
@@ -131,7 +144,7 @@ const useMantenimientoPreventivo = () => {
 
   const getCuadrillaNombre = (id_cuadrilla) => {
     const cuadrilla = cuadrillas.find((c) => c.id === id_cuadrilla);
-    return cuadrilla ? cuadrilla.nombre : 'Desconocida';
+    return cuadrilla ? cuadrilla.nombre : 'No Hay Cuadrilla asignada';
   };
 
   const getZonaNombre = (id_sucursal) => {
@@ -161,4 +174,4 @@ const useMantenimientoPreventivo = () => {
   };
 };
 
-export default useMantenimientoPreventivo;
+export default useMantenimientoCorrectivo;

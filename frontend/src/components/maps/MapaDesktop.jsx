@@ -1,6 +1,6 @@
 import React from 'react';
 import MapSidebar from './MapSidebar';
-import BackButton from './BackButton';
+import BackButton from '../BackButton';
 import { FaTruck, FaUserAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { FiCompass } from 'react-icons/fi';
 

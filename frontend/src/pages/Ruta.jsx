@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import useLeafletMap from '../hooks/useLeafletMap';
-import useRuta from '../hooks/useRuta';
-import RutaLayout from '../components/RutaLayout';
+import RutaLayout from '../components/maps/RutaLayout';
+import useLeafletMap from '../hooks/maps/useLeafletMap';
+import useRuta from '../hooks/maps/useRuta';
 import '../styles/mapa.css';
 
 const defaultCenter = { lat: -31.4167, lng: -64.1833 };

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useContext } from "react";
-import { LocationContext } from "../context/LocationContext";
-import { deleteSucursal } from "../services/maps";
+import { LocationContext } from "../../context/LocationContext";
+import { deleteSucursal } from "../../services/maps";
 import { renderToString } from 'react-dom/server';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { bearing } from "@turf/turf";

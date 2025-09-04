@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getUsers, deleteUser } from '../services/userService';
+import { getUsers, deleteUser } from '../../services/userService';
 
 const useUsers = () => {
   const [users, setUsers] = useState([]);

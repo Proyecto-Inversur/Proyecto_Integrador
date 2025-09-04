@@ -3,13 +3,13 @@ import { useLocation } from 'react-router-dom';
 import { Container, Row, Col, Button, Modal } from 'react-bootstrap';
 import { deleteMantenimientoPlanilla } from '../services/mantenimientoPreventivoService';
 import { FiArrowLeft, FiMessageSquare } from "react-icons/fi";
-import usePreventivo from '../hooks/usePreventivo';
 import BackButton from '../components/BackButton';
 import LoadingSpinner from '../components/LoadingSpinner';
-import MantenimientoInfo from '../components/MantenimientoInfo';
-import ChatSection from '../components/ChatSection';
-import PlanillaSection from '../components/PlanillaSection';
-import PhotoSection from '../components/PhotoSection';
+import MantenimientoInfo from '../components/mantenimientos/MantenimientoInfo';
+import ChatSection from '../components/mantenimientos/ChatSection';
+import PlanillaSection from '../components/mantenimientos/PlanillaSection';
+import PhotoSection from '../components/mantenimientos/PhotoSection';
+import usePreventivo from '../hooks/mantenimientos/usePreventivo';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../styles/mantenimientos.css';
 

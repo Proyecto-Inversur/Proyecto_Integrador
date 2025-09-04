@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, getMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
-import { getCuadrillas } from '../services/cuadrillaService';
-import { getSucursales } from '../services/sucursalService';
-import { getPreventivos, selectPreventivo, deletePreventivo } from '../services/maps';
-import { getChatPreventivo, sendMessagePreventivo } from '../services/chats';
-import { useAuthRoles } from '../hooks/useAuthRoles';
-import useIsMobile from '../hooks/useIsMobile';
+import { updateMantenimientoPreventivo, deleteMantenimientoPhoto, getMantenimientoPreventivo } from '../../services/mantenimientoPreventivoService';
+import { getCuadrillas } from '../../services/cuadrillaService';
+import { getSucursales } from '../../services/sucursalService';
+import { getPreventivos, selectPreventivo, deletePreventivo } from '../../services/maps';
+import { getChatPreventivo, sendMessagePreventivo } from '../../services/chats';
+import { useAuthRoles } from '../useAuthRoles';
+import useIsMobile from '../useIsMobile';
 import useChat from './useChat';
 import useMantenimientos from './useMantenimientos';
 

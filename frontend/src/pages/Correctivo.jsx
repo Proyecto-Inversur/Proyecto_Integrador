@@ -5,11 +5,11 @@ import { deleteMantenimientoPlanilla } from '../services/mantenimientoCorrectivo
 import { FiArrowLeft, FiMessageSquare } from "react-icons/fi";
 import BackButton from '../components/BackButton';
 import LoadingSpinner from '../components/LoadingSpinner';
-import MantenimientoInfo from '../components/MantenimientoInfo';
-import ChatSection from '../components/ChatSection';
-import PlanillaSection from '../components/PlanillaSection';
-import PhotoSection from '../components/PhotoSection';
-import useCorrectivo from '../hooks/useCorrectivo';
+import MantenimientoInfo from '../components/mantenimientos/MantenimientoInfo';
+import ChatSection from '../components/mantenimientos/ChatSection';
+import PlanillaSection from '../components/mantenimientos/PlanillaSection';
+import PhotoSection from '../components/mantenimientos/PhotoSection';
+import useCorrectivo from '../hooks/mantenimientos/useCorrectivo';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../styles/mantenimientos.css';
 

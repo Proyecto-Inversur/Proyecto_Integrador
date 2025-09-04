@@ -1,10 +1,10 @@
 import { useState, useContext, useRef } from "react";
-import { useAuthRoles } from '../hooks/useAuthRoles';
-import { LocationContext } from "../context/LocationContext";
-import { getSucursalesLocations, getCorrectivos, getPreventivos } from "../services/maps";
-import { getMantenimientosCorrectivos } from '../services/mantenimientoCorrectivoService';
-import { getMantenimientosPreventivos } from '../services/mantenimientoPreventivoService';
-import { notify_nearby_maintenances } from "../services/notificaciones";
+import { useAuthRoles } from '../useAuthRoles';
+import { LocationContext } from "../../context/LocationContext";
+import { getSucursalesLocations, getCorrectivos, getPreventivos } from "../../services/maps";
+import { getMantenimientosCorrectivos } from '../../services/mantenimientoCorrectivoService';
+import { getMantenimientosPreventivos } from '../../services/mantenimientoPreventivoService';
+import { notify_nearby_maintenances } from "../../services/notificaciones";
 import L from "leaflet";
 
 const NOTIFY_DISTANCE = 10000;

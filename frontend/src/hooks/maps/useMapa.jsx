@@ -11,7 +11,7 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
   const {
     users,
     cuadrillas,
-    sucursales,
+    sucursales
   } = useMapsData();
 
   const { generarRutas, clearRoutes } = useMapRoutes(
@@ -57,11 +57,9 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
     if (isMobile) setIsSidebarOpen(false);
   };
 
-  // Renderizar markers
   useEffect(() => {
     if (!mapInstanceRef.current || !sucursales.length) return;
 
-    // limpiar markers previos
     usersMarkersRef.current.forEach((m) => m?.remove());
     cuadrillasMarkersRef.current.forEach((m) => m?.remove());
     sucursalMarkersRef.current.forEach((m) => m?.remove());
@@ -115,7 +113,31 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
         sucursalMarkersRef.current.push(marker);
       });
     }
+
+    return () => {
+      usersMarkersRef.current.forEach(marker => marker?.remove());
+      cuadrillasMarkersRef.current.forEach(marker => marker?.remove());
+      sucursalMarkersRef.current.forEach(marker => marker?.remove());
+    };
   }, [users, cuadrillas, sucursales, showEncargados, showCuadrillas, showSucursales]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current || !compassRef.current) return;
+
+    const map = mapInstanceRef.current;
+
+    const updateCompass = () => {
+      const angle = map.getBearing ? map.getBearing() : 0; // leaflet-rotate
+      // Aguja compensa la rotación del mapa
+      const needle = compassRef.current.querySelector('.compass-needle');
+      if (needle) needle.style.transform = `rotate(${-angle}deg)`;
+    };
+
+    map.on('rotate', updateCompass);
+    updateCompass();
+
+    return () => map.off('rotate', updateCompass);
+  }, []);
 
   return {
     users,

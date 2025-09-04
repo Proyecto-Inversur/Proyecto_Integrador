@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
-import UserForm from '../components/UserForm';
 import { FaPlus } from 'react-icons/fa';
-import useUsers from '../hooks/useUsers';
 import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
+import UserForm from '../components/forms/UserForm';
+import useUsers from '../hooks/forms/useUsers';
 import '../styles/botones_forms.css';
 
 const availableColumns = [

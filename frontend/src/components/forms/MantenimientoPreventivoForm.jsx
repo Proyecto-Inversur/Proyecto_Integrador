@@ -1,29 +1,29 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Form, InputGroup, Dropdown } from 'react-bootstrap';
-import { createMantenimientoPreventivo, updateMantenimientoPreventivo } from '../services/mantenimientoPreventivoService';
-import { getPreventivos, createPreventivo, deletePreventivo, updatePreventivo } from '../services/preventivoService';
-import { getCuadrillas } from '../services/cuadrillaService';
-import { getSucursales } from '../services/sucursalService';
+import { createMantenimientoPreventivo, updateMantenimientoPreventivo } from '../../services/mantenimientoPreventivoService';
+import { getPreventivos, createPreventivo, deletePreventivo, updatePreventivo } from '../../services/preventivoService';
+import { getCuadrillas } from '../../services/cuadrillaService';
+import { getSucursales } from '../../services/sucursalService';
 import { FaPlus, FaPencilAlt } from 'react-icons/fa';
-import '../styles/formularios.css';
+import '../../styles/formularios.css';
 
 const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
   const [formData, setFormData] = useState({
-    id_sucursal: null,
-    frecuencia: null,
-    id_cuadrilla: null,
-    fecha_apertura: null,
+    id_sucursal: '',
+    frecuencia: '',
+    id_cuadrilla: '',
+    fecha_apertura: '',
     estado: 'Pendiente',
   });
   const [preventivos, setPreventivos] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
   const [sucursales, setSucursales] = useState([]);
   const [newPreventivo, setNewPreventivo] = useState({
-    id: null,
-    id_sucursal: null,
-    nombre_sucursal: null,
-    frecuencia: null,
+    id: '',
+    id_sucursal: '',
+    nombre_sucursal: '',
+    frecuencia: '',
   });
   const [showNewPreventivoInput, setShowNewPreventivoInput] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -56,10 +56,10 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
 
     if (mantenimiento) {
       setFormData({
-        id_sucursal: mantenimiento.id_sucursal || null,
-        frecuencia: mantenimiento.frecuencia || null,
-        id_cuadrilla: mantenimiento.id_cuadrilla || null,
-        fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || null,
+        id_sucursal: mantenimiento.id_sucursal || '',
+        frecuencia: mantenimiento.frecuencia || '',
+        id_cuadrilla: mantenimiento.id_cuadrilla || '',
+        fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || '',
         estado: mantenimiento.estado || 'Pendiente',
       });
     }
@@ -76,8 +76,8 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
       const sucursal = sucursales.find(s => s.id === parseInt(value));
       setNewPreventivo({
         ...newPreventivo,
-        id_sucursal: value ? parseInt(value) : null,
-        nombre_sucursal: sucursal ? sucursal.nombre : null,
+        id_sucursal: value ? parseInt(value) : '',
+        nombre_sucursal: sucursal ? sucursal.nombre : '',
       });
     } else {
       setNewPreventivo({ ...newPreventivo, [name]: value });
@@ -88,8 +88,8 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
     if (preventivoId === 'new') {
       setShowNewPreventivoInput(true);
       setIsEditing(false);
-      setNewPreventivo({ id: null, id_sucursal: null, nombre_sucursal: null, frecuencia: null });
-      setFormData({ ...formData, id_sucursal: null, frecuencia: null });
+      setNewPreventivo({ id: '', id_sucursal: '', nombre_sucursal: '', frecuencia: '' });
+      setFormData({ ...formData, id_sucursal: '', frecuencia: '' });
     } else {
       setShowNewPreventivoInput(false);
       setIsEditing(false);
@@ -147,7 +147,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
         id_sucursal: response.data.id_sucursal,
         frecuencia: response.data.frecuencia,
       });
-      setNewPreventivo({ id: null, id_sucursal: null, nombre_sucursal: null, frecuencia: null });
+      setNewPreventivo({ id: '', id_sucursal: '', nombre_sucursal: '', frecuencia: '' });
       setShowNewPreventivoInput(false);
       setIsEditing(false);
       setError(null);
@@ -168,7 +168,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
       setPreventivos(preventivos.filter((preventivo) => preventivo.id !== id));
       if (formData.id_sucursal === preventivos.find(p => p.id === id)?.id_sucursal &&
           formData.frecuencia === preventivos.find(p => p.id === id)?.frecuencia) {
-        setFormData({ ...formData, id_sucursal: null, frecuencia: null });
+        setFormData({ ...formData, id_sucursal: '', frecuencia: '' });
       }
       setError(null);
     } catch (error) {

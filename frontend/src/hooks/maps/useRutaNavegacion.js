@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { deleteSelection } from '../services/maps';
+import { deleteSelection } from '../../services/maps';
 import L from "leaflet";
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Button, Container, Row, Col, Form } from 'react-bootstrap';
-import MantenimientoPreventivoForm from '../components/MantenimientoPreventivoForm';
-import BackButton from '../components/BackButton';
 import { FaPlus } from 'react-icons/fa';
-import useMantenimientoPreventivo from '../hooks/useMantenimientoPreventivo';
+import BackButton from '../components/BackButton';
 import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
+import MantenimientoPreventivoForm from '../components/forms/MantenimientoPreventivoForm';
+import useMantenimientoPreventivo from '../hooks/forms/useMantenimientoPreventivo';
 import '../styles/botones_forms.css';
 
 const MantenimientosPreventivos = () => {

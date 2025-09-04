@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, getMantenimientoCorrectivo } from '../services/mantenimientoCorrectivoService';
-import { getSucursales } from '../services/sucursalService';
-import { getCuadrillas } from '../services/cuadrillaService';
-import { getCorrectivos, selectCorrectivo, deleteCorrectivo } from '../services/maps';
-import { getChatCorrectivo, sendMessageCorrectivo } from '../services/chats';
-import { useAuthRoles } from '../hooks/useAuthRoles';
-import useIsMobile from '../hooks/useIsMobile';
+import { updateMantenimientoCorrectivo, deleteMantenimientoPhoto, getMantenimientoCorrectivo } from '../../services/mantenimientoCorrectivoService';
+import { getSucursales } from '../../services/sucursalService';
+import { getCuadrillas } from '../../services/cuadrillaService';
+import { getCorrectivos, selectCorrectivo, deleteCorrectivo } from '../../services/maps';
+import { getChatCorrectivo, sendMessageCorrectivo } from '../../services/chats';
+import { useAuthRoles } from '../useAuthRoles';
+import useIsMobile from '../useIsMobile';
 import useChat from './useChat';
 import useMantenimientos from './useMantenimientos';
 
