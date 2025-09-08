@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, Form } from 'react-bootstrap';
 import { FiEdit } from 'react-icons/fi';
-import '../../styles/formularios.css';
+import '../styles/formularios.css';
 
 const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
   const [show, setShow] = useState(false);

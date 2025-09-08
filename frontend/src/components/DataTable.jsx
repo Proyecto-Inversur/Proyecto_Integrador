@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
 import ColumnSelector from './ColumnSelector';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
-import { getColumnPreferences, saveColumnPreferences } from '../../services/preferencesService';
+import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
 
 const DataTable = ({ columns = [], data = [], entityKey, onEdit, onDelete, onRowClick }) => {
   const [selectedColumns, setSelectedColumns] = useState(columns.map(c => c.key));

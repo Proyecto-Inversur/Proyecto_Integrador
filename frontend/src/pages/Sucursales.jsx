@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { FaPlus } from 'react-icons/fa';
-import DataTable from '../components/forms/DataTable';
+import DataTable from '../components/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SucursalForm from '../components/forms/SucursalForm';
 import useSucursales from '../hooks/forms/useSucursales';
