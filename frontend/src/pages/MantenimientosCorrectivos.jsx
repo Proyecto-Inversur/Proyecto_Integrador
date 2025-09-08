@@ -3,7 +3,7 @@ import { Button, Container, Row, Col, Form, Collapse } from 'react-bootstrap';
 import { FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
-import DataTable from '../components/DataTable';
+import DataTable from '../components/forms/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MantenimientoCorrectivoForm from '../components/forms/MantenimientoCorrectivoForm';
 import useMantenimientoCorrectivo from '../hooks/forms/useMantenimientoCorrectivo';

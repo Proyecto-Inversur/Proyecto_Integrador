@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import { FaPlus } from 'react-icons/fa';
-import DataTable from '../components/DataTable';
+import DataTable from '../components/forms/DataTable';
 import LoadingSpinner from '../components/LoadingSpinner';
 import UserForm from '../components/forms/UserForm';
 import useUsers from '../hooks/forms/useUsers';
