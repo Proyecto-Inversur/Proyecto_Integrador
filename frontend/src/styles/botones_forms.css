@@ -45,10 +45,39 @@ td.acciones-col {
 
 /* Diseño Contenedor de Tablas */
 .contenido-wrapper {
-  background-color: #efefef; 
+  background-color: #efefef;
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-top: 2rem;
 }
 
+/* Botón Filtros (amarillo) */
+.filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid #ffc720;
+  background-color: #ffc720 !important; /* asegura color frente a .btn */
+  color: #000 !important;
+  padding: .5rem .9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  transition: transform .15s ease, box-shadow .15s ease, background-color .2s ease;
+}
+.filters-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  background-color: #e0ad1e !important;
+  border-color: #e0ad1e !important;
+  color: #000 !important;
+}
+
+/* Contenedor de filtros */
+.filters-container { margin-top: .75rem; }
+
+/* Compactar altura sin tocar layout de Bootstrap */
+.filters-container .form-group { margin-bottom: 0; }
+.filters-container .form-label { margin-bottom: .25rem; }
+.filters-container .form-select { width: 100%; min-height: 38px; }
