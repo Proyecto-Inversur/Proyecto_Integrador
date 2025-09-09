@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useAuthRoles } from '../hooks/useAuthRoles';
 
 const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
-  const { currentEntity, loading, verifying } = useContext(AuthContext);
+  const { loading, verifying } = useContext(AuthContext);
+  const { id, isUser, isAdmin } = useAuthRoles();
   const location = useLocation();
 
   if (loading || verifying) {
@@ -16,15 +18,15 @@ const ProtectedRoute = ({ children, adminOnly, usersOnly }) => {
     );
   }
 
-  if (!currentEntity) {
+  if (!id) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  if (adminOnly && (currentEntity.type !== 'usuario' || currentEntity.data.rol !== 'Administrador')) {
+  if (adminOnly && !isAdmin) {
     return <Navigate to="/" replace />;
   }
 
-  if (usersOnly && currentEntity.type !== 'usuario') {
+  if (usersOnly && !isUser) {
     return <Navigate to="/" replace />;
   }
 
