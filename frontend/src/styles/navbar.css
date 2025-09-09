@@ -204,12 +204,13 @@
 
 /* ===== MODAL STYLES ===== */
 .modal-dialog {
-  margin: 10vh auto !important; 
+  margin: 0vh auto !important; 
   max-width: 480px !important; 
-  transform: translateY(-20vh) !important;
+  transform: translateY(-30vh) !important;
 }
 
 .modal-content {
+  position: inherit;
   max-height: 70vh !important;
   overflow: hidden !important;
   border-radius: var(--border-radius-large) !important;
