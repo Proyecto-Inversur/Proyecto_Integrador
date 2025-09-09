@@ -39,12 +39,15 @@ const DataTable = ({ columns = [], data = [], entityKey, onEdit, onDelete, onRow
   };
 
   return (
-    <div className="table-responsive">
+    <>
+    <div className="mb-1 flex justify-start">
       <ColumnSelector
         availableColumns={columns}
         selectedColumns={selectedColumns}
         onSave={handleSaveColumns}
-      />
+        />
+    </div>
+    <div className="table-responsive">
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -109,6 +112,7 @@ const DataTable = ({ columns = [], data = [], entityKey, onEdit, onDelete, onRow
         </tbody>
       </Table>
     </div>
+    </>
   );
 };
 

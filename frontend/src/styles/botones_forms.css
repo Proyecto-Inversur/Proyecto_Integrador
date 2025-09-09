@@ -74,10 +74,19 @@ td.acciones-col {
   color: #000 !important;
 }
 
-/* Contenedor de filtros */
-.filters-container { margin-top: .75rem; }
+/* Contenedor de filtros en mantenimientos */
+.maintenance-filters-container {
+  margin-top: .75rem;
+}
 
-/* Compactar altura sin tocar layout de Bootstrap */
-.filters-container .form-group { margin-bottom: 0; }
-.filters-container .form-label { margin-bottom: .25rem; }
-.filters-container .form-select { width: 100%; min-height: 38px; }
+.maintenance-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.maintenance-filter-item {
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+}
