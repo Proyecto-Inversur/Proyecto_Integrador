@@ -2,7 +2,7 @@ import React, { createContext, useEffect } from 'react';
 import { config } from '../config';
 import { loadGoogleSDK } from '../utils/googleSignIn';
 import { auth } from '../services/firebase';
-import { onAuthStateChanged } from "firebase/auth";
+import { onIdTokenChanged  } from "firebase/auth";
 import useAuth, { buildUserAuthError } from '../hooks/useAuth';
 
 const AuthContext = createContext();
@@ -18,6 +18,7 @@ const AuthProvider = ({ children }) => {
     retrySignIn,
     startSigningIn,
     stopSigningIn,
+    isLoggingOut,
   } = useAuth();
   const signInWithGoogle = async (loginIn) => {
     await loadGoogleSDK();
@@ -75,17 +76,20 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  // Ejecutar al cargar la página
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && currentEntity) {
+    const unsubscribe = onIdTokenChanged(auth, async (user) => {
+      if (user) {
         try {
-          const token = await user.getIdToken(true);
+          const token = await user.getIdToken();
           await verifyUser(token);
         } catch (err) {
           await logOut();
         }
       } else if (!user) {
+        if (isLoggingOut.current) {
+          isLoggingOut.current = false;
+          return;
+        }
         await handleGoogleSignIn();
       }
     });
@@ -93,13 +97,20 @@ const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // Ejecutar cuando se establece un nuevo token
   useEffect(() => {
     if (singingIn) {
       stopSigningIn();
       handleGoogleSignIn(false);
     }
   }, [singingIn]);
+
+  useEffect(() => {
+    const handleLogoutEvent = () => {
+      logOut();
+    };
+    window.addEventListener('auth:logout', handleLogoutEvent);
+    return () => window.removeEventListener('auth:logout', handleLogoutEvent);
+  }, [logOut]);
 
   return (
     <AuthContext.Provider

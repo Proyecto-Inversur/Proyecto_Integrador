@@ -54,47 +54,53 @@ export default function useAuth() {
   const navigate = useNavigate();
   const isVerifyingRef = useRef(false);
   const isVerifiedRef = useRef(false);
+  const isLoggingOut = useRef(false);
   const { subscription, subscribe, unsubscribe } = usePushSubscription();
 
   const verifyUser = async (idToken) => {
     isVerifyingRef.current = true;
-    for (let i = 0; i < 3; i++) {
-      try {
-        dispatch({ type: 'SET_LOADING', value: true });
-        dispatch({ type: 'SET_VERIFYING', value: true });
+    dispatch({ type: 'SET_LOADING', value: true });
+    dispatch({ type: 'SET_VERIFYING', value: true });
 
-        const response = await api.post(
-          '/auth/verify',
-          {},
-          { headers: { Authorization: `Bearer ${idToken}` } }
-        );
+    try {
+      for (let i = 0; i < 3; i++) {
+        try {
+          const response = await api.post(
+            '/auth/verify',
+            {},
+            { headers: { Authorization: `Bearer ${idToken}` } }
+          );
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        isVerifiedRef.current = true;
-        setCurrentEntity(response.data);
-        localStorage.setItem('authToken', idToken);
-        sessionStorage.setItem('authToken', idToken);
-        localStorage.setItem('currentEntity', JSON.stringify(response.data));
-        sessionStorage.setItem('currentEntity', JSON.stringify(response.data));
+          isVerifiedRef.current = true;
+          setCurrentEntity(response.data);
+          localStorage.setItem('authToken', idToken);
+          sessionStorage.setItem('authToken', idToken);
+          localStorage.setItem('currentEntity', JSON.stringify(response.data));
+          sessionStorage.setItem('currentEntity', JSON.stringify(response.data));
 
-        await subscribe(response?.data?.data?.uid);
+          await subscribe(response?.data?.data?.uid);
 
-        return { success: true, data: response.data };
-      } catch (error) {
-        if (i === 2) {
-          const userMessage = buildUserAuthError(error, 'Error al verificar el usuario.');
-          await logOut(userMessage);
-          return { success: false, data: null };
+          return { success: true, data: response.data };
+        } catch (error) {
+          if (i === 2) {
+            const userMessage = buildUserAuthError(
+              error,
+              'Error al verificar el usuario.'
+            );
+            await logOut(userMessage);
+            return { success: false, data: null };
+          }
         }
-      } finally {
-        isVerifyingRef.current = false;
-        dispatch({ type: 'SET_LOADING', value: false });
-        dispatch({ type: 'SET_VERIFYING', value: false });
-      }
+      } 
+    } finally {
+      isVerifyingRef.current = false;
+      dispatch({ type: 'SET_LOADING', value: false });
+      dispatch({ type: 'SET_VERIFYING', value: false });
     }
   };
 
   const logOut = async (error) => {
+    isLoggingOut.current = true;
     try {
       localStorage.removeItem('authToken');
       sessionStorage.removeItem('authToken');
@@ -156,5 +162,7 @@ export default function useAuth() {
     startSigningIn,
     stopSigningIn,
     subscription,
+    isLoggingOut,
   };
 }
+

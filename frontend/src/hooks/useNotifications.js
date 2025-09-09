@@ -71,8 +71,14 @@ const useNotifications = () => {
     socketRef.current = socket;
 
     return () => {
-      if (socketRef.current?.close) socketRef.current.close();
-      else if (socketRef.current?.disconnect) socketRef.current.disconnect();
+      const OPEN = typeof WebSocket !== 'undefined' ? WebSocket.OPEN : 1;
+      if (socketRef.current?.close) {
+        if (socketRef.current.readyState === OPEN) {
+          socketRef.current.close();
+        }
+      } else if (socketRef.current?.disconnect) {
+        socketRef.current.disconnect();
+      }
       socketRef.current = null;
     };
   }, [uid]);
