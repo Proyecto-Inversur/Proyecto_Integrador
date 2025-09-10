@@ -1,0 +1,40 @@
+:root {
+  --thumb-w: 180px;
+  --thumb-h: 200px;
+}
+
+/* Contenedor principal de la página Preventivo */
+.mantenimiento-container {
+  padding-top: 8rem;
+  padding-bottom: 8rem;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Contenedor del contenido principal */
+.page-content {
+  width: 100%;
+  max-width: 1200px; /* Limita el ancho para mejor centrado */
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Fila principal que alinea las secciones de información, chat y planilla */
+.main-row {
+  display: flex;
+  flex-wrap: nowrap !important;
+  gap: 1rem;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+

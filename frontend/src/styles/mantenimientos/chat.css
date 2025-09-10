@@ -1,0 +1,120 @@
+/* Estilos para la sección de chat */
+.chat-section {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 33.33%;
+  min-width: 0;
+}
+
+/* Contenedor del historial de mensajes */
+.chat-box {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  max-height: 36rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: #f8f9fa;
+}
+
+/* Mensajes comunes */
+.chat-message {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  max-width: 75%;
+  word-break: break-word;
+  position: relative;
+  font-size: 0.95rem;
+}
+
+/* Mensajes recibidos */
+.chat-message-received {
+  background-color: #e4e4e4;
+  color: #0a0a0a;
+  align-self: flex-start;
+}
+
+/* Mensajes enviados */
+.chat-message-sent {
+  background-color: #ffc720;
+  color: #0a0a0a;
+  align-self: flex-end;
+}
+
+/* Texto del mensaje */
+.chat-message-text {
+  margin: 0;
+}
+
+/* Info: autor + fecha */
+.chat-info {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+/* Formulario de entrada */
+.chat-input-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Input de texto */
+.chat-input {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  background-color: #f1f3f5;
+}
+
+/* Botón de enviar */
+.chat-send-btn {
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* Ícono de archivo adjunto */
+.chat-attach-btn {
+  font-size: 20px;
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
+
+/* Imagen dentro del chat */
+.chat-image-preview {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+/* Enlace a archivo */
+.chat-file-link {
+  color: #0d6efd;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  display: inline-block;
+}
+
