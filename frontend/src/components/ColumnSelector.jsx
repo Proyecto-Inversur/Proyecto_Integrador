@@ -33,11 +33,13 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
       >
         <FiEdit />
       </Button>
-      <Modal show={show} onHide={() => setShow(false)}>
-        <Modal.Header closeButton>
+      <Modal show={show} onHide={() => setShow(false)} 
+        dialogClassName="column-selector-modal"
+      >
+        <Modal.Header closeButton className="column-selector-header">
           <Modal.Title>Seleccionar columnas</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="column-selector-body">
           {availableColumns.map((col) => (
             <Form.Check
               key={col.key}
@@ -49,7 +51,7 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
             />
           ))}
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="column-selector-footer">
           <Button className="custom-save-button" onClick={handleSave}>
             Guardar
           </Button>

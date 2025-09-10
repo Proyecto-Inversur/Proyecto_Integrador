@@ -202,14 +202,14 @@
   border-left: 4px solid var(--theme-secondary) !important;
 }
 
-/* ===== MODAL STYLES ===== */
-.modal-dialog {
-  margin: 0vh auto !important; 
-  max-width: 480px !important; 
+/* ===== MODAL NOTIFICACIONES (scope solo navbar) ===== */
+.notif-modal.modal-dialog {
+  top: 13rem;
+  max-width: 480px !important;
   transform: translateY(-30vh) !important;
 }
 
-.modal-content {
+.notif-modal-content.modal-content {
   position: inherit;
   max-height: 70vh !important;
   overflow: hidden !important;
@@ -217,7 +217,7 @@
   box-shadow: var(--box-shadow-lg) !important;
 }
 
-.modal-body {
+.notif-modal-body.modal-body {
   max-height: 50vh !important;
   overflow-y: auto !important;
   padding: 1rem !important;
@@ -242,22 +242,19 @@
 
 /* Ajustes para pantallas pequeñas (móviles) */
 @media (max-width: 768px) {
-  .modal-dialog {
-    top: 8vh !important;
+  .notif-modal.modal-dialog {
+    top: 11rem !important;
     width: 95% !important;
     max-width: none !important;
+    margin: 0vh auto !important;
   }
 
-  .modal-content {
+  .notif-modal-content.modal-content {
     max-height: 75vh !important;
   }
 
-  .modal-body {
+  .notif-modal-body.modal-body {
     max-height: 55vh !important;
-  }
-
-  .modal-dialog {
-  margin: 0vh auto !important; 
   }
 }
 

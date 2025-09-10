@@ -136,6 +136,13 @@
   padding-bottom: 1rem;
 }
 
-.modal-content {
-  top: 13rem;
+.column-selector-modal{
+  top: 7rem;
+}
+
+/* Ajustes para pantallas pequeñas (móviles) */
+@media (max-width: 768px) {
+.column-selector-modal {
+  top: 11rem;
+}
 }

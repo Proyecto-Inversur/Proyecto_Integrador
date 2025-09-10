@@ -74,7 +74,16 @@ const Navbar = () => {
         </Container>
       </BootstrapNavbar>
 
-      <Modal show={showNotifications} onHide={handleCloseNotifications} centered aria-labelledby="notif-title">
+      <Modal
+        show={showNotifications}
+        onHide={handleCloseNotifications}
+        centered
+        aria-labelledby="notif-title"
+        dialogClassName="notif-modal"
+        contentClassName="notif-modal-content"
+        bodyClassName="notif-modal-body"
+        backdropClassName="notif-backdrop"
+      >
         <Modal.Header closeButton>
           <Modal.Title id="notif-title" as="h2" className="w-100 text-center">
             Notificaciones
