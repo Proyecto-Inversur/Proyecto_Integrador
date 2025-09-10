@@ -4,7 +4,7 @@ import ColumnSelector from './ColumnSelector';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { getColumnPreferences, saveColumnPreferences } from '../services/preferencesService';
 
-const DataTable = ({ columns = [], data = [], entityKey, onEdit, onDelete, onRowClick }) => {
+const DataTable = ({ columns = [], data = [], entityKey, onEdit, onDelete, onRowClick, filterContent, }) => {
   const [selectedColumns, setSelectedColumns] = useState(columns.map(c => c.key));
 
   useEffect(() => {
@@ -40,13 +40,14 @@ const DataTable = ({ columns = [], data = [], entityKey, onEdit, onDelete, onRow
 
   return (
     <>
-    <div className="mb-1 flex justify-start">
+    <div>
       <ColumnSelector
         availableColumns={columns}
         selectedColumns={selectedColumns}
         onSave={handleSaveColumns}
-        />
+      />
     </div>
+    {filterContent && <div className="mb-2">{filterContent}</div>}
     <div className="table-responsive">
       <Table striped bordered hover>
         <thead>
