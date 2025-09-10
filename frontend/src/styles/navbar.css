@@ -223,9 +223,6 @@
   padding: 1rem !important;
 }
 
-/* ===== RESPONSIVE ===== */
-/* Ajustes responsivos para el modal en diferentes tamaños de pantalla */
-
 @media (max-width: 991px) {
   .custom-nav-links {
     display: none !important;
@@ -240,7 +237,6 @@
   }
 }
 
-/* Ajustes para pantallas pequeñas (móviles) */
 @media (max-width: 768px) {
   .notif-modal.modal-dialog {
     top: 11rem !important;
@@ -258,8 +254,6 @@
   }
 }
 
-
-/* Pantallas grandes (PC) */
 @media (min-width: 768px) {
   .custom-nav-links {
     display: none !important;
@@ -274,8 +268,6 @@
   }
 }
 
-
-/* Ajustes para pantallas muy pequeñas */
 @media (max-width: 400px) {
   .custom-nav-links {
     display: none !important;

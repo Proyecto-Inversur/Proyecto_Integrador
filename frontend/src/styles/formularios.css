@@ -115,13 +115,6 @@
   padding-right: 15px;
 }
 
-@media (max-width: 991px) {
-  .custom-delete-button {
-  position: absolute;
-  left: 90%;
-  }
-}
-
 /* Estilo para el form select */
 .form-select {
   color: #6c757d !important;
@@ -140,14 +133,6 @@
   top: 7rem;
 }
 
-/* Ajustes para pantallas pequeñas (móviles) */
-@media (max-width: 768px) {
-.column-selector-modal {
-  top: 11rem;
-}
-}
-
-
 /* ===== Modal Mantenimiento Correctivo (scope) ===== */
 .mc-modal.modal-dialog {
   top: 2rem;                 /* separa del navbar fijo */
@@ -161,9 +146,18 @@
   max-height: calc(100dvh - 10rem);
 }
 
+@media (max-width: 991px) {
+  .custom-delete-button {
+    position: absolute;
+    left: 90%;
+  }
+}
 
-/* ===== Mobile ===== */
 @media (max-width: 768px) {
+  .column-selector-modal {
+    top: 11rem;
+  }
+
   .mc-modal.modal-dialog {
     top: 1rem;
     width: 95%;
@@ -171,8 +165,7 @@
     margin: 0 auto;   
   }
 
-    .mc-modal-content.modal-content {
+  .mc-modal-content.modal-content {
     max-height: calc(100dvh - 15rem) !important;
   }
-  
 }

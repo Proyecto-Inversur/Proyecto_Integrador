@@ -25,7 +25,7 @@
 }
 
 .container-map {
-  position: relative;  /*Cambio*/
+  position: relative;
   width: 100%;
   max-width: 90rem;
   height: 30rem;
@@ -428,9 +428,7 @@
   border-radius: 6px;
 }
 
-/* MOBILE: drawer y fixes */
 @media (max-width: 768px) {
-
   .map-mobile-sidebar-header {
     display: flex;
     justify-content: space-between;
@@ -478,24 +476,25 @@
   .map-mobile-sidebar {
     display: block;
     position: fixed;
-    top: 0;                 /* se apoya contra el top del viewport */
+    top: 0;
     left: 0;
-    height: 100dvh;         /* considera barras del SO */
+    height: 100dvh;
     width: 84vw;
     max-width: 320px;
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     box-shadow: 4px 0 24px rgba(0,0,0,.18);
-    padding: 0;             /* el padding lo maneja el contenido */
-    overflow: hidden;       /* scrollea dentro de .sidebar-content */
+    padding: 0;
+    overflow: hidden;
     border-radius: 0 16px 16px 0;
     transform: translateX(-102%);
     transition: transform .32s cubic-bezier(0.4,0,0.2,1);
     z-index: 3000;
-    pointer-events: none;   /* cerrado: no intercepta clics */
+    pointer-events: none;
   }
+
   .map-mobile-sidebar.open {
     transform: translateX(0);
-    pointer-events: auto;   /* abierto: vuelve interactivo */
+    pointer-events: auto;
   }
 
   /* Backdrop que no requiere nodos extras */
@@ -503,16 +502,17 @@
     content: "";
     position: fixed;
     inset: 0;
-    left: clamp(84vw, 0px, 320px);  /* arranca en el borde del panel */
+    left: clamp(84vw, 0px, 320px);
     background: rgba(0,0,0,.45);
     opacity: 0;
-    pointer-events: none;           /* cerrado: no tapa el toggle */
+    pointer-events: none;
     transition: opacity .28s ease;
-    z-index: -1;                    /* detrás del panel */
+    z-index: -1;
   }
+
   .map-mobile-sidebar.open::after {
     opacity: 1;
-    pointer-events: auto;           /* abierto: bloquea clics al mapa */
+    pointer-events: auto;
   }
 
   /* Contenido scrolleable del panel */
@@ -522,6 +522,7 @@
     padding: 1.25rem 1rem 1rem;
     background: #fff;
   }
+
   .sidebar-content::-webkit-scrollbar { width: 6px; }
   .sidebar-content::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
   .sidebar-content::-webkit-scrollbar-thumb { background: #c9c9c9; border-radius: 3px; }
@@ -548,25 +549,28 @@
     transition: transform .18s cubic-bezier(0.4,0,0.2,1), box-shadow .18s, background .18s, border-color .18s;
     box-shadow: 0 1px 3px rgba(0,0,0,.08);
   }
+
   .sidebar-content .obra-item:hover {
     background: #fff;
     border-color: #dfa700;
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(0,0,0,.16);
   }
+
   .sidebar-content .obra-item strong {
     display: block; margin-bottom: .18rem;
     color: #222; font-weight: 700; font-size: .95rem; letter-spacing: -.01em;
   }
+
   .sidebar-content .obra-item small { color: #6c757d; font-size: .8rem; font-weight: 500; }
 
   /* Botón hamburguesa: FIX de stacking */
   .sidebar-toggle {
     display: block !important;
-    position: fixed !important;   /* clave: no queda debajo del drawer */
+    position: fixed !important;
     bottom: 6rem !important;
     left: 0.9rem !important;
-    z-index: 2900 !important;     /* > panel (3000), > leaflet */
+    z-index: 2900 !important;
     background: #2c2c2c;
     border-radius: 0.5rem;
     padding: 0.5rem;
@@ -606,7 +610,6 @@
 @media (max-width: 397px) {
   .ruta-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
 
-  /* Panel un poco más corto para iPhone SE/mini */
   .map-mobile-sidebar { max-width: 300px; width: 90vw; }
 
   .boton-volver { top: 6.5rem; left: 0.5rem; }
@@ -620,7 +623,6 @@
   .inv-label { color: #888; }
 }
 
-/* Ajustes para monitores grandes */
 @media (min-width: 1710px) {
   .map-main { max-width: 1600px; }
   .container-map {

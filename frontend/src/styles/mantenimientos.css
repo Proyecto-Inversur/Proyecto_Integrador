@@ -72,7 +72,6 @@
   font-size: 0.95rem;
 }
 
-
 /* Formulario dentro de la sección de información */
 .info-form {
   margin-bottom: 0.9rem;
@@ -103,15 +102,15 @@
 
 /* Botón para agregar a la ruta actual */
 .info-button-add {
-background-color: #2c2c2c;
-border-color: #2c2c2c;
-border-radius: 0.75rem;
-padding: 8px 16px;
-display: flex;
-align-items: center;
-gap: 8px;
-font-size: 0.9rem;
-font-weight: bold;
+  background-color: #2c2c2c;
+  border-color: #2c2c2c;
+  border-radius: 0.75rem;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: bold;
 }
 
 .info-button-add,
@@ -126,16 +125,16 @@ font-weight: bold;
 
 /* Botón para marcar como finalizado */
 .info-button-finish {
-background-color: #2c2c2c;
-border-color: #2c2c2c;
-border-radius: 0.75rem;
-padding: 8px 16px;
-display: flex;
-align-items: center;
-gap: 8px;
-font-size: 0.9rem;
-font-weight: bold;
-margin-top: 0.5rem;
+  background-color: #2c2c2c;
+  border-color: #2c2c2c;
+  border-radius: 0.75rem;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-top: 0.5rem;
 }
 
 .obras-button:hover {
@@ -490,7 +489,6 @@ margin-top: 0.5rem;
   border-radius: 8px;
 }
 
-
 /* Contenedor de la cuadrícula de fotos */
 .grid-section {
   display: flex;
@@ -642,7 +640,6 @@ margin-top: 0.5rem;
   box-shadow: 0 4px 10px rgba(0,0,0,.14);
 }
 
-/* Pantallas pequeñas: móviles (hasta 768px) */
 @media (max-width: 768px) {
   .main-row {
     flex-direction: column;
@@ -682,13 +679,12 @@ margin-top: 0.5rem;
   }
 }
 
-/* botones en pantallas de telefono */
 @media (max-width: 398px) {
   .floating-chat-btn {
     margin-bottom: 1.6rem;
   }
 
-.chat-box {
+  .chat-box {
     max-height: 65dvh; 
   }
 
@@ -697,7 +693,6 @@ margin-top: 0.5rem;
   }
 }
 
-/* Pantallas grandes: monitores grandes (desde 1400px) */
 @media (min-width: 1400px) {
   .page-content {
     max-width: 1400px;
