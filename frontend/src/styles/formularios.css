@@ -146,3 +146,33 @@
   top: 11rem;
 }
 }
+
+
+/* ===== Modal Mantenimiento Correctivo (scope) ===== */
+.mc-modal.modal-dialog {
+  top: 2rem;                 /* separa del navbar fijo */
+  margin: 0.75rem auto;
+  max-width: 650px;          /* ancho en desktop */
+}
+
+.mc-modal-content.modal-content {
+  position: relative;
+  /* limita la altura total del contenido del modal */
+  max-height: calc(100dvh - 10rem);
+}
+
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .mc-modal.modal-dialog {
+    top: 1rem;
+    width: 95%;
+    max-width: none;
+    margin: 0 auto;   
+  }
+
+    .mc-modal-content.modal-content {
+    max-height: calc(100dvh - 15rem) !important;
+  }
+  
+}

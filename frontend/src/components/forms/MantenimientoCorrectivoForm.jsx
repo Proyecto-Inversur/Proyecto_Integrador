@@ -64,7 +64,6 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
     setIsLoading(true);
     e.preventDefault();
     try {
-      // Validar que los campos obligatorios no estén vacíos
       if (
         !formData.id_sucursal ||
         !formData.fecha_apertura ||
@@ -97,9 +96,19 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
   };
 
   return (
-    <Modal show onHide={onClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>{mantenimiento ? 'Editar Mantenimiento Correctivo' : 'Crear Mantenimiento Correctivo'}</Modal.Title>
+    <Modal
+      show
+      onHide={onClose}
+      centered
+      scrollable
+      dialogClassName="mc-modal"
+      contentClassName="mc-modal-content"
+      bodyClassName="mc-modal-body"
+    >
+      <Modal.Header closeButton className="mc-modal-header">
+        <Modal.Title>
+          {mantenimiento ? 'Editar Mantenimiento Correctivo' : 'Crear Mantenimiento Correctivo'}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {isLoading ? (

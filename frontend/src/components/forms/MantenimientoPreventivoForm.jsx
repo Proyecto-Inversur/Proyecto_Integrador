@@ -223,10 +223,21 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
   };
 
   return (
-    <Modal show onHide={onClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>{mantenimiento ? 'Editar Mantenimiento Preventivo' : 'Crear Mantenimiento Preventivo'}</Modal.Title>
+    <Modal
+      show
+      onHide={onClose}
+      centered
+      scrollable
+      dialogClassName="mc-modal"
+      contentClassName="mc-modal-content"
+      bodyClassName="mc-modal-body"
+    >
+      <Modal.Header closeButton className="mc-modal-header">
+        <Modal.Title>
+          {mantenimiento ? 'Editar Mantenimiento Preventivo' : 'Crear Mantenimiento Preventivo'}
+        </Modal.Title>
       </Modal.Header>
+
       <Modal.Body>
         {isLoading ? (
             <div className="custom-div">

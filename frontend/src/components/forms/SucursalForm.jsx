@@ -142,8 +142,16 @@ const SucursalForm = ({ sucursal, onClose }) => {
   };
 
   return (
-    <Modal show onHide={onClose}>
-      <Modal.Header closeButton>
+    <Modal
+      show
+      onHide={onClose}
+      centered
+      scrollable
+      dialogClassName="suc-modal"
+      contentClassName="suc-modal-content"
+      bodyClassName="suc-modal-body"
+    >
+      <Modal.Header closeButton className="suc-modal-header">
         <Modal.Title>{sucursal ? 'Editar Sucursal' : 'Crear Sucursal'}</Modal.Title>
       </Modal.Header>
         <Modal.Body>

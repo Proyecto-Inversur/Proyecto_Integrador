@@ -53,8 +53,16 @@ const UserForm = ({ user, onClose }) => {
   };
 
   return (
-    <Modal show onHide={onClose}>
-      <Modal.Header closeButton>
+    <Modal
+      show
+      onHide={onClose}
+      centered
+      scrollable
+      dialogClassName="user-modal"
+      contentClassName="user-modal-content"
+      bodyClassName="user-modal-body"
+    >
+      <Modal.Header closeButton className="user-modal-header">
         <Modal.Title>{user ? 'Editar Usuario' : 'Crear Usuario'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>

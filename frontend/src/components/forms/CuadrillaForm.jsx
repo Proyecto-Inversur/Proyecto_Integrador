@@ -126,8 +126,16 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
   };
 
   return (
-    <Modal show onHide={onClose}>
-      <Modal.Header closeButton>
+    <Modal
+      show
+      onHide={onClose}
+      centered
+      scrollable
+      dialogClassName="cuadrilla-modal"
+      contentClassName="cuadrilla-modal-content"
+      bodyClassName="cuadrilla-modal-body"
+    >
+      <Modal.Header closeButton className="cuadrilla-modal-header">
         <Modal.Title>{cuadrilla ? 'Editar Cuadrilla' : 'Crear Cuadrilla'}</Modal.Title>
       </Modal.Header>
         <Modal.Body>
