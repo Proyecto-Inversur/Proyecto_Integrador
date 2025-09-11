@@ -48,7 +48,7 @@ const DataTable = ({ columns = [], data = [], entityKey, onEdit, onDelete, onRow
         buttonClass="custom-col-selector"
       />
     </div>
-    {filterContent && <div>{filterContent}</div>}
+    {filterContent && <div className="mb-2">{filterContent}</div>}
     <div className="table-responsive">
       <Table striped bordered hover>
         <thead>
