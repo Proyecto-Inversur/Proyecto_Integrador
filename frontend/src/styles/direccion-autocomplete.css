@@ -1,0 +1,26 @@
+.direccion-autocomplete {
+  position: relative;
+}
+
+.direccion-autocomplete-input {
+  width: 100%;
+  padding: 8px;
+}
+
+.direccion-autocomplete-suggestions {
+  position: absolute;
+  z-index: 1000;
+  background-color: white;
+  width: 100%;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 0;
+}
+
+.direccion-autocomplete-item {
+  padding: 8px;
+  cursor: pointer;
+}

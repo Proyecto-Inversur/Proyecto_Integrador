@@ -19,7 +19,7 @@ def get_mantenimiento_preventivo(db: Session, mantenimiento_id: int):
         raise HTTPException(status_code=404, detail="Mantenimiento preventivo no encontrado")
     return mantenimiento
 
-async def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuencia: str, id_cuadrilla: int, fecha_apertura: date, current_entity: dict):
+async def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuencia: str, id_cuadrilla: int, fecha_apertura: date, estado: str, current_entity: dict):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
     if current_entity["type"] != "usuario":
@@ -39,7 +39,8 @@ async def create_mantenimiento_preventivo(db: Session, id_sucursal: int, frecuen
         id_sucursal=id_sucursal,
         frecuencia=frecuencia,
         id_cuadrilla=id_cuadrilla,
-        fecha_apertura=fecha_apertura
+        fecha_apertura=fecha_apertura,
+        estado=estado
     )
     db.add(db_mantenimiento)
     db.commit()
@@ -64,7 +65,8 @@ async def update_mantenimiento_preventivo(
     fecha_cierre: Optional[date] = None,
     planillas: Optional[List[UploadFile]] = None,
     fotos: Optional[List[UploadFile]] = None,
-    extendido: Optional[datetime] = None
+    extendido: Optional[datetime] = None,
+    estado: Optional[str] = None
 ):
     if not current_entity:
         raise HTTPException(status_code=401, detail="Autenticación requerida")
@@ -125,6 +127,8 @@ async def update_mantenimiento_preventivo(
             mensaje=f"Extendido solicitado - Sucursal: {preventivo.nombre_sucursal} | Cuadrilla: {cuadrilla.nombre}",
             firebase_uid=None
         )
+    if estado is not None:
+        db_mantenimiento.estado = estado
     db.commit()
     db.refresh(db_mantenimiento)
     update_preventivo(db_mantenimiento)

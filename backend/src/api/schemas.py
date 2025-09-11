@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
-from datetime import date, datetime
+from datetime import date
 from typing import Optional, Dict, Any
 
 # Enum para los roles
@@ -106,6 +106,7 @@ class MantenimientoPreventivoCreate(BaseModel):
     frecuencia: Frecuencia
     id_cuadrilla: int
     fecha_apertura: date
+    estado: Estado
 
 # Esquemas para Mantenimiento Correctivo
 class MantenimientoCorrectivoCreate(BaseModel):

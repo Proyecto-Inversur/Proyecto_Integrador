@@ -51,7 +51,8 @@ def test_routes_registered():
         "/maps",
         "/notificaciones",
         "/push",
-        "/chat"
+        "/chat",
+        "/preferences"
     ]
 
     app_routes = [route.path for route in app.routes]

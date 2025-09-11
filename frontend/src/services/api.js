@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { API_URL } from '../config'; 
+import { config } from '../config'; 
  
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: config.API_URL,
 });
 
 api.interceptors.request.use(
@@ -20,8 +20,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      window.dispatchEvent(new Event('auth:logout'));
     }
     return Promise.reject(error);
   }

@@ -1,0 +1,53 @@
+@media (max-width: 768px) {
+  .main-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .info-section,
+  .chat-section,
+  .planilla-section {
+    width: 90%;
+    margin-bottom: 1.5rem;
+  }
+
+  .grid-item {
+    flex: 1 1 calc(100% - 1rem);
+    max-width: 100%;
+  }
+
+  .chat-input { max-width: 100%; }
+
+  .planilla-placeholder,
+  .planilla-button { max-width: 100%; }
+
+  .planilla-nav.prev { left: -1.5rem; }
+  .planilla-nav.next { right: -1.5rem; }
+
+  .chat-box { max-height: 73.6dvh; }
+
+  .chat-overlay { padding-top: 9.5dvh; }
+}
+
+@media (max-width: 398px) {
+  .floating-chat-btn { margin-bottom: 1.6rem; }
+  .chat-box { max-height: 65dvh; }
+  .chat-overlay { padding-top: 11.5dvh; }
+}
+
+@media (min-width: 1400px) {
+  .page-content { max-width: 1400px; }
+
+  .info-section,
+  .chat-section,
+  .planilla-section { padding: 2.5rem; }
+
+  .info-section-title { font-size: 2rem; }
+  .info-form-control { font-size: 1.1rem; padding: 0.75rem; }
+
+  .info-button-add,
+  .info-button-finish { font-size: 1rem; padding: 0.9rem 1.5rem; }
+
+  .grid-item { height: 180px; }
+}
+

@@ -1,0 +1,112 @@
+/* Botones flotantes y overlay de chat */
+.floating-save-btn {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 9.4rem;
+  background-color: #ffc720;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+.floating-save-btn:hover { background-color: #2c2c2c; }
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.2s ease;
+}
+
+.icon-button:hover { background-color: #f0f0f0; }
+
+.floating-chat-btn {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 8.3rem;
+  background-color: #ffc720;
+  border: none;
+  border-radius: 50% !important;
+  width: 60px;
+  height: 60px;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+.floating-chat-btn:hover { background-color: #ff0505; }
+
+.chat-overlay {
+  position: fixed;
+  inset: 0;
+  height: 105dvh;   /* para mantener el boton de volver debajo del navbar */
+  background: #fff;
+  z-index: 1050; /* por arriba del footer y pagina */
+  transform: translateX(100%);
+  transition: transform .25s ease;
+  display: flex;
+  flex-direction: column;
+  padding-top: 13dvh;
+}
+
+.chat-overlay.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.close-chat-btn {
+  background: none;
+  border: none;
+  align-self: flex-start;
+  padding: 1rem;
+}
+
+.chat-overlay .chat-section {
+  flex: 1;
+  width: 100%;
+}
+
+.navbar{
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+}
+
+/* Botones de guardado por sección */
+.section-save-btn {
+  background-color: #ffc720;
+  border-color: #ffc720;
+  color: #111;
+  border: none;
+  font-weight: 500;
+  padding: .55rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.section-save-btn:hover:not(:disabled) {
+  background-color: #e0ad1e;
+  border-color: #e0ad1e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,.14);
+}
+

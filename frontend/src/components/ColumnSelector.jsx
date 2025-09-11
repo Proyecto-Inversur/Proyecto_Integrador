@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Form } from 'react-bootstrap';
+import { FiEdit } from 'react-icons/fi';
 import '../styles/formularios.css';
 
 const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
@@ -23,18 +24,26 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
   };
 
   return (
-    <>
-      <Button variant="secondary" onClick={handleOpen} className="me-2">
-        Columnas
+    <div className='columnas'>
+      <Button
+        variant="secondary"
+        onClick={handleOpen}
+        className="me-2"
+        aria-label="Seleccionar columnas"
+      >
+        <FiEdit />
       </Button>
-      <Modal show={show} onHide={() => setShow(false)}>
-        <Modal.Header closeButton>
+      <Modal show={show} onHide={() => setShow(false)} 
+        dialogClassName="column-selector-modal"
+      >
+        <Modal.Header closeButton className="column-selector-header">
           <Modal.Title>Seleccionar columnas</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="column-selector-body">
           {availableColumns.map((col) => (
             <Form.Check
               key={col.key}
+              id={`col-${col.key}`}
               type="checkbox"
               label={col.label}
               checked={localSelection.includes(col.key)}
@@ -42,13 +51,13 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
             />
           ))}
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="column-selector-footer">
           <Button className="custom-save-button" onClick={handleSave}>
             Guardar
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </div>
   );
 };
 

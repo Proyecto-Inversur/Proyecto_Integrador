@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button, Alert, Spinner } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
@@ -22,45 +22,37 @@ const Login = () => {
     }
   };
 
-  if (verifying) {
-    return (
-      <div className="main-bg">
-        <div className="login-container text-c animated flipInX">
-          <div>
-            <img src={logoInversur} alt="Inversur Logo" className="logo" />
-          </div>
-          <div className="container-content d-flex justify-content-center align-items-center min-vh-50">
-            <Spinner animation="border" role="status" style={{ color: 'white' }}>
-              <span className="visually-hidden">Verificando...</span>
-            </Spinner>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="main-bg">
       <div className="login-container text-c animated flipInX">
         <div>
           <img src={logoInversur} alt="Inversur Logo" className="logo" />
         </div>
-        <div className="container-content">
-          {(error || location.state?.error) && (
-            <Alert variant="danger">{error || location.state.error}</Alert>
-          )}
-          <Button
-            className="form-button button-l margin-b d-flex align-items-center justify-content-center gap-2 custom-login-btn"
-            onClick={handleGoogleSignIn}
-            disabled={verifying}
-          >
-            <FcGoogle size={20} />
-            Iniciar Sesión con Google
-          </Button>
-          <p className="margin-t text-whitesmoke">
-            <small>Inversur © 2025</small>
-          </p>
-        </div>
+        {!verifying && (
+          <div className="container-content">
+            {(error || location.state?.error) && (
+              <Alert variant="danger">{error || location.state.error}</Alert>
+            )}
+            <Button
+              className="form-button button-l margin-b d-flex align-items-center justify-content-center gap-2 custom-login-btn"
+              onClick={handleGoogleSignIn}
+              disabled={verifying}
+            >
+              <FcGoogle size={20} />
+              Iniciar Sesión con Google
+            </Button>
+            <p className="margin-t text-whitesmoke">
+              <small>Inversur © 2025</small>
+            </p>
+          </div>
+        )}
+        {verifying && (
+          <div className="container-content d-flex justify-content-center align-items-center min-vh-50">
+            <Spinner animation="border" role="status" style={{ color: 'white' }}>
+              <span className="visually-hidden">Verificando...</span>
+            </Spinner>
+          </div>
+        )}
       </div>
     </div>
   );

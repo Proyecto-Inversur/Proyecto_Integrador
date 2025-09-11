@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AuthContext } from './AuthContext';
+import React, { createContext, useEffect, useState } from 'react';
+import { useAuthRoles } from '../hooks/useAuthRoles';
 import { updateUserLocation } from '../services/maps';
 
 export const LocationContext = createContext();
 
 const LocationProvider = ({ children }) => {
-  const { currentEntity } = useContext(AuthContext);
+  const { id, nombre } = useAuthRoles();
   const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
-    if (!currentEntity) {
+    if (!id) {
       setUserLocation(null);
       return;
     }
@@ -25,7 +25,7 @@ const LocationProvider = ({ children }) => {
         const { latitude, longitude } = position.coords;
         const location = { lat: latitude, lng: longitude };
         setUserLocation(location);
-        const name = currentEntity.data?.nombre || 'Unknown';
+        const name = nombre || 'Unknown';
         updateUserLocation({ lat: latitude, lng: longitude, name })
           .catch(error => console.error('Error updating location:', error));
       },
@@ -37,7 +37,7 @@ const LocationProvider = ({ children }) => {
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [currentEntity]);
+  }, [id]);
 
   return (
     <LocationContext.Provider value={{ userLocation }}>

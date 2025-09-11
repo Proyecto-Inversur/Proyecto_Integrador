@@ -1,46 +1,28 @@
-import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import React from 'react';
 import { FaUsers, FaClipboardList, FaMapMarkerAlt, FaFileAlt } from 'react-icons/fa';
+import HomeButton from '../components/HomeButton';
 import '../styles/home.css';
 
 const Home = () => {
-  const { currentEntity } = useContext(AuthContext);
-
   return (
     <div className="home-container">
       <div className="page-content">
         <div className="button-home-container">
-          {currentEntity && currentEntity.type === 'usuario' && currentEntity.data.rol === 'Administrador' && (
-            <Link to="/users" className="home-button">
-              <FaUsers />
-              Usuarios
-            </Link>
-          )}
-          {currentEntity && (
-            <Link to="/mantenimiento" className="home-button">
-              <FaClipboardList />
-              Mantenimiento
-            </Link>
-          )}
-          {currentEntity && currentEntity.type === 'usuario' && (
-            <Link to="/mapa" className="home-button">
-              <FaMapMarkerAlt />
-              Mapa
-            </Link>
-          )}
-          {currentEntity && currentEntity.type === 'cuadrilla' && (
-            <Link to="/ruta" className="home-button">
-              <FaMapMarkerAlt />
-              Mapa
-            </Link>
-          )}
-          {currentEntity && currentEntity.type === 'usuario' && currentEntity.data.rol === 'Administrador' && (
-            <Link to="/reportes" className="home-button">
-              <FaFileAlt />
-              Reportes
-            </Link>
-          )}
+          <HomeButton to="/users" icon={FaUsers} requiredRoles="admin">
+            Usuarios
+          </HomeButton>
+          <HomeButton to="/mantenimiento" icon={FaClipboardList} requiredRoles={["user", "cuadrilla"]}>
+            Mantenimiento
+          </HomeButton>
+          <HomeButton to="/mapa" icon={FaMapMarkerAlt} requiredRoles="user">
+            Mapa
+          </HomeButton>
+          <HomeButton to="/ruta" icon={FaMapMarkerAlt} requiredRoles="cuadrilla">
+            Mapa
+          </HomeButton>
+          <HomeButton to="/reportes" icon={FaFileAlt} requiredRoles="admin">
+            Reportes
+          </HomeButton>
         </div>
       </div>
     </div>

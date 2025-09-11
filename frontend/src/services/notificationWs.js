@@ -1,12 +1,12 @@
-import { API_URL } from '../config';
+import { config } from '../config';
 
 const getWsUrl = (uid) => {
-  if (!API_URL) {
+  if (!config.API_URL) {
     console.error('Missing API URL configuration for WebSocket');
     return null;
   }
-  const protocol = API_URL.startsWith('https') ? 'wss' : 'ws';
-  const base = API_URL.replace(/^https?/, protocol);
+  const protocol = config.API_URL.startsWith('https') ? 'wss' : 'ws';
+  const base = config.API_URL.replace(/^https?/, protocol);
   return `${base}/ws/notificaciones/${uid}`;
 };
 

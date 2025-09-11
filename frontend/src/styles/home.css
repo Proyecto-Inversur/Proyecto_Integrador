@@ -3,127 +3,122 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 120px); /* Resta el header y footer */
+  min-height: calc(100vh - 120px);
   padding: 6rem 1rem;
   text-align: center;
 }
   
-  /* Contenedor del contenido */
-  .page-content {
-    width: 100%;
-    padding: 0;
-  }
-  
-  /* Contenedor de los botones */
+/* Contenedor del contenido */
+.page-content {
+  width: 100%;
+  padding: 0;
+}
+
+/* Contenedor de los botones */
+.button-home-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 3rem;
+  width: 100%;
+  padding: 0 0.5rem;
+}
+
+/* Estilo de los botones */
+.home-button {
+  width: 100%;
+  max-width: 16rem;
+  aspect-ratio: 1;
+  background-color: #2c2c2c;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Efecto hover */
+.home-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  background-color: #e1a900;
+}
+
+/* Estilo de los íconos */
+.home-button svg {
+  width: 4.5rem;
+  height: 4.5rem;
+  stroke: white;
+}
+
+@media (min-width: 991px) {
   .button-home-container {
-    display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-    margin-top: 2rem; /* Espacio moderado arriba */
-    width: 100%;
-    padding: 0 0.5rem;
-  }
-  
-  
-  /* Estilo de los botones */
-  .home-button {
-    width: 100%;
-    max-width: 16rem;
-    aspect-ratio: 1;
-    background-color: #2c2c2c;
-    color: white;
-    border: none;
-    border-radius: 0.75rem;
-    font-size: 1.5rem;
-    font-weight: bold;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     gap: 1rem;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    text-decoration: none;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    margin-top: 6rem;
+    padding: 0 1rem;
   }
-  
-  /* Efecto hover */
-  .home-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    background-color: #e1a900;
+
+  .home-button {
+    font-size: 1.5rem;
   }
-  
-  /* Estilo de los íconos */
+
   .home-button svg {
     width: 4.5rem;
     height: 4.5rem;
-    stroke: white;
   }
-  
-  /* Pantallas grandes (PC) */
-  @media (min-width: 768px) {
-    .button-home-container {
-      flex-direction: row;
-      gap: 1rem;
-      margin-top: 6rem; /* Espacio moderado en pantallas grandes */
-      padding: 0 1rem;
-    }
-  
-    .home-button {
-      font-size: 1.5rem;
-    }
-  
-    .home-button svg {
-      width: 4.5rem;
-      height: 4.5rem;
-    }
+}
 
+@media (max-width: 767px) {
+  .button-home-container {
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 0 2rem;
   }
-  
-  /* Ajustes para pantallas pequeñas (móviles) */
-  @media (max-width: 767px) {
-    .button-home-container {
-      flex-direction: column;
-      gap: 1rem;
-      margin-top: 1.5rem;
-      padding: 0 2rem;
-    }
-  
-    .home-button {
-      max-width: 100%;
-      font-size: 1.7rem;
-      padding: 1rem;
-    }
-  
-    .home-button svg {
-      width: 3.5rem;
-      height: 3.5rem;
-    }
 
-    .home-container{
-      padding-top: 6rem;
-      padding-bottom: 6rem;
-    }
+  .home-button {
+    max-width: 100%;
+    font-size: 1.7rem;
+    padding: 1rem;
   }
-  
-  /* Ajustes para pantallas muy pequeñas */
-  @media (max-width: 400px) {
-    .home-button {
-      font-size: 1.6rem;
-      padding: 0.8rem;
-    }
-  
-    .home-button svg {
-      width: 3rem;
-      height: 3rem;
-    }
 
-    .home-container{
-      padding-top: 8rem;
-      padding-bottom: 8rem;
-    }
+  .home-button svg {
+    width: 3.5rem;
+    height: 3.5rem;
   }
+
+  .home-container{
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .home-button {
+    font-size: 1.6rem;
+    padding: 0.8rem;
+  }
+
+  .home-button svg {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .home-container{
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}

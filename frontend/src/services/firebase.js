@@ -1,9 +1,9 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 import { initializeAuth, indexedDBLocalPersistence, browserPopupRedirectResolver, signOut, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { firebaseConfig, webPushPublicKey } from '../config';
+import { config } from '../config';
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(config.firebaseConfig);
 const database = getDatabase(app);
 const auth = initializeAuth(app, {
   persistence: indexedDBLocalPersistence,
@@ -23,7 +23,7 @@ const getPushSubscription = async () => {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
+      applicationServerKey: urlBase64ToUint8Array(config.webPushPublicKey)
     });
     return subscription;
   } catch (err) {

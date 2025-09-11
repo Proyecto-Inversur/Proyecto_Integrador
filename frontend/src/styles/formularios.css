@@ -115,13 +115,6 @@
   padding-right: 15px;
 }
 
-@media (max-width: 991px) {
-  .custom-delete-button {
-  position: absolute;
-  left: 90%;
-  }
-}
-
 /* Estilo para el form select */
 .form-select {
   color: #6c757d !important;
@@ -130,4 +123,49 @@
 /* Cambiar el color del texto a negro al pasar el mouse */
 .form-select:hover {
   color: #2c2c2c !important;
+}
+
+.columnas {
+  padding-bottom: 1rem;
+}
+
+.column-selector-modal{
+  top: 7rem;
+}
+
+/* ===== Modal Mantenimiento Correctivo (scope) ===== */
+.mc-modal.modal-dialog {
+  top: 2rem;                 /* separa del navbar fijo */
+  margin: 0.75rem auto;
+  max-width: 650px;          /* ancho en desktop */
+}
+
+.mc-modal-content.modal-content {
+  position: relative;
+  /* limita la altura total del contenido del modal */
+  max-height: calc(100dvh - 10rem);
+}
+
+@media (max-width: 991px) {
+  .custom-delete-button {
+    position: absolute;
+    left: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .column-selector-modal {
+    top: 11rem;
+  }
+
+  .mc-modal.modal-dialog {
+    top: 1rem;
+    width: 95%;
+    max-width: none;
+    margin: 0 auto;   
+  }
+
+  .mc-modal-content.modal-content {
+    max-height: calc(100dvh - 15rem) !important;
+  }
 }

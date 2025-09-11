@@ -168,8 +168,6 @@
   background-color: #ffc720
 }
 
-
-/* Pantallas pequeñas: móviles (hasta 768px) */
 @media (max-width: 768px) {
   .reports-container {
     padding: 1rem;
@@ -198,5 +196,4 @@
     flex-direction: column;
     align-items: stretch;
   }
-
 }
