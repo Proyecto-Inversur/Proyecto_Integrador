@@ -34,9 +34,9 @@
 }
 
 .custom-button:hover {
-  background-color: #ffffff;
-  border-color: #2c2c2c;
-  color: #2c2c2c;
+  background-color: #ffffff !important; 
+  border-color: #000000 !important;
+  color: #000000 !important;
   border-radius: 0.75rem;
   padding: 8px 16px;
   display: flex;

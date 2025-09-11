@@ -3,7 +3,7 @@ import { Button, Modal, Form } from 'react-bootstrap';
 import { FiEdit } from 'react-icons/fi';
 import '../styles/formularios.css';
 
-const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
+const ColumnSelector = ({ availableColumns, selectedColumns, onSave, buttonClass = 'custom-col-selector',}) => {
   const [show, setShow] = useState(false);
   const [localSelection, setLocalSelection] = useState(selectedColumns);
 
@@ -26,9 +26,9 @@ const ColumnSelector = ({ availableColumns, selectedColumns, onSave }) => {
   return (
     <div className='columnas'>
       <Button
-        variant="secondary"
+        variant="primary"
         onClick={handleOpen}
-        className="me-2"
+        className={`me-2 ${buttonClass}`}  
         aria-label="Seleccionar columnas"
       >
         <FiEdit />
