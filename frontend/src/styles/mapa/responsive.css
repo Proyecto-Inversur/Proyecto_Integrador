@@ -138,19 +138,22 @@
   .sidebar-toggle {
     display: block !important;
     position: fixed !important;
-    bottom: 6rem !important;
+    bottom: 4.5rem !important;
     left: 0.9rem !important;
     z-index: 2900 !important;
-    background: #2c2c2c;
+    background: #e1a900;
+    border: none !important;
     border-radius: 0.5rem;
     padding: 0.5rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
   /* Reposición de controles superiores para no chocar con header */
   .cuadrillas, .encargados, .sucursales { top: 6.5rem; z-index: 2000; }
 
   .compass-ruta { bottom: 7.5rem; }
+
+  .compass-map { bottom: 4.5rem; }
+
   .inversur-popup .leaflet-popup-content-wrapper {
     width: clamp(200px, 72vw, 270px) !important;
     border-radius: 10px;
@@ -189,6 +192,9 @@
   .boton-navegar { bottom: 5.5rem; right: 0.5rem; }
 
   .compass-ruta { bottom: 8.2rem; }
+
+  .compass-map, .sidebar-toggle { bottom: 5.5rem !important; }
+
   .inv-line { grid-template-columns: 1fr; }
   .inv-label { color: #888; }
 }

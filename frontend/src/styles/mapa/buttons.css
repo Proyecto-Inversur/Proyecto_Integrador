@@ -55,7 +55,7 @@
 .ruta-btn:hover { transform: translateY(-1px); }
 
 /* Variantes */
-.ruta-btn.success { background-color: #dfa700; color: #2c2c2c; }
+.ruta-btn.success { background-color: #e1a900; color: white; }
 .ruta-btn.success:hover { background-color: #2c2c2c; color: white; }
 
 .ruta-btn.danger { background-color: #5f5f5f; color: white; }
@@ -95,6 +95,6 @@
 .cuadrillas.active,
 .encargados.active,
 .sucursales.active {
-  background: #dfa700;
-  color: #2c2c2c;
+  background: #e1a900;
+  color: white;
 }
