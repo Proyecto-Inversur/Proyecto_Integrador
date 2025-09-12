@@ -1,24 +1,16 @@
 import './commands.js';
 
-console.log('Running e2e.js support file');
+console.log('Running Cypress e2e support file');
 
+before(() => {
+  // Evita errores por scripts externos (Google Maps / GSI)
+  cy.stubGoogleGlobals();
+});
+
+// Por defecto, stub de servicios externos comunes
 beforeEach(() => {
-  cy.visit('/login');
-  cy.window().then((win) => {
-    cy.log('Setting up manual mock for signInWithPopup');
-    win.__firebase_auth__ = {
-      signInWithPopup: () => {
-        cy.log('Manual mock signInWithPopup called');
-        return Promise.resolve({
-          user: {
-            email: 'admin@example.com',
-            displayName: 'Admin User',
-            uid: 'mock-uid-123',
-            getIdToken: () => Promise.resolve('mock-id-token'),
-          },
-        });
-      },
-    };
-    cy.log('Mock set on window.__firebase_auth__:', !!win.__firebase_auth__);
-  });
+  cy.intercept('GET', 'https://www.googleapis.com/oauth2/v3/tokeninfo*', {
+    statusCode: 200,
+    body: { email: 'test@example.com', sub: 'google-sub-123' },
+  }).as('googleTokenInfo');
 });

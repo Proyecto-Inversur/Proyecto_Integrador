@@ -11,10 +11,10 @@
         "test:run": "vitest run",
         "test:ui": "vitest --ui",
         "cypress": "cypress open",
-        "cy:run": "cypress run",
-        "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run"
+        "cy:run": "cypress run"
     },
     "dependencies": {
+        "@kurkle/color": "^0.4.0",
         "@react-google-maps/api": "^2.20.7",
         "@turf/turf": "^7.2.0",
         "axios": "^1.10.0",
@@ -48,9 +48,10 @@
         "cypress": "^13.15.0",
         "dotenv": "^16.5.0",
         "jsdom": "^24.1.3",
+        "mocha-junit-reporter": "^2.2.1",
+        "start-server-and-test": "^2.0.0",
         "typescript": "^5.9.2",
         "vite": "^6.3.5",
-        "start-server-and-test": "^2.0.0",
         "vite-plugin-istanbul": "^7.0.0",
         "vitest": "^3.2.4"
     }

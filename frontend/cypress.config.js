@@ -1,6 +1,13 @@
 const { defineConfig } = require("cypress");
 const { exec } = require("child_process");
-require("dotenv").config();
+const fs = require('fs');
+const path = require('path');
+
+// Load .env.test if available, otherwise fallback to .env
+const envPath = fs.existsSync(path.join(__dirname, '.env.test'))
+  ? path.join(__dirname, '.env.test')
+  : path.join(__dirname, '.env');
+require('dotenv').config({ path: envPath });
 
 module.exports = defineConfig({
   reporter: 'mocha-junit-reporter',
@@ -12,8 +19,6 @@ module.exports = defineConfig({
     specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
     supportFile: "cypress/support/e2e.js",
     setupNodeEvents(on, config) {
-      const fs = require('fs');
-      const path = require('path');
 
       on('task', {
         readFixture(filename) {

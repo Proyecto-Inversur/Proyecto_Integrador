@@ -1,25 +1,21 @@
-console.log('Registering mockGoogleSignIn command');
+// Utilidad para simular sesión autenticada sin pasar por Google/Firebase
+Cypress.Commands.add('setAuthSession', (entity = {
+  type: 'usuario',
+  data: { id: 1, uid: 'test-uid', nombre: 'Test User', email: 'test@example.com', rol: 'Administrador' },
+}) => {
+  const idToken = 'e2e-token';
+  window.sessionStorage.setItem('authToken', idToken);
+  window.localStorage.setItem('authToken', idToken);
+  window.sessionStorage.setItem('currentEntity', JSON.stringify(entity));
+  window.localStorage.setItem('currentEntity', JSON.stringify(entity));
+});
 
-Cypress.Commands.add('mockGoogleSignIn', ({ email = 'test@example.com', name = 'Test User', uid = 'mock-uid-123', idToken = 'mock-id-token' } = {}) => {
-    cy.window().then((win) => {
-        cy.log('Mocking signInWithPopup with email:', email);
-        if (!win.__firebase_auth__) {
-        win.__firebase_auth__ = {
-            signInWithPopup: () => {
-            cy.log('Manual mock signInWithPopup called for email:', email);
-            return Promise.resolve({
-                user: {
-                email,
-                displayName: name,
-                uid,
-                getIdToken: () => Promise.resolve(idToken),
-                },
-            });
-            },
-        };
-        cy.log('Mock set in mockGoogleSignIn command');
-        } else {
-        cy.log('Mock already set on window.__firebase_auth__');
-        }
-    });
+// Stub básico de Google APIs para prevenir errores de carga
+Cypress.Commands.add('stubGoogleGlobals', () => {
+  cy.on('window:before:load', (win) => {
+    win.google = win.google || {
+      accounts: { id: { initialize: () => {}, prompt: () => {} } },
+      maps: { places: {} },
+    };
+  });
 });
