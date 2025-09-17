@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-if os.environ.get("TESTING") != "true":
+if os.environ.get("TESTING") != "true" and os.environ.get("E2E_TESTING") != "true":
     initialize_firebase()
     init_admin(email=EMAIL_ADMIN, nombre=NOMBRE_ADMIN, password=PASSWORD_ADMIN)
 
@@ -61,7 +61,7 @@ async def auth_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
         return await call_next(request)
     
-    if os.environ.get("TESTING") == "true":
+    if os.environ.get("TESTING") == "true" or os.environ.get("E2E_TESTING") == "true":
         request.state.current_entity = getattr(
             request.app.state, "current_entity", DEFAULT_TEST_ENTITY
         )
