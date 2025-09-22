@@ -172,7 +172,7 @@ const PlanillaSection = ({
             </>
           )}
           <div className="planilla-viewport" ref={previewsRef}>
-            <div className="planilla-track">
+            <div className={`planilla-track ${planillaPreviews.length === 1 ? 'single' : ''}`}>
               {planillaPreviews.map((preview, index) => (
                 <div className="planilla-slide" key={`preview-${index}`}>
                   <div className="photo-container">
@@ -226,7 +226,7 @@ const PlanillaSection = ({
               </>
             )}
             <div className="planilla-viewport" ref={existingRef}>
-              <div className="planilla-track">
+              <div className={`planilla-track ${existingPlanillas.length === 1 ? 'single' : ''}`}>
                 {existingPlanillas.map((planilla, index) => {
                   const isSel = multiple ? selected.includes(planilla) : selected === planilla;
                   return (
