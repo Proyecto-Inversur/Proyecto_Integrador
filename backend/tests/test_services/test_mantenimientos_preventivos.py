@@ -25,6 +25,7 @@ def test_create_preventivo(mock_append, mock_notify, db_session):
             frecuencia="Mensual",
             id_cuadrilla=cuadrilla.id,
             fecha_apertura=date.today(),
+            estado="Pendiente",
             current_entity={"type": "usuario"},
         )
     )
@@ -47,6 +48,7 @@ def test_create_preventivo_not_found(mock_append, mock_notify, db_session):
                 frecuencia="Mensual",
                 id_cuadrilla=cuadrilla.id,
                 fecha_apertura=date.today(),
+                estado="Pendiente",
                 current_entity={"type": "usuario"},
             )
         )
@@ -73,6 +75,7 @@ def test_delete_preventivo(mock_delete_preventivo, mock_append, mock_notify, db_
             "Mensual",
             cuadrilla.id,
             date.today(),
+            "Pendiente",
             {"type": "usuario"},
         )
     )
@@ -106,6 +109,7 @@ def _create_basic_mantenimiento(db_session):
         frecuencia="Mensual",
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
+        estado="Pendiente",
     )
     db_session.add(mantenimiento)
     db_session.commit()
@@ -137,10 +141,12 @@ def test_update_mantenimiento_preventivo(mock_update, db_session):
             db_session,
             mantenimiento.id,
             {"type": "usuario"},
-            frecuencia="Semanal",
+            frecuencia="Trimestral",
+            estado="En Progreso",
         )
     )
-    assert updated.frecuencia == "Semanal"
+    assert updated.frecuencia == "Trimestral"
+    assert updated.estado == "En Progreso"
 
 @patch("src.services.mantenimientos_preventivos.update_preventivo")
 def test_update_mantenimiento_preventivo_not_found(mock_update, db_session):
@@ -150,7 +156,8 @@ def test_update_mantenimiento_preventivo_not_found(mock_update, db_session):
                 db_session,
                 999,
                 {"type": "usuario"},
-                frecuencia="Semanal",
+                frecuencia="Trimestral",
+                estado="En Progreso",
             )
         )
 
