@@ -1,4 +1,4 @@
-describe('Módulo de Usuarios - Integración', () => {
+describe('Modulo de Usuarios - Integracion', () => {
   const adminEntity = {
     type: 'usuario',
     data: {
@@ -18,13 +18,7 @@ describe('Módulo de Usuarios - Integración', () => {
     win.sessionStorage.setItem('currentEntity', JSON.stringify(adminEntity));
   };
 
-  before(() => {
-    // Reset DB before running the suite
-    cy.task('db:reset');
-  });
-
   beforeEach(() => {
-    // Ensure clean storage before each test
     cy.clearLocalStorage();
     cy.clearCookies();
     cy.window().then(() => {
@@ -32,8 +26,10 @@ describe('Módulo de Usuarios - Integración', () => {
     });
   });
 
-  it('carga la página y crea, edita y elimina un usuario', () => {
-    // Open Users page with a pre-set admin session
+  it('carga la pagina y crea, edita y elimina un usuario', () => {
+    const baseUserName = `Usuario E2E ${Date.now()}`;
+    const updatedUserName = `${baseUserName} Editado`;
+
     cy.visit('/users', {
       onBeforeLoad: (win) => {
         win.localStorage.clear();
@@ -42,36 +38,33 @@ describe('Módulo de Usuarios - Integración', () => {
       },
     });
 
-    // Should see page title and Agregar button (be tolerant of accents)
     cy.contains(/Usuarios/i, { timeout: 20000 }).should('be.visible');
     cy.contains('button', 'Agregar').should('be.visible').click();
 
-    // Modal opens, fill in the form
     cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
-    cy.get('input[name="nombre"]').clear().type('Usuario E2E');
+    cy.get('input[name="nombre"]').clear().type(baseUserName);
     cy.get('select[name="rol"]').select('Encargado de Mantenimiento');
 
-    // Submit create (uses fake Google flow on frontend; backend runs in TESTING mode)
     cy.contains('button', 'Registrar con Google').click();
 
-    // After closing, table should show the new row
-    cy.contains('td', 'Usuario E2E', { timeout: 20000 }).should('be.visible');
+    cy.contains('td', baseUserName, { timeout: 20000 }).should('be.visible');
     cy.contains('td', 'test@example.com').should('be.visible');
     cy.contains('td', 'Encargado de Mantenimiento').should('be.visible');
 
-    // Edit the created user
-    cy.get('button[aria-label="Editar"]').first().click();
+    cy.contains('tr', baseUserName).within(() => {
+      cy.get('button[aria-label="Editar"]').click();
+    });
+
     cy.get('div.modal.show').should('be.visible');
-    cy.get('input[name="nombre"]').clear().type('Usuario E2E Editado');
+    cy.get('input[name="nombre"]').clear().type(updatedUserName);
     cy.contains('button', 'Guardar').click();
 
-    // Assert update
-    cy.contains('td', 'Usuario E2E Editado', { timeout: 20000 }).should('be.visible');
+    cy.contains('td', updatedUserName, { timeout: 20000 }).should('be.visible');
 
-    // Delete the user
-    cy.get('button[aria-label="Eliminar"]').first().click();
+    cy.contains('tr', updatedUserName).within(() => {
+      cy.get('button[aria-label="Eliminar"]').click();
+    });
 
-    // Assert deletion
-    cy.contains('td', 'Usuario E2E Editado').should('not.exist');
+    cy.contains('td', updatedUserName).should('not.exist');
   });
 });
