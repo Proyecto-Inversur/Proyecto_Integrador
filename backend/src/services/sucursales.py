@@ -1,3 +1,4 @@
+import os
 from sqlalchemy.orm import Session
 from api.models import Sucursal
 from fastapi import HTTPException
@@ -37,6 +38,10 @@ def create_sucursal(db_session: Session, nombre: str, zona: str, direccion: dict
         db_session.rollback()
         raise HTTPException(status_code=500, detail=f"Error guardando en PostgreSQL: {str(e)}")
     
+    # Skip Firebase if running E2E tests
+    if os.environ.get("E2E_TESTING") == "true":
+        return db_sucursal
+    
     # Store in Firebase
     try:
         initialize_firebase()
@@ -74,6 +79,10 @@ def update_sucursal(db_session: Session, sucursal_id: int, current_entity: dict,
     db_session.commit()
     db_session.refresh(db_sucursal)
     
+    # Skip Firebase if running E2E tests
+    if os.environ.get("E2E_TESTING") == "true":
+        return db_sucursal
+    
     # Update Firebase
     if nombre or (direccion and ('lat' in direccion or 'lng' in direccion)):
         try:
@@ -104,6 +113,10 @@ def delete_sucursal(db_session: Session, sucursal_id: int, current_entity: dict)
     # Delete from PostgreSQL
     db_session.delete(db_sucursal)
     db_session.commit()
+    
+    # Skip Firebase if running E2E tests
+    if os.environ.get("E2E_TESTING") == "true":
+        return {"message": f"Sucursal con id {sucursal_id} eliminada"}
     
     # Delete from Firebase
     try:

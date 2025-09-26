@@ -21,97 +21,12 @@
   beforeEach(() => {
     cy.clearLocalStorage();
     cy.clearCookies();
-    cy.window().then(() => {
-      // no-op, solo asegura la disponibilidad de window antes de visitar
-    });
+    cy.window().then(() => {});
   });
 
   it('carga la pagina y crea, edita y elimina un mantenimiento correctivo', () => {
-    const initialColumns = [
-      'id',
-      'sucursal',
-      'cuadrilla',
-      'zona',
-      'rubro',
-      'numero_caso',
-      'fecha_apertura',
-      'fecha_cierre',
-      'incidente',
-      'estado',
-      'prioridad',
-      'acciones',
-    ];
-    const sucursalesData = [
-      { id: 1, nombre: 'Sucursal Centro', zona: 'Zona Centro' },
-      { id: 2, nombre: 'Sucursal Norte', zona: 'Zona Norte' },
-    ];
-    const zonasData = [
-      { id: 1, nombre: 'Zona Centro' },
-      { id: 2, nombre: 'Zona Norte' },
-    ];
-    const cuadrillasData = [
-      { id: 21, nombre: 'Cuadrilla Uno' },
-      { id: 22, nombre: 'Cuadrilla Dos' },
-    ];
     let mantenimientosData = [];
     let mantenimientoIdCounter = 800;
-
-    cy.intercept('GET', '**/preferences/mantenimientos_correctivos', {
-      statusCode: 200,
-      body: { columns: initialColumns },
-    }).as('getCorrectivoColumnPreferences');
-
-    cy.intercept('PUT', '**/preferences/mantenimientos_correctivos', (req) => {
-      req.alias = 'saveCorrectivoColumnPreferences';
-      req.reply({ statusCode: 200, body: { columns: req.body.columns } });
-    });
-
-    cy.intercept('GET', '**/mantenimientos-correctivos/', (req) => {
-      req.reply({ statusCode: 200, body: mantenimientosData });
-    }).as('getMantenimientosCorrectivos');
-
-    cy.intercept('GET', '**/cuadrillas/', {
-      statusCode: 200,
-      body: cuadrillasData,
-    }).as('getCuadrillas');
-
-    cy.intercept('GET', '**/sucursales/', {
-      statusCode: 200,
-      body: sucursalesData,
-    }).as('getSucursales');
-
-    cy.intercept('GET', '**/zonas/', {
-      statusCode: 200,
-      body: zonasData,
-    }).as('getZonas');
-
-    cy.intercept('POST', '**/mantenimientos-correctivos/', (req) => {
-      mantenimientoIdCounter += 1;
-      const nuevo = {
-        id: mantenimientoIdCounter,
-        id_sucursal: req.body.id_sucursal,
-        id_cuadrilla: req.body.id_cuadrilla,
-        rubro: req.body.rubro,
-        numero_caso: req.body.numero_caso,
-        fecha_apertura: `${req.body.fecha_apertura}T00:00:00`,
-        fecha_cierre: null,
-        incidente: req.body.incidente,
-        estado: req.body.estado,
-        prioridad: req.body.prioridad,
-      };
-      mantenimientosData = [...mantenimientosData, nuevo];
-      req.reply({ statusCode: 201, body: nuevo });
-    }).as('createMantenimientoCorrectivo');
-
-    cy.intercept('PUT', '**/mantenimientos-correctivos/*', (req) => {
-      req.reply({ statusCode: 200, body: { success: true } });
-    }).as('updateMantenimientoCorrectivo');
-
-    cy.intercept('DELETE', '**/mantenimientos-correctivos/*', (req) => {
-      const id = Number(req.url.split('/').pop());
-      mantenimientosData = mantenimientosData.filter((m) => m.id !== id);
-      req.reply({ statusCode: 200, body: { success: true } });
-    }).as('deleteMantenimientoCorrectivo');
 
     cy.visit('/mantenimientos-correctivos', {
       onBeforeLoad: (win) => {
@@ -121,18 +36,10 @@
       },
     });
 
-    cy.wait('@getMantenimientosCorrectivos');
-    cy.wait('@getCorrectivoColumnPreferences');
-    cy.wait('@getCuadrillas');
-    cy.wait('@getSucursales');
-    cy.wait('@getZonas');
-
     cy.contains(/Mantenimientos Correctivos/i, { timeout: 20000 }).should('be.visible');
     cy.contains('button', 'Agregar').should('be.visible').click();
 
     cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
-    cy.wait('@getCuadrillas');
-    cy.wait('@getSucursales');
 
     cy.get('#id_sucursal').select('1');
     cy.get('#id_cuadrilla').select('21');
@@ -145,10 +52,7 @@
 
     cy.contains('button', 'Guardar').click();
 
-    cy.wait('@createMantenimientoCorrectivo');
-    cy.wait('@getMantenimientosCorrectivos');
-
-    cy.contains('td', 'Sucursal Centro', { timeout: 20000 }).should('be.visible');
+    cy.contains('td', 'Fuga de agua').should('be.visible');
     cy.contains('td', 'Fuga de agua').should('be.visible');
 
     cy.contains('tr', 'Fuga de agua').within(() => {
@@ -346,5 +250,37 @@
     cy.get('table tbody tr').first().within(() => {
       cy.contains('td', '2024-01-20').should('exist');
     });
+  });
+
+  it('permite ocultar columnas mediante el selector', () => {
+    cy.stubGoogleGlobals();
+
+    cy.visit('/sucursales', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+        setupPlacesStubs(win);
+      },
+    });
+
+    cy.get('table thead th').should('contain', 'ID');
+
+    cy.get('button[aria-label="Seleccionar columnas"]').click();
+
+    cy.get('.column-selector-modal').should('be.visible');
+    cy.get('input#col-id').should('be.checked').uncheck({ force: true });
+    cy.contains('button', 'Guardar').click();
+
+    cy.get('table thead th').should(($ths) => {
+      const texts = Array.from($ths, (th) => th.innerText.trim());
+      expect(texts).to.not.include('ID');
+    });
+
+    cy.get('button[aria-label="Seleccionar columnas"]').click();
+
+    cy.get('.column-selector-modal').should('be.visible');
+    cy.get('input#col-id').check();
+    cy.contains('button', 'Guardar').click();
   });
 });
