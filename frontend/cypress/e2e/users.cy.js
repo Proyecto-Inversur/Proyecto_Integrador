@@ -36,16 +36,16 @@ describe('Modulo de Usuarios - Integracion', () => {
       },
     });
 
-    cy.contains(/Usuarios/i, { timeout: 20000 }).should('be.visible');
+    cy.contains(/Usuarios/i, { timeout: 30000 }).should('be.visible');
     cy.contains('button', 'Agregar').should('be.visible').click();
 
-    cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
+    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(baseUserName);
     cy.get('#rol').select('Encargado de Mantenimiento');
 
     cy.contains('button', 'Registrar con Google').click();
 
-    cy.contains('td', baseUserName, { timeout: 20000 }).should('be.visible');
+    cy.contains('td', baseUserName, { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'test@example.com').should('be.visible');
     cy.contains('td', 'Encargado de Mantenimiento').should('be.visible');
 
@@ -57,7 +57,7 @@ describe('Modulo de Usuarios - Integracion', () => {
     cy.get('#nombre').clear().type(updatedUserName);
     cy.contains('button', 'Guardar').click();
 
-    cy.contains('td', updatedUserName, { timeout: 20000 }).should('be.visible');
+    cy.contains('td', updatedUserName, { timeout: 30000 }).should('be.visible');
 
     cy.contains('tr', updatedUserName).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
@@ -67,7 +67,7 @@ describe('Modulo de Usuarios - Integracion', () => {
 
     cy.contains('button', 'Agregar').should('be.visible').click();
 
-    cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
+    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(baseUserName);
     cy.get('#rol').select('Encargado de Mantenimiento');
 

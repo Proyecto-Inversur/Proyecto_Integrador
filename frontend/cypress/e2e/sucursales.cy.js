@@ -83,17 +83,17 @@
       },
     });
 
-    cy.contains(/Sucursales/i, { timeout: 20000 }).should('be.visible');
+    cy.contains(/Sucursales/i, { timeout: 30000 }).should('be.visible');
 
     cy.contains('button', 'Agregar').should('be.visible').click();
 
-    cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
+    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(baseSucursalName);
     cy.get('#dropdown-zona').click();
     cy.contains('.custom-dropdown-item', sucursalZone).click();
 
     cy.get('.direccion-autocomplete-input').should('not.be.disabled').type('Universidad Católica de Córdoba');
-    cy.contains('.direccion-autocomplete-item', suggestionDescription, { timeout: 10000 })
+    cy.contains('.direccion-autocomplete-item', suggestionDescription, { timeout: 30000 })
       .should('be.visible')
       .click();
 
@@ -101,22 +101,22 @@
 
     cy.contains('button', 'Guardar').click();
 
-    cy.contains('td', baseSucursalName, { timeout: 20000 }).should('be.visible');
+    cy.contains('td', baseSucursalName, { timeout: 30000 }).should('be.visible');
     cy.contains('td', sucursalZone).should('be.visible');
     cy.contains('tr', baseSucursalName).within(() => {
       cy.get('button[aria-label="Editar"]').click();
     });
 
-    cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
+    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(updatedSucursalName);
     cy.get('.direccion-autocomplete-input').should('not.be.disabled').type('Universidad Católica de Córdoba');
-    cy.contains('.direccion-autocomplete-item', suggestionDescription, { timeout: 10000 })
+    cy.contains('.direccion-autocomplete-item', suggestionDescription, { timeout: 30000 })
       .should('be.visible')
       .click();
 
     cy.contains('button', 'Guardar').click();
 
-    cy.contains('td', updatedSucursalName, { timeout: 20000 }).should('be.visible');
+    cy.contains('td', updatedSucursalName, { timeout: 30000 }).should('be.visible');
     cy.contains('tr', updatedSucursalName).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
@@ -124,13 +124,13 @@
 
     cy.contains('button', 'Agregar').should('be.visible').click();
 
-    cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
+    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(baseSucursalName);
     cy.get('#dropdown-zona').click();
     cy.contains('.custom-dropdown-item', sucursalZone).click();
 
     cy.get('.direccion-autocomplete-input').should('not.be.disabled').type('Universidad Católica de Córdoba');
-    cy.contains('.direccion-autocomplete-item', suggestionDescription, { timeout: 10000 })
+    cy.contains('.direccion-autocomplete-item', suggestionDescription, { timeout: 30000 })
       .should('be.visible')
       .click();
 

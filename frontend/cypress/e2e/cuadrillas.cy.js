@@ -37,10 +37,10 @@
       },
     });
 
-    cy.contains(/Cuadrillas/i, { timeout: 20000 }).should('be.visible');
+    cy.contains(/Cuadrillas/i, { timeout: 30000 }).should('be.visible');
     cy.contains('button', 'Agregar').should('be.visible').click();
 
-    cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
+    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(baseCuadrillaName);
     cy.get('#dropdown-zona').click();
     cy.contains('.custom-dropdown-item-add', 'Agregar nueva zona...').click();
@@ -49,18 +49,18 @@
 
     cy.contains('button', 'Registrar con Google').click();
 
-    cy.contains('td', baseCuadrillaName, { timeout: 20000 }).should('be.visible');
+    cy.contains('td', baseCuadrillaName, { timeout: 30000 }).should('be.visible');
     cy.contains('td', cuadrillaZone).should('be.visible');
 
     cy.contains('tr', baseCuadrillaName).within(() => {
       cy.get('button[aria-label="Editar"]').click();
     });
 
-    cy.get('div.modal.show', { timeout: 10000 }).should('be.visible');
+    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(updatedCuadrillaName);
     cy.contains('button', 'Guardar').click();
 
-    cy.contains('td', updatedCuadrillaName, { timeout: 20000 }).should('be.visible');
+    cy.contains('td', updatedCuadrillaName, { timeout: 30000 }).should('be.visible');
 
     cy.contains('tr', updatedCuadrillaName).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();

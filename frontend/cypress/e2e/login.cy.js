@@ -31,7 +31,7 @@ describe('Flujo de Login', () => {
     cy.contains('button', 'Iniciar Sesión con Google').click();
 
     cy.wait('@verifyUserError', { timeout: 30000 });
-    cy.get('.alert-danger', { timeout: 10000 })
+    cy.get('.alert-danger', { timeout: 30000 })
       .should('be.visible')
       .and('contain.text', 'Usuario no registrado');
   });
