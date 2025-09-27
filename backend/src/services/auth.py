@@ -82,7 +82,6 @@ def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dic
             raise HTTPException(status_code=403, detail="No tienes permisos de administrador")
     
     try:
-        firebase_uid = None
         if os.environ.get("E2E_TESTING") != "true":
             if not id_token:
                 raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
@@ -105,6 +104,8 @@ def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dic
             except auth.EmailAlreadyExistsError:
                 firebase_user = auth.get_user_by_email(user_data.email)
                 firebase_uid = firebase_user.uid
+        else:
+            firebase_uid = "test-uid"
 
         db_user = Usuario(
             nombre=user_data.nombre,
@@ -167,7 +168,6 @@ def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, curr
         raise HTTPException(status_code=403, detail="No tienes permisos")
     
     try:
-        firebase_uid = None
         if os.environ.get("E2E_TESTING") != "true":
             if not id_token:
                 raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
@@ -191,6 +191,8 @@ def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, curr
             except auth.EmailAlreadyExistsError:
                 firebase_user = auth.get_user_by_email(cuadrilla_data.email)
                 firebase_uid = firebase_user.uid
+        else:
+            firebase_uid = "test-uid"
 
         db_cuadrilla = Cuadrilla(
             nombre=cuadrilla_data.nombre,
