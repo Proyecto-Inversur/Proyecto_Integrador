@@ -84,6 +84,7 @@ const Preventivo = () => {
               isLoading={isLoading}
               showFinishButton={mantenimiento.fecha_cierre === null}
               handleFinish={handleFinish}
+              handleChange={false}
             />
             {!isMobile && (
               <Col className="chat-section">

@@ -158,29 +158,43 @@ const usePreventivo = (mantenimientoId) => {
   };
 
   const handleFinish = async () => {
-    const hasPlanilla = mantenimiento.planillas?.length > 0;
-    const hasFoto = mantenimiento.fotos?.length > 0;
+    if (mantenimiento.fecha_cierre !== null) {
+      try {
+        const updatedFormData = {
+          ...formData,
+          fecha_cierre: '0001-01-01',
+        };
+        await handleSubmit({ preventDefault: () => {} }, updatedFormData);
+        setSuccess('Mantenimiento marcado como pendiente correctamente.');
+      } catch (error) {
+        console.error('Error marking as pending:', error);
+        setError('Error al marcar como pendiente.');
+      }
+    } else {
+      const hasPlanilla = mantenimiento.planillas?.length > 0;
+      const hasFoto = mantenimiento.fotos?.length > 0;
 
-    if (!hasPlanilla || !hasFoto) {
-      setError('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
-      return;
-    }
+      if (!hasPlanilla || !hasFoto) {
+        setError('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
+        return;
+      }
 
-    try {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const formattedDate = `${year}-${month}-${day}`;
-      const updatedFormData = {
-        ...formData,
-        fecha_cierre: formattedDate,
-      };
-      await handleSubmit({ preventDefault: () => {} }, updatedFormData);
-      setSuccess('Mantenimiento marcado como finalizado correctamente.');
-    } catch (error) {
-      console.error('Error marking as finished:', error);
-      setError('Error al marcar como finalizado.');
+      try {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        const updatedFormData = {
+          ...formData,
+          fecha_cierre: formattedDate,
+        };
+        await handleSubmit({ preventDefault: () => {} }, updatedFormData);
+        setSuccess('Mantenimiento marcado como finalizado correctamente.');
+      } catch (error) {
+        console.error('Error marking as finished:', error);
+        setError('Error al marcar como finalizado.');
+      }
     }
   };
 
