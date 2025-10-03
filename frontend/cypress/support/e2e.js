@@ -1,4 +1,5 @@
 import './commands.js';
+import 'cypress-file-upload';
 
 console.log('Running Cypress e2e support file');
 
