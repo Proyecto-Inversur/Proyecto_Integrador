@@ -34,7 +34,7 @@ const RutaLayout = ({
         <button className="ruta-btn danger boton-borrar" onClick={borrarRuta}>
           ❌ Borrar ruta
         </button>
-        {!isCenter && !isNavigating && (
+        {!isCenter && (
           <button className="ruta-btn success boton-centrar" onClick={centerOnUser}>
             Centrar
           </button>
