@@ -99,13 +99,16 @@ async def update_mantenimiento_preventivo(
     if fecha_apertura is not None:
         db_mantenimiento.fecha_apertura = fecha_apertura
     if fecha_cierre is not None:
-        db_mantenimiento.fecha_cierre = fecha_cierre
-        await notify_users_preventivo(
-            db_session=db,
-            id_mantenimiento=db_mantenimiento.id,
-            mensaje=f"Preventivo Solucionado - Sucursal: {preventivo.nombre_sucursal}",
-            firebase_uid=None
-        )
+        if fecha_cierre == date(1, 1, 1):
+            db_mantenimiento.fecha_cierre = None
+        else:
+            db_mantenimiento.fecha_cierre = fecha_cierre
+            await notify_users_preventivo(
+                db_session=db,
+                id_mantenimiento=db_mantenimiento.id,
+                mensaje=f"Preventivo Solucionado - Sucursal: {preventivo.nombre_sucursal}",
+                firebase_uid=None
+            )
     
     if planillas is not None:
         for planilla in planillas:
