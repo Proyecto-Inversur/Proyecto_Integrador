@@ -69,7 +69,7 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
         const marker = L.marker([user.lat, user.lng], {
           icon: L.divIcon({
             html: renderToStaticMarkup(<FaUserAlt size={22} color="#2c2c2c" />),
-            className: "",
+            className: "encargado-marker",
             iconSize: [20, 20],
             iconAnchor: [10, 20],
           }),
@@ -85,7 +85,7 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
         const marker = L.marker([c.lat, c.lng], {
           icon: L.divIcon({
             html: renderToStaticMarkup(<FaTruck size={22} color="#2c2c2c" />),
-            className: "",
+            className: "cuadrilla-marker",
             iconSize: [20, 20],
             iconAnchor: [10, 20],
           }),
@@ -103,7 +103,7 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
             html: renderToStaticMarkup(
               <FaMapMarkerAlt size={22} color="#2c2c2c" />
             ),
-            className: "",
+            className: "sucursal-marker",
             iconSize: [20, 20],
             iconAnchor: [10, 20],
           }),

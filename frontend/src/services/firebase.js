@@ -25,7 +25,8 @@ let onIdTokenChanged;
 
 if (isTestRuntime) {
   // Lightweight stubs to avoid hitting Firebase/ServiceWorker in E2E
-  database = {};
+  const app = initializeApp(config.firebaseConfig);
+  database = getDatabase(app);
   const fakeUser = {
     uid: 'test-uid',
     getIdToken: async () => 'e2e-token',
