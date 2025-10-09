@@ -115,6 +115,49 @@ const useRuta = (mapInstanceRef, createRoutingControl) => {
   }, [userLocation]);
 
   useEffect(() => {
+    const isE2E = typeof window !== 'undefined' && !!window.Cypress;
+
+    if (isE2E && userLocation) {
+      const { lat, lng } = userLocation;
+      const currentLatLng = L.latLng(lat, lng);
+
+      if (isNavigating) {
+        const reachedIds = sucursales
+          .filter(
+            (s) =>
+              currentLatLng.distanceTo(L.latLng(s.lat, s.lng)) <= ARRIVAL_RADIUS
+          )
+          .map((s) => Number(s.id));
+
+        if (reachedIds.length) {
+          const nuevas = sucursales.filter((s) => !reachedIds.includes(Number(s.id)));
+          setSucursales(nuevas);
+          reachedIds.forEach((id) => deleteSucursal(id));
+        }
+
+        const nextWaypoints = [
+          currentLatLng,
+          ...sucursales.map((s) => L.latLng(s.lat, s.lng)),
+        ];
+        actualizarWaypoints(nextWaypoints);
+
+        let mapBearing = headingRef.current;
+        if (mapBearing == null && prevLatLngRef.current) {
+          const calc = bearing(
+            [prevLatLngRef.current.lng, prevLatLngRef.current.lat],
+            [lng, lat]
+          );
+          mapBearing = -calc;
+        }
+
+        smoothPanTo(currentLatLng, 20, mapBearing ?? 0);
+      }
+
+      prevLatLngRef.current = currentLatLng;
+      checkNearbyMaintenances(currentLatLng);
+      return;
+    }
+
     if (!navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
       ({ coords }) => {
@@ -151,14 +194,17 @@ const useRuta = (mapInstanceRef, createRoutingControl) => {
           }
           smoothPanTo(currentLatLng, 20, mapBearing ?? 0);
         }
+
         prevLatLngRef.current = currentLatLng;
         checkNearbyMaintenances(currentLatLng);
       },
       (err) => console.error("Geolocation error:", err),
       { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }
     );
+
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [isNavigating, sucursales]);
+  }, [isNavigating, sucursales, userLocation]);
+
 
   const toggleNavegacion = () => {
     if (isNavigating) {

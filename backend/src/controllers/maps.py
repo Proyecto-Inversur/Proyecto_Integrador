@@ -48,7 +48,7 @@ async def location_update(request: Request, location: LocationUpdate, db_session
     if os.environ.get("E2E_TESTING") == "true":
         cuadrilla = db_session.query(Cuadrilla).filter(Cuadrilla.nombre == "Cuadrilla E2E").first()
         firebase_uid = cuadrilla.firebase_uid
-        user_id = cuadrilla.id
+        user_id = str(cuadrilla.id)
         tipo = "cuadrilla"
     else:
         firebase_uid = str(current_entity["data"]["uid"])

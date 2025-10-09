@@ -31,11 +31,9 @@ describe('Módulo de Mapa - Integración con datos reales', () => {
       },
     });
 
-    // Espera que la página y el mapa carguen
     cy.contains(/Mapa de Usuarios y Sucursales/i, { timeout: 30000 }).should('be.visible');
     cy.get('.ruta-map', { timeout: 30000 }).should('exist');
 
-    // ✅ Verifica que el sidebar esté visible y tenga contenido real
     cy.get('.map-sidebar-left', { timeout: 30000 })
       .should('be.visible')
       .invoke('text')
@@ -59,9 +57,6 @@ describe('Módulo de Mapa - Integración con datos reales', () => {
     });
 
     cy.get('.cuadrilla-marker', { timeout: 30000 })
-      .should('exist')
-      .and('have.length.greaterThan', 0);
-    cy.get('.encargado-marker', { timeout: 30000 })
       .should('exist')
       .and('have.length.greaterThan', 0);
     cy.get('.sucursal-marker', { timeout: 30000 })

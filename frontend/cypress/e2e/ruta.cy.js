@@ -70,7 +70,7 @@ describe('Modulo de Ruta - Integracion', () => {
     cy.contains('.fade', 'Mantenimiento agregado a la ruta.', { timeout: 30000 }).should('be.visible');
   });
 
-  it('Carga pagina de ruta con la ruta actual', () => {
+  it('Carga pagina de ruta con la ruta actual, centra en el usuario, inicia, detiene navegacion y borra la ruta', () => {
     cy.readFile('cypress/fixtures/cuadrillaId.json').then((data) => {
       const cuadrillaId = parseInt(data.id, 10);
 
@@ -82,5 +82,19 @@ describe('Modulo de Ruta - Integracion', () => {
         },
       });
     });
+
+    cy.get('[stroke="#2c2c2c"]', { timeout: 30000 }).should('be.visible');
+    
+    cy.get('.leaflet-container')
+    .trigger('mousedown', { which: 1, pageX: 200, pageY: 200 })
+    .trigger('mousemove', { which: 1, pageX: 300, pageY: 300 })
+    .trigger('mouseup', { force: true });
+
+    cy.contains('button', 'Centrar').should('be.visible').click();
+    cy.contains('button', 'Iniciar').should('be.visible').click();
+    cy.contains('button', 'Detener').should('be.visible').click();
+
+    cy.contains('button', 'Borrar ruta').should('be.visible').click();
+    cy.get('[stroke="#2c2c2c"]', { timeout: 30000 }).should('not.exist');
   });
 });

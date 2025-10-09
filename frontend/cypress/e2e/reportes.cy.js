@@ -30,31 +30,24 @@ describe('Módulo de Reportes - Integración con datos reales', () => {
       },
     });
 
-    // ✅ Espera que el encabezado principal se muestre
     cy.contains('Reportes', { timeout: 30000 }).should('be.visible');
 
-    // ✅ Verifica que existan los filtros de mes y año
     cy.get('.filters-container', { timeout: 30000 }).within(() => {
       cy.get('select').should('have.length.at.least', 2);
       cy.get('.generate-button').should('be.visible');
       cy.get('.download-button').should('be.visible');
     });
 
-    // ✅ Clic en "Generar Reportes"
     cy.get('.generate-button').click();
 
-    // ✅ Espera que los gráficos se generen (canvas)
     cy.get('canvas', { timeout: 30000 })
       .should('exist')
       .and('have.length.greaterThan', 0);
 
-    // ✅ Verifica que existan algunas tablas de datos
     cy.get('.report-table', { timeout: 30000 })
       .should('exist')
       .and('have.length.greaterThan', 0);
 
-    // ✅ Clic en el botón de "Descargar Reporte"
-    // Solo se verifica que el evento se dispare sin errores
     cy.window().then((win) => {
       const spy = cy.spy(win, 'alert').as('alertSpy');
       cy.get('.download-button').click();
