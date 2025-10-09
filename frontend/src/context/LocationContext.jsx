@@ -15,9 +15,9 @@ const LocationProvider = ({ children }) => {
       return;
     }
 
-    // Skip geolocation and backend updates during Cypress E2E to avoid network noise
     if (isE2E) {
-      setUserLocation(null);
+      const location = { lat: -31.4167, lng: -64.1833 };
+      setUserLocation(location);
       return;
     }
 

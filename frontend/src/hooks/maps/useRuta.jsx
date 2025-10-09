@@ -43,7 +43,7 @@ const useRuta = (mapInstanceRef, createRoutingControl) => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [userLocation]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
