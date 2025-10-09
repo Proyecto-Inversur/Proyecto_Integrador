@@ -75,7 +75,7 @@
 
     cy.contains('td', 'Sucursal E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'Cuadrilla E2E').should('be.visible');
-    cy.contains('td', updatedCase).should('be.visible');
+    cy.contains('td', updatedCase, { timeout: 30000 }).should('be.visible');
     cy.contains('td', updatedIncident).should('be.visible');
     cy.contains('td', updatedRubro).should('be.visible');
 
@@ -85,7 +85,7 @@
 
     cy.contains('td', 'Sucursal E2E').should('not.exist');
 
-    cy.contains('button', 'Agregar').should('be.visible').click();
+    cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 

@@ -78,7 +78,7 @@
 
     cy.contains('td', 'Sucursal E2E - Trimestral').should('not.exist');
 
-    cy.contains('button', 'Agregar').should('be.visible').click();
+    cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 

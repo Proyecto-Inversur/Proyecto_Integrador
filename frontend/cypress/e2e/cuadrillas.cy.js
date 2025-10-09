@@ -84,6 +84,13 @@
     cy.get('.custom-add-button').should('be.enabled').click();
 
     cy.contains('button', 'Registrar con Google').click();
+
+    cy.contains('tr', baseCuadrillaName).within(() => {
+      cy.get('td').first().invoke('text').then((idText) => {
+        const cuadrillaId = idText.trim();
+        cy.writeFile('cypress/fixtures/cuadrillaId.json', { id: cuadrillaId });
+      });
+    });
   });
 
   it('permite ocultar columnas mediante el selector', () => {
