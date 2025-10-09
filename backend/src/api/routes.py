@@ -61,7 +61,7 @@ async def auth_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
         return await call_next(request)
     
-    if os.environ.get("TESTING") == "true" or os.environ.get("E2E_TESTING") == "true":
+    if os.environ.get("TESTING") == "true":
         request.state.current_entity = getattr(
             request.app.state, "current_entity", DEFAULT_TEST_ENTITY
         )
