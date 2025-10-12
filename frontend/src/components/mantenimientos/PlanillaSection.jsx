@@ -105,11 +105,13 @@ const PlanillaSection = ({
           accept="image/*"
           multiple={multiple}
           id="planillaUpload"
+          aria-labelledby="cargarPlanillaBtn"
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
         <div className="d-flex justify-content-center mb-2">
           <Button
+            id="cargarPlanillaBtn"
             variant="warning"
             className="d-flex align-items-center gap-2"
             onClick={() => document.getElementById('planillaUpload').click()}
@@ -194,10 +196,11 @@ const PlanillaSection = ({
         <div className="d-flex justify-content-center gap-2 mt-2">
           {isSelecting ? (
             <>
-              <Button className="icon-button" variant="danger" onClick={handleDelete}>
+              <Button aria-label="eliminar" className="icon-button" variant="danger" onClick={handleDelete}>
                 <BsTrashFill />
               </Button>
               <Button
+                aria-label="cancelar"
                 className="icon-button"
                 variant="secondary"
                 onClick={() => {
@@ -209,7 +212,7 @@ const PlanillaSection = ({
               </Button>
             </>
           ) : (
-            <Button className="icon-button" variant="light" onClick={() => setIsSelecting(true)}>
+            <Button aria-label="editar" className="icon-button" variant="light" onClick={() => setIsSelecting(true)}>
               <BsPencilFill />
             </Button>
           )}

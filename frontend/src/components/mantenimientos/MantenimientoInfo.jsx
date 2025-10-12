@@ -86,7 +86,7 @@ const MantenimientoInfo = ({
     </div>
     {!isUser && (
       <Form className="info-form" onSubmit={handleSubmit}>
-        <Form.Group className="extendido-row">
+        <Form.Group className="extendido-row" controlId="formExtendido">
           <Form.Label className="extendido-label">Extendido:</Form.Label>
           <Form.Control
             type="datetime-local"

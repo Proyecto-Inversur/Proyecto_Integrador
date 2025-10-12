@@ -68,6 +68,7 @@ const PhotoSection = ({ handleSubmit, isLoading, fotos = [], onUpload, onDelete,
           ref={fileInputRef}
           style={{ display: 'none' }}
           onChange={handleFileChange}
+          data-testid="file-input"
         />
         <div className="d-flex justify-content-center mb-2">
           <Button
@@ -118,10 +119,11 @@ const PhotoSection = ({ handleSubmit, isLoading, fotos = [], onUpload, onDelete,
         <div className="d-flex justify-content-center mt-2 gap-2">
           {isSelectingPhotos ? (
             <>
-              <Button className="icon-button" variant="danger" onClick={handleDelete}>
+              <Button aria-label="eliminar" className="icon-button" variant="danger" onClick={handleDelete}>
                 <BsTrashFill />
               </Button>
               <Button
+                aria-label="cancelar"
                 className="icon-button"
                 variant="secondary"
                 onClick={() => {
@@ -134,6 +136,7 @@ const PhotoSection = ({ handleSubmit, isLoading, fotos = [], onUpload, onDelete,
             </>
           ) : (
             <Button
+              aria-label="editar"
               className="icon-button"
               variant="light"
               onClick={() => setIsSelectingPhotos(true)}

@@ -8,7 +8,7 @@ import * as notifSvc from '@/services/notificaciones'
 import AppNavbar from '@/components/Navbar'
 import { AuthContext } from '@/context/AuthContext'
 
-// Mocks EXACTOS de los módulos que importa el Navbar
+// Mocks de los módulos que importa el Navbar
 vi.mock('@/services/notificaciones', () => ({
   get_notificaciones_correctivos: vi.fn().mockResolvedValue({ data: [] }),
   get_notificaciones_preventivos: vi.fn().mockResolvedValue({ data: [] }),
@@ -42,8 +42,6 @@ async function openNotifications() {
   await userEvent.click(bell)
 
   const dialog = await screen.findByRole('dialog')
-  // si usaste as="h2" en Modal.Title, esto funciona;
-  // si no, cambia por getByText(/^Notificaciones$/i)
   expect(within(dialog).getByRole('heading', { name: /notificaciones/i })).toBeInTheDocument()
 
   const loading = within(dialog).queryByText(/cargando/i)

@@ -1,4 +1,4 @@
-// ⚠️ Mocks ANTES de cualquier import del componente
+// Mocks ANTES de cualquier import del componente
 vi.mock('react-transition-group', () => ({
   // Modal de react-bootstrap usa <Transition> y <CSSTransition>. Los anulamos.
   Transition: ({ children }: any) => (typeof children === 'function' ? children({}) : children),
