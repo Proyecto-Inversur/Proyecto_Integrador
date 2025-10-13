@@ -1,152 +1,131 @@
-import React from 'react'
-import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest'
-import { render, screen, within, waitFor, waitForElementToBeRemoved } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
-import * as notifSvc from '@/services/notificaciones'
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import Navbar from '../../src/components/Navbar';
+import * as useNotifications from '../../src/hooks/useNotifications';
 
-import AppNavbar from '@/components/Navbar'
-import { AuthContext } from '@/context/AuthContext'
+// --- Mocks y Datos de Prueba ---
 
-// Mocks de los módulos que importa el Navbar
-vi.mock('@/services/notificaciones', () => ({
-  get_notificaciones_correctivos: vi.fn().mockResolvedValue({ data: [] }),
-  get_notificaciones_preventivos: vi.fn().mockResolvedValue({ data: [] }),
-  correctivo_leido: vi.fn().mockResolvedValue({}),
-  preventivo_leido: vi.fn().mockResolvedValue({}),
-  delete_notificacion: vi.fn().mockResolvedValue({}),
-}))
-vi.mock('@/services/notificationWs', () => ({
-  subscribeToNotifications: vi.fn(() => ({ close: vi.fn() })),
-}))
+// Simulamos el hook `useNotifications` para controlar su salida en cada test.
+vi.mock('../../src/hooks/useNotifications');
 
-function renderWithProviders() {
-  const authValue = {
-    verifying: false,
-    currentEntity: { data: { uid: 'test-uid', nombre: 'Usuario' } },
-    logOut: vi.fn(),
-  } as any
+const mockNotifications = [
+  { id: 1, mensaje: 'Nuevo correctivo asignado', tipo: 'correctivo', leida: false, created_at: new Date().toISOString() },
+  { id: 2, mensaje: 'Preventivo por vencer', tipo: 'preventivo', leida: true, created_at: new Date().toISOString() },
+];
 
-  const utils = render(
-    <AuthContext.Provider value={authValue}>
-      <MemoryRouter>
-        <AppNavbar />
-      </MemoryRouter>
-    </AuthContext.Provider>
-  )
-  return { ...utils, authValue }
-}
+// Creamos un objeto con todas las funciones "espía" que devolverá nuestro hook simulado.
+const mockUseNotificationsReturn = {
+  notifications: [],
+  unreadCount: 0,
+  showNotifications: false,
+  handleShowNotifications: vi.fn(),
+  handleCloseNotifications: vi.fn(),
+  handleLogout: vi.fn(),
+  timeAgo: vi.fn((date) => 'hace un momento'),
+  handleClick: vi.fn(),
+  handleDeleteNotification: vi.fn(),
+  handleMarkAllAsRead: vi.fn(),
+  handleDeleteReadNotifications: vi.fn(),
+};
 
-async function openNotifications() {
-  const bell = screen.getByLabelText(/notificaciones/i)
-  await userEvent.click(bell)
-
-  const dialog = await screen.findByRole('dialog')
-  expect(within(dialog).getByRole('heading', { name: /notificaciones/i })).toBeInTheDocument()
-
-  const loading = within(dialog).queryByText(/cargando/i)
-  if (loading) {
-    await waitForElementToBeRemoved(() => within(dialog).getByText(/cargando/i))
-  }
-  return dialog
-}
-
-describe('Navbar → Notificaciones', () => {
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn> | undefined
+describe('Navbar', () => {
 
   beforeEach(() => {
-    vi.clearAllMocks()
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-  })
+    // Antes de cada test, limpiamos los mocks y restauramos el estado por defecto del hook.
+    vi.clearAllMocks();
+    vi.spyOn(useNotifications, 'default').mockReturnValue(mockUseNotificationsReturn);
+  });
 
-  afterEach(() => {
-    consoleErrorSpy?.mockRestore()
-  })
+  const renderWithRouter = () => {
+    return render(
+      <MemoryRouter>
+        <Navbar />
+      </MemoryRouter>
+    );
+  };
 
-  it('abre el modal y muestra estado vacío', async () => {
-    renderWithProviders()
-    const dialog = await openNotifications()
+  it('Debería mostrar el contador de notificaciones cuando hay notificaciones sin leer', () => {
+    // Sobrescribimos el mock para este test específico.
+    vi.spyOn(useNotifications, 'default').mockReturnValue({ ...mockUseNotificationsReturn, unreadCount: 3 });
+    
+    renderWithRouter();
 
-    expect(within(dialog).getByText(/no tienes notificaciones/i)).toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: /marcar todas como leídas/i })).toBeEnabled()
-    expect(within(dialog).getByRole('button', { name: /eliminar leídas/i })).toBeEnabled()
-    expect(within(dialog).getByRole('button', { name: /cerrar sesión/i })).toBeEnabled()
-    expect(within(dialog).getByRole('button', { name: /^cerrar$/i })).toBeEnabled()
-  })
+    const counter = screen.getByText('3');
+    expect(counter).toBeInTheDocument();
+    expect(counter).toHaveClass('notification-counter');
+  });
 
-  it('marca todas como leídas (correctivo + preventivo no leídos)', async () => {
-    ;(notifSvc.get_notificaciones_correctivos as any).mockResolvedValueOnce({
-      data: [
-        { id: 11, mensaje: 'Correctivo A', created_at: new Date().toISOString(), leida: false, id_mantenimiento: 101 },
-        { id: 12, mensaje: 'Correctivo B', created_at: new Date().toISOString(), leida: true,  id_mantenimiento: 102 },
-      ],
-    })
-    ;(notifSvc.get_notificaciones_preventivos as any).mockResolvedValueOnce({
-      data: [
-        { id: 21, mensaje: 'Preventivo A', created_at: new Date().toISOString(), leida: false, id_mantenimiento: 201 },
-      ],
-    })
+  it('NO debería mostrar el contador si no hay notificaciones sin leer', () => {
+    // Usamos el mock por defecto que tiene unreadCount: 0.
+    renderWithRouter();
+    
+    // `queryByText` devuelve null si no encuentra el elemento, a diferencia de `getByText` que da error.
+    expect(screen.queryByText('3')).toBeNull();
+  });
 
-    renderWithProviders()
-    const dialog = await openNotifications()
+  it('Debería llamar a handleShowNotifications al hacer clic en el ícono de la campana', () => {
+    renderWithRouter();
 
-    expect(within(dialog).getByText(/correctivo a/i)).toBeInTheDocument()
-    expect(within(dialog).getByText(/preventivo a/i)).toBeInTheDocument()
+    const notificationButton = screen.getByTestId('notif-btn');
+    fireEvent.click(notificationButton);
 
-    await userEvent.click(within(dialog).getByRole('button', { name: /marcar todas como leídas/i }))
+    expect(mockUseNotificationsReturn.handleShowNotifications).toHaveBeenCalledTimes(1);
+  });
 
-    await waitFor(() => {
-      expect((notifSvc as any).correctivo_leido).toHaveBeenCalledWith(11)
-      expect((notifSvc as any).correctivo_leido).not.toHaveBeenCalledWith(12)
-      expect((notifSvc as any).preventivo_leido).toHaveBeenCalledWith(21)
-    })
-  })
+  it('Debería mostrar el modal con notificaciones si showNotifications es true', () => {
+    // Simulamos que el modal está abierto y que hay notificaciones.
+    vi.spyOn(useNotifications, 'default').mockReturnValue({
+      ...mockUseNotificationsReturn,
+      showNotifications: true,
+      notifications: mockNotifications,
+    });
 
-  it('elimina sólo las notificaciones leídas', async () => {
-    ;(notifSvc.get_notificaciones_correctivos as any).mockResolvedValueOnce({
-      data: [
-        { id: 31, mensaje: 'Correctivo leído',    created_at: new Date().toISOString(), leida: true,  id_mantenimiento: 301 },
-        { id: 32, mensaje: 'Correctivo no leído', created_at: new Date().toISOString(), leida: false, id_mantenimiento: 302 },
-      ],
-    })
-    ;(notifSvc.get_notificaciones_preventivos as any).mockResolvedValueOnce({ data: [] })
+    renderWithRouter();
 
-    renderWithProviders()
-    const dialog = await openNotifications()
+    // Verificamos que el contenido del modal y las notificaciones se rendericen.
+    expect(screen.getByText('Notificaciones')).toBeInTheDocument();
+    expect(screen.getByText('Nuevo correctivo asignado')).toBeInTheDocument();
+    expect(screen.getByText('Preventivo por vencer')).toBeInTheDocument();
+  });
+  
+  it('Debería mostrar el estado vacío si no hay notificaciones en el modal', () => {
+    // Simulamos el modal abierto pero sin notificaciones.
+    vi.spyOn(useNotifications, 'default').mockReturnValue({ ...mockUseNotificationsReturn, showNotifications: true, notifications: [] });
 
-    await userEvent.click(within(dialog).getByRole('button', { name: /eliminar leídas/i }))
+    renderWithRouter();
 
-    await waitFor(() => {
-      expect((notifSvc as any).delete_notificacion).toHaveBeenCalledTimes(1)
-      expect((notifSvc as any).delete_notificacion).toHaveBeenCalledWith(31)
-    })
-  })
+    expect(screen.getByText('No tienes notificaciones.')).toBeInTheDocument();
+  });
 
-  it('cierra sesión desde el modal', async () => {
-    ;(notifSvc.get_notificaciones_correctivos as any).mockResolvedValueOnce({ data: [] })
-    ;(notifSvc.get_notificaciones_preventivos as any).mockResolvedValueOnce({ data: [] })
+  it('Debería llamar a las funciones correctas al interactuar con los botones del modal', () => {
+    vi.spyOn(useNotifications, 'default').mockReturnValue({
+        ...mockUseNotificationsReturn,
+        showNotifications: true,
+        notifications: mockNotifications,
+      });
+    renderWithRouter();
+    
+    // Botón "Marcar leídas"
+    fireEvent.click(screen.getByRole('button', { name: /Marcar leídas/i }));
+    expect(mockUseNotificationsReturn.handleMarkAllAsRead).toHaveBeenCalledTimes(1);
+    
+    // Botón "Eliminar leídas"
+    fireEvent.click(screen.getByRole('button', { name: /Eliminar leídas/i }));
+    expect(mockUseNotificationsReturn.handleDeleteReadNotifications).toHaveBeenCalledTimes(1);
 
-    const { authValue } = renderWithProviders()
-    const dialog = await openNotifications()
+    // Botón "Cerrar Sesión"
+    fireEvent.click(screen.getByRole('button', { name: /Cerrar Sesión/i }));
+    expect(mockUseNotificationsReturn.handleLogout).toHaveBeenCalledTimes(1);
 
-    await userEvent.click(within(dialog).getByRole('button', { name: /cerrar sesión/i }))
-    expect(authValue.logOut).toHaveBeenCalledTimes(1)
-  })
-})
+    // Clic en una notificación individual
+    fireEvent.click(screen.getByText('Nuevo correctivo asignado'));
+    expect(mockUseNotificationsReturn.handleClick).toHaveBeenCalledWith(mockNotifications[0]);
 
-it('elimina una notificación al clickear su X', async () => {
-  (notifSvc.get_notificaciones_correctivos as any).mockResolvedValueOnce({
-    data: [{ id: 99, mensaje: 'Notif X', created_at: new Date().toISOString(), leida: false, id_mantenimiento: 999 }],
-  })
-  ;(notifSvc.get_notificaciones_preventivos as any).mockResolvedValueOnce({ data: [] })
-
-  renderWithProviders()
-  const dialog = await openNotifications()
-
-  const btnX = within(dialog).getByRole('button', { name: /eliminar notificación/i })
-  await userEvent.click(btnX)
-
-  await waitFor(() => {
-    expect((notifSvc as any).delete_notificacion).toHaveBeenCalledWith(99)
-  })
-})
+    // Botón de eliminar en una notificación
+    const deleteButtons = screen.getAllByLabelText('Eliminar notificación');
+    fireEvent.click(deleteButtons[0]);
+    expect(mockUseNotificationsReturn.handleDeleteNotification).toHaveBeenCalledWith(mockNotifications[0].id, expect.anything());
+  });
+});
