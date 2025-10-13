@@ -14,3 +14,5 @@ coverage
 credentials
 osrm-data
 __mocks__
+downloads
+cuadrillaId.json
