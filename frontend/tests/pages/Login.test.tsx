@@ -1,5 +1,3 @@
-// frontend/tests/pages/Login.test.tsx
-
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
@@ -50,7 +48,6 @@ describe('Página de Login', () => {
   it('Debería mostrar un spinner de carga cuando "verifying" es true', () => {
     renderWithContextAndRouter({ ...defaultAuthContextValue, verifying: true });
 
-    // ✅ CORRECCIÓN: Buscamos el spinner solo por su rol, ya que su texto está oculto.
     expect(screen.getByRole('status')).toBeInTheDocument();
     
     // Verificamos que el contenido principal (el botón de login) no esté.
