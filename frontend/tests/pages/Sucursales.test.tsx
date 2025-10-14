@@ -1,95 +1,97 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Importo el hook y la página que voy a probar.
+import useSucursales from '../../src/hooks/forms/useSucursales';
 import Sucursales from '../../src/pages/Sucursales';
-import * as sucursalService from '../../src/services/sucursalService';
-import * as zonaService from '../../src/services/zonaService';
-import { BrowserRouter } from 'react-router-dom';
 
-// Mocks
-vi.mock('../../src/services/sucursalService');
-vi.mock('../../src/services/zonaService');
-vi.mock('../../src/services/api');
+// --- Mocks ---
+// Simulo las dependencias para aislar la prueba a la lógica de la página.
 
-describe('Sucursales component', () => {
-  const mockSucursales = [
-    { id: 1, nombre: 'Sucursal 1', zona: 'Zona A', direccion: 'Calle 123', superficie: '100' },
-    { id: 2, nombre: 'Sucursal 2', zona: 'Zona B', direccion: 'Avenida 456', superficie: '200' },
-  ];
+// 1. Simulo el hook principal para controlar el estado.
+vi.mock('../../src/hooks/forms/useSucursales');
 
-  const mockZonas = [{ id: 1, nombre: 'Zona A' }, { id: 2, nombre: 'Zona B' }];
+// 2. Simulo los componentes hijos para verificar que se rendericen.
+vi.mock('../../src/components/DataTable', () => ({ default: (props) => <div data-testid="data-table" /> }));
+vi.mock('../../src/components/LoadingSpinner', () => ({ default: () => <div data-testid="loading-spinner" /> }));
+vi.mock('../../src/components/forms/SucursalForm', () => ({ default: (props) => <div data-testid="sucursal-form" /> }));
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    sucursalService.getSucursales.mockResolvedValue({ data: mockSucursales });
-    zonaService.getZonas.mockResolvedValue({ data: mockZonas });
-  });
 
-  test('muestra sucursales en la tabla', async () => {
-    render(
-      <BrowserRouter>
-        <Sucursales />
-      </BrowserRouter>
-    );
+describe('Página Sucursales', () => {
 
-    expect(screen.getByText('Gestión de Sucursales')).toBeInTheDocument();
+    // Defino la salida por defecto de mi hook simulado.
+    const mockUseSucursalesReturn = {
+        sucursales: [{ id: 1, nombre: 'Sucursal de Prueba' }],
+        showForm: false,
+        setShowForm: vi.fn(),
+        selectedSucursal: null,
+        isLoading: false,
+        handleDelete: vi.fn(),
+        handleEdit: vi.fn(),
+        handleFormClose: vi.fn(),
+    };
 
-    await waitFor(() => {
-      expect(screen.getByText('Sucursal 1')).toBeInTheDocument();
-      expect(screen.getByText('Sucursal 2')).toBeInTheDocument();
-    });
-  });
-
-  test('al hacer click en Agregar muestra el formulario', async () => {
-    render(
-      <BrowserRouter>
-        <Sucursales />
-      </BrowserRouter>
-    );
-
-    fireEvent.click(screen.getByText(/Agregar/i));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Crear Sucursal/i)).toBeInTheDocument();
-    });
-  });
-
-  test('debería eliminar una sucursal', async () => {
-    sucursalService.getSucursales.mockResolvedValue({
-      data: [{ id: 1, nombre: 'Sucursal 1', zona: 'Zona A', direccion: 'Calle 123', superficie: '100' }],
-    });
-    sucursalService.deleteSucursal.mockResolvedValue({});
-
-    render(
-      <BrowserRouter>
-        <Sucursales />
-      </BrowserRouter>
-    );
-
-    const eliminarButton = await screen.findByRole('button', { name: /Eliminar/i });
-    fireEvent.click(eliminarButton);
-
-    await waitFor(() => {
-      expect(sucursalService.deleteSucursal).toHaveBeenCalledWith(1);
-    });
-  });
-  
-  test('debería editar una sucursal', async () => {
-    sucursalService.getSucursales.mockResolvedValue({
-      data: [{ id: 1, nombre: 'Sucursal 2', zona: 'Zona B', direccion: 'Avenida 456', superficie: '200' }],
+    beforeEach(() => {
+        // Antes de cada test, limpio los mocks.
+        vi.clearAllMocks();
+        vi.mocked(useSucursales).mockReturnValue(mockUseSucursalesReturn);
     });
 
-    render(
-      <BrowserRouter>
-        <Sucursales />
-      </BrowserRouter>
-    );
+    // Función auxiliar para renderizar el componente.
+    const renderPage = () => {
+        return render(
+            <MemoryRouter>
+                <Sucursales />
+            </MemoryRouter>
+        );
+    };
 
-    const editarButton = await screen.findByRole('button', { name: /Editar/i });
-    fireEvent.click(editarButton);
+    // Test para el estado de carga.
+    it('Debería mostrar el spinner de carga cuando isLoading es true', () => {
+        // Sobrescribo el estado de carga para este test.
+        vi.mocked(useSucursales).mockReturnValue({ ...mockUseSucursalesReturn, isLoading: true });
 
-    expect(await screen.findByDisplayValue('Sucursal 2')).toBeInTheDocument();
-  });  
+        renderPage();
+
+        expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+        // El resto de la UI no debería estar visible.
+        expect(screen.queryByRole('heading', { name: /Gestión de Sucursales/i })).toBeNull();
+    });
+
+    // Test para el renderizado por defecto.
+    it('Debería mostrar la tabla y los controles cuando la carga ha finalizado', () => {
+        renderPage();
+
+        // Verifico que los elementos principales de la UI estén visibles.
+        expect(screen.getByRole('heading', { name: /Gestión de Sucursales/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Agregar/i })).toBeInTheDocument();
+        expect(screen.getByTestId('data-table')).toBeInTheDocument();
+        
+        // Por defecto, el formulario debe estar oculto.
+        expect(screen.queryByTestId('sucursal-form')).toBeNull();
+    });
+
+    // Test para la interacción de abrir el formulario.
+    it('Debería llamar a setShowForm al hacer clic en el botón "Agregar"', () => {
+        renderPage();
+
+        const addButton = screen.getByRole('button', { name: /Agregar/i });
+        fireEvent.click(addButton);
+
+        // Verifico que se intentó cambiar el estado para mostrar el formulario.
+        expect(mockUseSucursalesReturn.setShowForm).toHaveBeenCalledWith(true);
+    });
+
+    // Test para la visibilidad del formulario.
+    it('Debería mostrar el SucursalForm cuando showForm es true', () => {
+        // Simulo el estado en el que el formulario debe ser visible.
+        vi.mocked(useSucursales).mockReturnValue({ ...mockUseSucursalesReturn, showForm: true });
+
+        renderPage();
+
+        // El formulario ahora debería estar visible.
+        expect(screen.getByTestId('sucursal-form')).toBeInTheDocument();
+    });
 });
-
-

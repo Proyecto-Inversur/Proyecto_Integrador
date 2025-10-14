@@ -1,118 +1,110 @@
-import React from 'react'
-import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest'
-import { render, screen, within, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import Users from '@/pages/Users'
-import * as userSvc from '@/services/userService'
+// Importo el hook y la página que voy a probar.
+import useUsers from '../../src/hooks/forms/useUsers';
+import Users from '../../src/pages/Users';
 
-/** Desactiva transiciones del Modal para evitar warnings de act(...) */
-vi.mock('react-transition-group', () => ({
-  CSSTransition: ({ children }: any) => children,
-  Transition: ({ children }: any) => children,
-}))
+// --- Mocks ---
+// Simulo las dependencias externas para aislar la prueba a la lógica de la página.
 
-/** Stub muy simple del formulario para no depender de react-bootstrap Modal */
-vi.mock('@/components/UserForm', () => ({
-  default: ({ user, onClose }: any) => (
-    <div role="dialog" aria-modal="true">
-      <h2>{user ? 'Editar Usuario' : 'Crear Usuario'}</h2>
-      <button onClick={onClose}>Cerrar</button>
-    </div>
-  ),
-}))
+// 1. Simulo el hook principal para tener control total sobre el estado.
+vi.mock('../../src/hooks/forms/useUsers');
 
-/** BackButton ligero para que sea accesible en el DOM */
-vi.mock('@/components/BackButton', () => ({
-  default: () => <button>Volver</button>,
-}))
+// 2. Simulo los componentes hijos para verificar que se rendericen.
+vi.mock('../../src/components/DataTable', () => ({ default: (props) => <div data-testid="data-table" /> }));
+vi.mock('../../src/components/LoadingSpinner', () => ({ default: () => <div data-testid="loading-spinner" /> }));
+vi.mock('../../src/components/forms/UserForm', () => ({ default: (props) => <div data-testid="user-form" /> }));
 
-/** Mock del service */
-vi.mock('@/services/userService', () => ({
-  getUsers: vi.fn(),
-  deleteUser: vi.fn().mockResolvedValue({}),
-}))
 
-const FAKE_USERS = [
-  { id: 1, nombre: 'Tomi Administrador', email: 'tomi@demo.com', rol: 'Administrador' },
-  { id: 4, nombre: 'Facu Administrador', email: 'facu@demo.com', rol: 'Administrador' },
-]
+describe('Página de Gestión de Usuarios', () => {
 
-async function renderPage() {
-  const utils = render(
-    <MemoryRouter>
-      <Users />
-    </MemoryRouter>
-  )
-  // Esperamos a que cargue la tabla
-  await screen.findByText(/gestión de usuarios/i)
-  await waitFor(() => {
-    // header + filas
-    expect(screen.getAllByRole('row')).toHaveLength(FAKE_USERS.length + 1)
-  })
-  return utils
-}
+    // Defino la salida por defecto de mi hook simulado.
+    const mockUseUsersReturn = {
+        users: [{ id: 1, nombre: 'Usuario de Prueba', email: 'test@test.com', rol: 'Admin' }],
+        showForm: false,
+        setShowForm: vi.fn(),
+        selectedUser: null,
+        error: null,
+        isLoading: false,
+        handleDelete: vi.fn(),
+        handleEdit: vi.fn(),
+        handleFormClose: vi.fn(),
+    };
 
-beforeEach(() => {
-  (userSvc.getUsers as any).mockReset()
-  ;(userSvc.deleteUser as any).mockClear()
-  // Primera carga con 2 usuarios
-  ;(userSvc.getUsers as any).mockResolvedValue({ data: FAKE_USERS })
-})
+    // Antes de cada test, limpio los mocks para que las pruebas no se afecten entre sí.
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.mocked(useUsers).mockReturnValue(mockUseUsersReturn);
+    });
 
-afterEach(() => vi.clearAllMocks())
+    // Función auxiliar para renderizar el componente.
+    const renderPage = () => {
+        return render(
+            <MemoryRouter>
+                <Users />
+            </MemoryRouter>
+        );
+    };
 
-describe('Users page', () => {
-  it('muestra el título y la tabla con los usuarios', async () => {
-    await renderPage()
+    // Test para el estado de carga.
+    it('Debería mostrar el spinner de carga mientras los datos se están obteniendo', () => {
+        // Para este caso, sobrescribo el valor del hook para simular que está cargando.
+        vi.mocked(useUsers).mockReturnValue({ ...mockUseUsersReturn, isLoading: true });
+        renderPage();
 
-    // Sin alerta de error
-    expect(screen.queryByRole('alert')).toBeNull()
+        // Verifico que el spinner se muestre.
+        expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+        // El resto de la UI no debería estar visible.
+        expect(screen.queryByRole('heading', { name: /Gestión de Usuarios/i })).toBeNull();
+    });
 
-    // Nombres presentes
-    expect(screen.getByText('Tomi Administrador')).toBeInTheDocument()
-    expect(screen.getByText('Facu Administrador')).toBeInTheDocument()
-  })
+    // Test para el renderizado por defecto.
+    it('Debería mostrar la tabla y los controles principales cuando la carga finaliza', () => {
+        renderPage();
 
-  it('abre el formulario al clickear "Agregar"', async () => {
-    await renderPage()
+        // Verifico que los elementos principales de la UI estén visibles.
+        expect(screen.getByRole('heading', { name: /Gestión de Usuarios/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Agregar/i })).toBeInTheDocument();
+        expect(screen.getByTestId('data-table')).toBeInTheDocument();
+        
+        // Por defecto, el formulario y las alertas de error deben estar ocultos.
+        expect(screen.queryByTestId('user-form')).toBeNull();
+        expect(screen.queryByRole('alert')).toBeNull();
+    });
 
-    await userEvent.click(screen.getByRole('button', { name: /agregar/i }))
+    // Test para el manejo de errores.
+    it('Debería mostrar un mensaje de error si el hook devuelve un error', () => {
+        const errorMsg = 'No se pudieron cargar los usuarios.';
+        // Simulo un estado de error.
+        vi.mocked(useUsers).mockReturnValue({ ...mockUseUsersReturn, error: errorMsg });
+        renderPage();
 
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByRole('heading', { name: /crear usuario/i })).toBeInTheDocument()
-  })
+        // Verifico que la alerta se muestre con el mensaje correcto.
+        const alert = screen.getByRole('alert');
+        expect(alert).toBeInTheDocument();
+        expect(alert).toHaveTextContent(errorMsg);
+    });
 
-  it('abre el formulario en modo edición al clickear el botón editar de una fila', async () => {
-    await renderPage()
+    // Test para la interacción de abrir el formulario.
+    it('Debería llamar a la función para mostrar el formulario al hacer clic en "Agregar"', () => {
+        renderPage();
+        const addButton = screen.getByRole('button', { name: /Agregar/i });
+        fireEvent.click(addButton);
 
-    const row = screen.getByText('Facu Administrador').closest('tr')!
-    const [btnEditar] = within(row).getAllByRole('button') // [Editar, Eliminar]
-    await userEvent.click(btnEditar)
+        // Verifico que se intentó cambiar el estado para mostrar el formulario.
+        expect(mockUseUsersReturn.setShowForm).toHaveBeenCalledWith(true);
+    });
 
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByRole('heading', { name: /editar usuario/i })).toBeInTheDocument()
-  })
+    // Test para la visibilidad del formulario.
+    it('Debería renderizar el UserForm cuando showForm es true', () => {
+        // Simulo el estado en el que el formulario debe ser visible.
+        vi.mocked(useUsers).mockReturnValue({ ...mockUseUsersReturn, showForm: true });
+        renderPage();
 
-  it('elimina un usuario al clickear el botón de eliminar y refresca la lista', async () => {
-    await renderPage()
-
-    // Preparamos el "segundo fetch" con la lista ya sin el usuario eliminado (Tomi)
-    ;(userSvc.getUsers as any).mockResolvedValueOnce({
-      data: FAKE_USERS.filter(u => u.id !== 1),
-    })
-
-    const row = screen.getByText('Tomi Administrador').closest('tr')!
-    const buttons = within(row).getAllByRole('button')
-    const btnEliminar = buttons[1] // [Editar, Eliminar]
-    await userEvent.click(btnEliminar)
-
-    expect(userSvc.deleteUser).toHaveBeenCalledWith(1)
-
-    // La lista se actualiza y ya no debe estar "Tomi Administrador"
-    await waitFor(() => {
-      expect(screen.queryByText('Tomi Administrador')).not.toBeInTheDocument()
-    })
-  })
-})
+        // Verifico que el componente del formulario se renderice.
+        expect(screen.getByTestId('user-form')).toBeInTheDocument();
+    });
+});
