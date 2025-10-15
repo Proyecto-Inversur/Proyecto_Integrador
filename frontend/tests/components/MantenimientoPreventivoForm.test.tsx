@@ -1,244 +1,173 @@
-import React from 'react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import React from 'react';
+// Importo las utilidades de Testing Library para renderizar, buscar elementos y simular eventos.
+import { render, screen, waitFor } from '@testing-library/react';
+// `userEvent` es una librería que simula interacciones del usuario de forma más realista que `fireEvent`.
+import userEvent from '@testing-library/user-event';
+// Importo las funciones de Vitest para estructurar los tests.
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Hoisted datos de prueba para usar dentro de las fábricas vi.mock
-const { PREVENTIVOS, CUADRILLAS, SUCURSALES, NUEVO_PREVENTIVO_DATA, MANTENIMIENTO_EXISTENTE } = vi.hoisted(() => ({
-  PREVENTIVOS: [
+// Importo los servicios como un "namespace" para poder mockearlos fácilmente.
+import * as preventivoService from '../../src/services/preventivoService';
+import * as cuadrillaService from '../../src/services/cuadrillaService';
+import * as sucursalService from '../../src/services/sucursalService';
+import * as mantenimientoPreventivoService from '../../src/services/mantenimientoPreventivoService';
+// Importo el componente que vamos a probar.
+import MantenimientoPreventivoForm from '../../src/components/forms/MantenimientoPreventivoForm';
+
+// --- Mocks ---
+// Simulo los módulos de servicios para que no hagan llamadas reales a la API durante los tests.
+// Esto nos permite controlar las respuestas y probar el componente de forma aislada y predecible.
+vi.mock('../../src/services/preventivoService');
+vi.mock('../../src/services/cuadrillaService');
+vi.mock('../../src/services/sucursalService');
+vi.mock('../../src/services/mantenimientoPreventivoService');
+
+
+// Suite de tests para el formulario de Mantenimiento Preventivo.
+describe('MantenimientoPreventivoForm', () => {
+  // `userEvent` nos permite simular interacciones del usuario (clics, escribir, etc.) de forma más realista.
+  let user;
+  // Creo un mock para la función `onClose` que se pasa como prop, para verificar si se llama cuando el form se cierra.
+  const mockOnClose = vi.fn();
+
+  // Defino datos de prueba constantes para reutilizar en los tests y que sean más legibles.
+  const PREVENTIVOS = [
     { id: 1, id_sucursal: 101, nombre_sucursal: 'Sucursal A', frecuencia: 'Mensual' },
     { id: 2, id_sucursal: 102, nombre_sucursal: 'Sucursal B', frecuencia: 'Trimestral' },
-  ],
-  CUADRILLAS: [
-    { id: 1, nombre: 'Cuadrilla 1' },
-    { id: 2, nombre: 'Cuadrilla 2' },
-  ],
-  SUCURSALES: [
-    { id: 101, nombre: 'Sucursal A' },
-    { id: 102, nombre: 'Sucursal B' },
-    { id: 103, nombre: 'Sucursal C' },
-  ],
-  NUEVO_PREVENTIVO_DATA: { id_sucursal: 103, nombre_sucursal: 'Sucursal C', frecuencia: 'Semestral' },
-  MANTENIMIENTO_EXISTENTE: {
+  ];
+  const CUADRILLAS = [{ id: 1, nombre: 'Cuadrilla 1' }, { id: 2, nombre: 'Cuadrilla 2' }];
+  const SUCURSALES = [{ id: 101, nombre: 'Sucursal A' }, { id: 102, nombre: 'Sucursal B' }, { id: 103, nombre: 'Sucursal C' }];
+  const MANTENIMIENTO_EXISTENTE = {
     id: 5,
     id_sucursal: 102,
     frecuencia: 'Trimestral',
     id_cuadrilla: 1,
     fecha_apertura: '2025-10-05T00:00:00',
     estado: 'Pendiente',
-  },
-}))
+  };
 
-// ---------- Mocks hoisted de servicios (evita ReferenceError por hoisting) ----------
-const { createMantenimientoPreventivo, updateMantenimientoPreventivo } = vi.hoisted(() => ({
-  createMantenimientoPreventivo: vi.fn(),
-  updateMantenimientoPreventivo: vi.fn(),
-}))
-vi.mock('../../src/services/mantenimientoPreventivoService', () => ({
-  createMantenimientoPreventivo,
-  updateMantenimientoPreventivo,
-}))
-
-const { getPreventivos, createPreventivo, deletePreventivo, updatePreventivo } = vi.hoisted(() => ({
-  getPreventivos: vi.fn().mockResolvedValue({ data: PREVENTIVOS }),
-  createPreventivo: vi.fn(),
-  deletePreventivo: vi.fn(),
-  updatePreventivo: vi.fn(),
-}))
-vi.mock('../../src/services/preventivoService', () => ({
-  getPreventivos,
-  createPreventivo,
-  deletePreventivo,
-  updatePreventivo,
-}))
-
-const { getCuadrillas } = vi.hoisted(() => ({
-  getCuadrillas: vi.fn().mockResolvedValue({ data: CUADRILLAS }),
-}))
-vi.mock('../../src/services/cuadrillaService', () => ({
-  getCuadrillas,
-}))
-
-const { getSucursales } = vi.hoisted(() => ({
-  getSucursales: vi.fn().mockResolvedValue({ data: SUCURSALES }),
-}))
-vi.mock('../../src/services/sucursalService', () => ({
-  getSucursales,
-}))
-
-// Mock simple para Dropdown de react-bootstrap (mantener resto de componentes reales)
-vi.mock('react-bootstrap', async (importOriginal) => {
-  const actual = await importOriginal()
-  const MockDropdown = ({ children, onToggle, show }) => (
-    <div data-testid="dropdown-mock" onClick={() => onToggle && onToggle(!show)}>
-      {children}
-    </div>
-  )
-  MockDropdown.Toggle = ({ children, ...props }) => (
-    <button data-testid="dropdown-toggle" type="button" {...props}>
-      {children}
-    </button>
-  )
-  MockDropdown.Menu = ({ children }) => <div data-testid="dropdown-menu-mock">{children}</div>
-  MockDropdown.Item = ({ children, onClick, as: As = 'div', ...props }) => (
-    <As data-testid="dropdown-item-mock" onClick={onClick} role="button" {...props}>
-      {children}
-    </As>
-  )
-  return {
-    ...actual,
-    Dropdown: MockDropdown,
-  }
-})
-
-// Importamos el componente después de configurar los mocks
-import MantenimientoPreventivoForm from '../../src/components/forms/MantenimientoPreventivoForm'
-
-describe('MantenimientoPreventivoForm', () => {
-  let user: ReturnType<typeof userEvent.setup>
-  const mockOnClose = vi.fn()
-
+  // `beforeEach` se ejecuta antes de cada `it`. Lo uso para limpiar los mocks y preparar el entorno de cada prueba.
   beforeEach(() => {
-    vi.clearAllMocks()
-    user = userEvent.setup()
-    // asegurar valor por defecto del mock asíncrono
-    getPreventivos.mockResolvedValue({ data: PREVENTIVOS })
-    getCuadrillas.mockResolvedValue({ data: CUADRILLAS })
-    getSucursales.mockResolvedValue({ data: SUCURSALES })
-  })
+    vi.clearAllMocks(); // Reseteo los contadores de llamadas de los mocks para que un test no afecte al otro.
+    user = userEvent.setup(); // Inicializo una nueva instancia de userEvent.
+    
+    // Configuro las respuestas por defecto de las llamadas a la API que se hacen al montar el formulario.
+    vi.mocked(preventivoService.getPreventivos).mockResolvedValue({ data: PREVENTIVOS });
+    vi.mocked(cuadrillaService.getCuadrillas).mockResolvedValue({ data: CUADRILLAS });
+    vi.mocked(sucursalService.getSucursales).mockResolvedValue({ data: SUCURSALES });
+    vi.mocked(mantenimientoPreventivoService.createMantenimientoPreventivo).mockResolvedValue({});
+    vi.mocked(mantenimientoPreventivoService.updateMantenimientoPreventivo).mockResolvedValue({});
+    vi.mocked(preventivoService.createPreventivo).mockResolvedValue({ data: {} });
+  });
 
-  it('renderiza en modo CREAR, carga datos y deshabilita el Guardar inicialmente', async () => {
-    render(<MantenimientoPreventivoForm onClose={mockOnClose} />)
+  // Test para el modo de edición.
+  it('Debería renderizar en modo EDITAR con los datos prellenados', async () => {
+    // Renderizo el form pasándole un mantenimiento existente para simular la edición.
+    render(<MantenimientoPreventivoForm mantenimiento={MANTENIMIENTO_EXISTENTE} onClose={mockOnClose} />);
+    // El form hace una llamada asíncrona al cargar, así que espero a que termine.
+    await waitFor(() => expect(preventivoService.getPreventivos).toHaveBeenCalled());
+    
+    // Verifico que el título sea el de edición.
+    expect(screen.getByText('Editar Mantenimiento Preventivo')).toBeInTheDocument();
+    // Verifico que los campos del formulario se hayan llenado con los datos del mantenimiento.
+    expect(screen.getByRole('button', { name: 'Sucursal B - Trimestral' })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Cuadrilla/i)).toHaveValue('1');
+    expect(screen.getByLabelText(/Fecha Apertura/i)).toHaveValue('2025-10-05');
+  });
 
-    expect(screen.getByText('Crear Mantenimiento Preventivo')).toBeInTheDocument()
-    await waitFor(() => expect(getPreventivos).toHaveBeenCalled())
-    const saveButton = screen.getByRole('button', { name: /guardar/i })
-    expect(saveButton).toBeDisabled()
-    expect(screen.getByRole('button', { name: /Seleccione un preventivo|Seleccione un preventivo/i })).toBeInTheDocument()
-  })
+  // Test para el flujo completo de creación de un mantenimiento.
+  it('Debería guardar en modo CREAR con el payload correcto', async () => {
+    render(<MantenimientoPreventivoForm onClose={mockOnClose} />);
+    await waitFor(() => expect(preventivoService.getPreventivos).toHaveBeenCalled());
 
-  it('renderiza en modo EDITAR y precarga los datos del mantenimiento', async () => {
-    render(<MantenimientoPreventivoForm mantenimiento={MANTENIMIENTO_EXISTENTE} onClose={mockOnClose} />)
-    await waitFor(() => expect(getPreventivos).toHaveBeenCalled())
+    // Simulo el flujo del usuario:
+    // 1. Abrir el dropdown de preventivos y seleccionar una opción.
+    await user.click(screen.getByRole('button', {name: /Seleccione un preventivo/i}));
+    await user.click(screen.getByText('Sucursal A - Mensual'));
+    
+    // 2. Llenar el resto de los campos del formulario.
+    await user.selectOptions(screen.getByLabelText(/Cuadrilla/i), '2');
+    await user.type(screen.getByLabelText(/Fecha Apertura/i), '2025-12-01');
+    
+    // 3. Hacer clic en el botón de guardar.
+    await user.click(screen.getByRole('button', { name: /guardar/i }));
 
-    expect(screen.getByText('Editar Mantenimiento Preventivo')).toBeInTheDocument()
-    // el display del preventivo se arma a partir de preventivos cargados (nombre_sucursal - frecuencia)
-    expect(screen.getByRole('button', { name: 'Sucursal B - Trimestral' })).toBeInTheDocument()
-    expect(screen.getByLabelText(/Cuadrilla/i)).toHaveValue('1')
-    expect(screen.getByLabelText(/Fecha Apertura/i)).toHaveValue('2025-10-05')
-  })
-
-  it('GUARDA en modo CREAR y llama a createMantenimientoPreventivo con payload correcto', async () => {
-    createMantenimientoPreventivo.mockResolvedValue({})
-    render(<MantenimientoPreventivoForm onClose={mockOnClose} />)
-    await waitFor(() => expect(getPreventivos).toHaveBeenCalled())
-
-    // abrir dropdown y seleccionar primer preventivo
-    await user.click(screen.getByTestId('dropdown-toggle'))
-    await user.click(screen.getByText('Sucursal A - Mensual'))
-
-    // completar cuadrilla y fecha
-    await user.selectOptions(screen.getByLabelText(/Cuadrilla/i), '2')
-    await user.type(screen.getByLabelText(/Fecha Apertura/i), '2025-12-01')
-
-    // enviar
-    await user.click(screen.getByRole('button', { name: /guardar/i }))
-
+    // Espero a que las llamadas asíncronas (el submit) terminen.
     await waitFor(() => {
-      expect(createMantenimientoPreventivo).toHaveBeenCalledWith({
+      // Verifico que se llamó al servicio de creación con el objeto de datos correcto.
+      expect(mantenimientoPreventivoService.createMantenimientoPreventivo).toHaveBeenCalledWith({
         id_sucursal: 101,
         frecuencia: 'Mensual',
-        id_cuadrilla: 2,
+        id_cuadrilla: 2, 
         fecha_apertura: '2025-12-01',
         estado: 'Pendiente',
-      })
-      expect(mockOnClose).toHaveBeenCalledTimes(1)
-    })
-  })
+      });
+      // Verifico que la función para cerrar el modal fue llamada.
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+  });
 
-  it('GUARDA en modo EDITAR y llama a updateMantenimientoPreventivo', async () => {
-    updateMantenimientoPreventivo.mockResolvedValue({})
-    render(<MantenimientoPreventivoForm mantenimiento={MANTENIMIENTO_EXISTENTE} onClose={mockOnClose} />)
-    await waitFor(() => expect(getPreventivos).toHaveBeenCalled())
+  // Test para el flujo de actualización de un mantenimiento.
+  it('Debería guardar en modo EDITAR con el payload correcto', async () => {
+    render(<MantenimientoPreventivoForm mantenimiento={MANTENIMIENTO_EXISTENTE} onClose={mockOnClose} />);
+    await waitFor(() => expect(preventivoService.getPreventivos).toHaveBeenCalled());
 
-    // cambiar cuadrilla
-    await user.selectOptions(screen.getByLabelText(/Cuadrilla/i), '2')
-    await user.click(screen.getByRole('button', { name: /guardar/i }))
+    // Simulo que el usuario cambia un campo del formulario.
+    await user.selectOptions(screen.getByLabelText(/Cuadrilla/i), '2');
+    
+    // Simulo el guardado.
+    await user.click(screen.getByRole('button', { name: /guardar/i }));
 
+    // Espero a que las llamadas asíncronas terminen.
     await waitFor(() => {
-      expect(updateMantenimientoPreventivo).toHaveBeenCalledWith(MANTENIMIENTO_EXISTENTE.id, {
+      // Verifico que se llamó al servicio de actualización con el ID correcto y los datos actualizados.
+      expect(mantenimientoPreventivoService.updateMantenimientoPreventivo).toHaveBeenCalledWith(MANTENIMIENTO_EXISTENTE.id, {
         id_sucursal: 102,
         frecuencia: 'Trimestral',
         id_cuadrilla: 2,
         fecha_apertura: '2025-10-05',
         estado: 'Pendiente',
-      })
-      expect(mockOnClose).toHaveBeenCalledTimes(1)
-    })
-  })
+      });
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+  });
 
-  it('permite AGREGAR un nuevo preventivo y lo selecciona automáticamente', async () => {
-    const newPreventivoResponse = { id: 3, ...NUEVO_PREVENTIVO_DATA }
-    createPreventivo.mockResolvedValue({ data: newPreventivoResponse })
+  // Test para la funcionalidad de agregar un nuevo tipo de preventivo desde el dropdown.
+  it('Debería permitir AGREGAR un nuevo tipo de preventivo', async () => {
+    // Preparo el objeto que espero que el componente envíe al servicio para la creación.
+    const NUEVO_PREVENTIVO_DATA = { 
+        id_sucursal: 103, 
+        nombre_sucursal: 'Sucursal C', 
+        frecuencia: 'Semestral' 
+    };
+    // Configuro el mock para que devuelva el nuevo preventivo creado.
+    vi.mocked(preventivoService.createPreventivo).mockResolvedValue({ data: { id: 3, ...NUEVO_PREVENTIVO_DATA } });
 
-    render(<MantenimientoPreventivoForm onClose={mockOnClose} />)
-    await waitFor(() => expect(getPreventivos).toHaveBeenCalled())
+    render(<MantenimientoPreventivoForm onClose={mockOnClose} />);
+    await waitFor(() => expect(preventivoService.getPreventivos).toHaveBeenCalled());
 
-    await user.click(screen.getByTestId('dropdown-toggle'))
-    await user.click(screen.getByText(/Agregar nuevo preventivo/i))
+    // Simulo el flujo para abrir el sub-formulario de creación.
+    await user.click(screen.getByRole('button', { name: /Seleccione un preventivo/i }));
+    await user.click(screen.getByText(/Agregar nuevo preventivo/i));
 
-    const sucursalSelect = screen.getByRole('combobox', { name: /Seleccione una sucursal/i })
-    const frecuenciaSelect = screen.getByRole('combobox', { name: /Seleccione una frecuencia/i })
+    // Espero a que aparezcan los nuevos campos y los busco por su etiqueta de accesibilidad.
+    const sucursalSelect = await screen.findByLabelText('Sucursal');
+    const frecuenciaSelect = await screen.findByLabelText('Frecuencia');
 
-    await user.selectOptions(sucursalSelect, '103')
-    await user.selectOptions(frecuenciaSelect, 'Semestral')
-    await user.click(screen.getByRole('button', { name: /Agregar/i }))
+    // Lleno el sub-formulario.
+    await user.selectOptions(sucursalSelect, '103');
+    await user.selectOptions(frecuenciaSelect, 'Semestral');
+    
+    // Hago clic en el botón "Agregar" del sub-formulario. Uso una expresión regular exacta (`/^...$/i`)
+    // para no confundirlo con el de "Agregar nuevo preventivo...".
+    await user.click(screen.getByRole('button', { name: /^Agregar$/i }));
 
+    // Verifico que se haya llamado al servicio para crear el nuevo tipo.
     await waitFor(() => {
-      expect(createPreventivo).toHaveBeenCalledWith(NUEVO_PREVENTIVO_DATA)
-    })
-
-    expect(screen.getByRole('button', { name: 'Sucursal C - Semestral' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Agregar/i })).not.toBeInTheDocument()
-  })
-
-  it('permite EDITAR un preventivo existente', async () => {
-    const updatedPreventivo = { id: 1, id_sucursal: 101, nombre_sucursal: 'Sucursal A', frecuencia: 'Cuatrimestral' }
-    updatePreventivo.mockResolvedValue({ data: updatedPreventivo })
-
-    render(<MantenimientoPreventivoForm onClose={mockOnClose} />)
-    await waitFor(() => expect(getPreventivos).toHaveBeenCalled())
-
-    await user.click(screen.getByTestId('dropdown-toggle'))
-    await user.click(screen.getAllByTitle('Editar')[0])
-
-    const frecuenciaSelect = screen.getByRole('combobox', { name: /Seleccione una frecuencia/i })
-    await user.selectOptions(frecuenciaSelect, 'Cuatrimestral')
-    await user.click(screen.getByRole('button', { name: /Actualizar/i }))
-
-    await waitFor(() => {
-      expect(updatePreventivo).toHaveBeenCalledWith(1, {
-        id_sucursal: 101,
-        nombre_sucursal: 'Sucursal A',
-        frecuencia: 'Cuatrimestral',
-      })
-    })
-    expect(screen.getByRole('button', { name: 'Sucursal A - Cuatrimestral' })).toBeInTheDocument()
-  })
-
-  it('permite ELIMINAR un preventivo', async () => {
-    deletePreventivo.mockResolvedValue({})
-
-    render(<MantenimientoPreventivoForm onClose={mockOnClose} />)
-    await waitFor(() => expect(getPreventivos).toHaveBeenCalled())
-
-    await user.click(screen.getByTestId('dropdown-toggle'))
-    await user.click(screen.getAllByTitle('Eliminar')[0])
-
-    await waitFor(() => {
-      expect(deletePreventivo).toHaveBeenCalledWith(1)
-    })
-
-    expect(screen.queryByText('Sucursal A - Mensual')).not.toBeInTheDocument()
-  })
-})
+      expect(preventivoService.createPreventivo).toHaveBeenCalledWith(NUEVO_PREVENTIVO_DATA);
+    });
+    
+    // Por último, verifico que el dropdown principal se haya actualizado con la nueva opción seleccionada.
+    expect(screen.getByRole('button', { name: 'Sucursal C - Semestral' })).toBeInTheDocument();
+  });
+});

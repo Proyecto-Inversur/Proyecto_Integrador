@@ -14,7 +14,7 @@ import routes from './routes';
 
 const googleMapsLibraries = ['places'];
 
-const AppContent = () => {
+export const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentEntity, loading, verifying } = useContext(AuthContext);

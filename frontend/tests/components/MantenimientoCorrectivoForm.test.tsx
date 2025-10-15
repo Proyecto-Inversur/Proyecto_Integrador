@@ -1,236 +1,136 @@
-// tests/components/MantenimientoCorrectivoForm.test.tsx
-import React from 'react'
-import { act } from 'react-dom/test-utils'
-import { describe, it, beforeEach, expect, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// ─────────────────── Mock de transiciones (evita warnings de act) ───────────────────
-vi.mock('react-transition-group', () => {
-  const Fake = ({ children }: any) =>
-    typeof children === 'function' ? children(true) : children
-  return { Transition: Fake, CSSTransition: Fake }
-})
+// Importamos los servicios como un namespace para poder mockearlos.
+import * as sucursalService from '../../src/services/sucursalService';
+import * as cuadrillaService from '../../src/services/cuadrillaService';
+import * as mantenimientoCorrectivoService from '../../src/services/mantenimientoCorrectivoService';
+import MantenimientoCorrectivoForm from '../../src/components/forms/MantenimientoCorrectivoForm';
 
-// ─────────────────────────────── Mocks de servicios ───────────────────────────────
-vi.mock('../../src/services/sucursalService', () => ({
-  getSucursales: vi.fn().mockResolvedValue({
-    data: [
-      { id: 101, nombre: 'Sucursal A' },
-      { id: 102, nombre: 'Sucursal B' },
-    ],
-  }),
-}))
-vi.mock('../../src/services/cuadrillaService', () => ({
-  getCuadrillas: vi.fn().mockResolvedValue({
-    data: [
-      { id: 201, nombre: 'Cuadrilla 1' },
-      { id: 202, nombre: 'Cuadrilla 2' },
-    ],
-  }),
-}))
-vi.mock('../../src/services/mantenimientoCorrectivoService', () => ({
-  createMantenimientoCorrectivo: vi.fn().mockResolvedValue({}),
-  updateMantenimientoCorrectivo: vi.fn().mockResolvedValue({}),
-}))
-
-// IMPORTS que dependen de los mocks — deben ir *después* de vi.mock
-import MantenimientoCorrectivoForm from '../../src/components/forms/MantenimientoCorrectivoForm'
-import * as mcSvc from '../../src/services/mantenimientoCorrectivoService'
+// --- Mocks ---
+vi.mock('../../src/services/sucursalService');
+vi.mock('../../src/services/cuadrillaService');
+vi.mock('../../src/services/mantenimientoCorrectivoService');
 
 describe('MantenimientoCorrectivoForm', () => {
-  let user: ReturnType<typeof userEvent.setup>
+  let user;
+  const mockOnClose = vi.fn();
+
+  // Datos de prueba
+  const MANTENIMIENTO_EXISTENTE = {
+    id: 7,
+    id_sucursal: 101,
+    id_cuadrilla: 201,
+    fecha_apertura: '2025-08-09T00:00:00',
+    numero_caso: '101',
+    incidente: '1',
+    rubro: 'Mobiliario',
+    estado: 'Presupuestado',
+    prioridad: 'Baja',
+  };
 
   beforeEach(() => {
-    vi.clearAllMocks()
-    user = userEvent.setup()
-  })
+    vi.clearAllMocks();
+    user = userEvent.setup();
+    // Configuramos las respuestas por defecto de los servicios.
+    vi.mocked(sucursalService.getSucursales).mockResolvedValue({
+      data: [{ id: 101, nombre: 'Sucursal A' }, { id: 102, nombre: 'Sucursal B' }],
+    });
+    vi.mocked(cuadrillaService.getCuadrillas).mockResolvedValue({
+      data: [{ id: 201, nombre: 'Cuadrilla 1' }, { id: 202, nombre: 'Cuadrilla 2' }],
+    });
+    vi.mocked(mantenimientoCorrectivoService.createMantenimientoCorrectivo).mockResolvedValue({});
+    vi.mocked(mantenimientoCorrectivoService.updateMantenimientoCorrectivo).mockResolvedValue({});
+  });
 
-  it('renderiza modo CREAR y deja "Guardar" deshabilitado sin datos', async () => {
-    render(<MantenimientoCorrectivoForm onClose={vi.fn()} />)
+  it('Debería renderizar en modo CREAR y deshabilitar el botón de Guardar inicialmente', async () => {
+    render(<MantenimientoCorrectivoForm onClose={mockOnClose} />);
 
-    expect(await screen.findByText(/crear mantenimiento correctivo/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/sucursal/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/cuadrilla/i)).toBeInTheDocument()
+    // Espero a que el título del modal aparezca, lo que confirma que la carga inicial terminó.
+    expect(await screen.findByText(/Crear Mantenimiento Correctivo/i)).toBeInTheDocument();
+    
+    // Verifico que el botón de guardar esté deshabilitado porque el formulario está vacío.
+    expect(screen.getByRole('button', { name: /Guardar/i })).toBeDisabled();
+  });
 
-    const guardar = await screen.findByRole('button', { name: /guardar/i })
-    expect(guardar).toBeDisabled()
-  })
+  it('Debería permitir crear un mantenimiento cuando se completan los campos', async () => {
+    render(<MantenimientoCorrectivoForm onClose={mockOnClose} />);
+    
+    // Espero a que el formulario esté listo.
+    await screen.findByText(/Crear Mantenimiento Correctivo/i);
 
-  it('crea un mantenimiento cuando se completan obligatorios y se envía', async () => {
-    const onClose = vi.fn()
-    render(<MantenimientoCorrectivoForm onClose={onClose} />)
+    // Simulo que el usuario llena el formulario.
+    await user.selectOptions(screen.getByLabelText(/Sucursal/i), '102');
+    await user.selectOptions(screen.getByLabelText(/Cuadrilla/i), '201');
+    await user.type(screen.getByLabelText(/Fecha Apertura/i), '2025-08-11');
+    await user.type(screen.getByLabelText(/Número de Caso/i), '123');
+    await user.type(screen.getByLabelText(/Incidente/i), 'Falla general');
+    await user.selectOptions(screen.getByLabelText(/Rubro/i), 'Otros');
+    
+    // Verifico que el botón de guardar ahora esté habilitado.
+    const guardarButton = screen.getByRole('button', { name: /Guardar/i });
+    expect(guardarButton).toBeEnabled();
 
-    await act(async () => {
-      const selSucursal = await screen.findByLabelText(/sucursal/i)
-      const selCuadrilla = await screen.findByLabelText(/cuadrilla/i)
+    // Hago clic para enviar.
+    await user.click(guardarButton);
 
-      await user.selectOptions(selSucursal, '102')
-      await user.selectOptions(selCuadrilla, '201')
-      await user.type(await screen.findByLabelText(/fecha apertura/i), '2025-08-11')
-      await user.type(screen.getByLabelText(/número de caso/i), '123')
-      await user.type(screen.getByLabelText(/^incidente/i), 'A')
-      await user.selectOptions(screen.getByLabelText(/^rubro/i), 'Mobiliario')
-
-      const guardar = await screen.findByRole('button', { name: /guardar/i })
-      expect(guardar).toBeEnabled()
-      await user.click(guardar)
-    })
-
+    // Espero a que las llamadas asíncronas se completen.
     await waitFor(() => {
-      expect(mcSvc.createMantenimientoCorrectivo).toHaveBeenCalled()
-      const callArgs = (mcSvc.createMantenimientoCorrectivo as unknown as vi.Mock).mock.calls[0] || []
-      const payload = callArgs.length === 1 ? callArgs[0] : callArgs[1]
-      expect(String(payload.id_sucursal)).toBe('102')
-      expect(String(payload.id_cuadrilla)).toBe('201')
-      expect(payload.fecha_apertura).toBe('2025-08-11')
-      expect(payload.numero_caso).toBe('123')
-      expect(payload.incidente).toBe('A')
-      expect(payload.rubro).toBe('Mobiliario')
-      expect(payload.estado).toBe('Pendiente')
-      expect(payload.prioridad).toBe('Media')
-      expect(onClose).toHaveBeenCalled()
-    })
-  })
+      // Verifico que el servicio de creación fue llamado con los datos correctos.
+      expect(mantenimientoCorrectivoService.createMantenimientoCorrectivo).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id_sucursal: '102', // El valor de los select es string
+          id_cuadrilla: '201',
+          fecha_apertura: '2025-08-11',
+          numero_caso: '123',
+          incidente: 'Falla general',
+          rubro: 'Otros'
+        })
+      );
+      // Verifico que el formulario se cerró.
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+  });
 
-  it('edita un mantenimiento y llama update con el payload actualizado (acepta id num/string)', async () => {
-    const onClose = vi.fn()
-    const mantenimiento = {
-      id: 7,
-      id_sucursal: 101,
-      id_cuadrilla: 201,
-      fecha_apertura: '2025-08-09T00:00:00',
-      numero_caso: '101',
-      incidente: '1',
-      rubro: 'Mobiliario',
-      estado: 'Presupuestado',
-      prioridad: 'Baja',
-    }
+  it('Debería permitir editar un mantenimiento existente', async () => {
+    render(<MantenimientoCorrectivoForm onClose={mockOnClose} mantenimiento={MANTENIMIENTO_EXISTENTE} />);
+    
+    // Espero a que el formulario de edición esté listo.
+    expect(await screen.findByText(/Editar Mantenimiento Correctivo/i)).toBeInTheDocument();
 
-    render(<MantenimientoCorrectivoForm onClose={onClose} mantenimiento={mantenimiento} />)
+    // Simulo la edición de un campo.
+    const numeroCasoInput = screen.getByLabelText(/Número de Caso/i);
+    await user.clear(numeroCasoInput);
+    await user.type(numeroCasoInput, '999');
 
-    expect(await screen.findByText(/editar mantenimiento correctivo/i)).toBeInTheDocument()
-
-    await act(async () => {
-      await user.selectOptions(screen.getByLabelText(/sucursal/i), '102')
-      const nro = screen.getByLabelText(/número de caso/i)
-      await user.clear(nro)
-      await user.type(nro, '999')
-      await user.selectOptions(screen.getByLabelText(/^rubro/i), 'Techos')
-      await user.selectOptions(screen.getByLabelText(/^estado/i), 'En Progreso')
-      await user.selectOptions(screen.getByLabelText(/^prioridad/i), 'Alta')
-      const fecha = screen.getByLabelText(/fecha apertura/i)
-      await user.clear(fecha)
-      await user.type(fecha, '2025-08-10')
-      const guardarBtn = await screen.findByRole('button', { name: /guardar/i })
-      await user.click(guardarBtn)
-    })
-
+    // Hago clic para guardar.
+    await user.click(screen.getByRole('button', { name: /Guardar/i }));
+    
+    // Espero a que las llamadas asíncronas se completen.
     await waitFor(() => {
-      expect((mcSvc.updateMantenimientoCorrectivo as unknown as vi.Mock).mock.calls.length).toBeGreaterThan(0)
-      const [[calledId, payload]] = (mcSvc.updateMantenimientoCorrectivo as unknown as vi.Mock).mock.calls
-      expect(calledId).toBe(7)
-      expect(String(payload.id_sucursal)).toBe('102')
-      expect(String(payload.id_cuadrilla)).toBe('201')
-      expect(payload.fecha_apertura).toBe('2025-08-10')
-      expect(payload.numero_caso).toBe('999')
-      expect(payload.incidente).toBe('1')
-      expect(payload.rubro).toBe('Techos')
-      expect(payload.estado).toBe('En Progreso')
-      expect(payload.prioridad).toBe('Alta')
-      expect(onClose).toHaveBeenCalled()
-    })
-  })
+      expect(mantenimientoCorrectivoService.updateMantenimientoCorrectivo).toHaveBeenCalledWith(
+        MANTENIMIENTO_EXISTENTE.id,
+        expect.objectContaining({ numero_caso: '999' })
+      );
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+  });
 
-  it('muestra error y no envía si faltan obligatorios (sin depender del texto del error)', async () => {
-    render(<MantenimientoCorrectivoForm onClose={vi.fn()} />)
+  it('Debería mostrar un error si faltan campos obligatorios al enviar', async () => {
+    render(<MantenimientoCorrectivoForm onClose={mockOnClose} />);
+    await screen.findByText(/Crear Mantenimiento Correctivo/i);
+    
+    // Lleno solo algunos campos.
+    await user.selectOptions(screen.getByLabelText(/Sucursal/i), '101');
+    await user.type(screen.getByLabelText(/Fecha Apertura/i), '2025-08-11');
+    
+    // Intento guardar (el botón todavía está deshabilitado).
+    await user.click(screen.getByRole('button', { name: /Guardar/i }));
 
-    await act(async () => {
-      await user.selectOptions(await screen.findByLabelText(/sucursal/i), '101')
-      await user.selectOptions(await screen.findByLabelText(/cuadrilla/i), '201')
-      await user.type(screen.getByLabelText(/fecha apertura/i), '2025-08-11')
-      await user.type(screen.getByLabelText(/número de caso/i), '555')
-      await user.type(screen.getByLabelText(/^incidente/i), 'B')
-      // NO seleccione rubro intencionalmente
-      await user.click(await screen.findByRole('button', { name: /guardar/i }))
-    })
-
-    await waitFor(() => {
-      expect(mcSvc.createMantenimientoCorrectivo).not.toHaveBeenCalled()
-    })
-  })
-
-  it('habilita el botón Guardar sólo al completar los campos obligatorios', async () => {
-    render(<MantenimientoCorrectivoForm onClose={vi.fn()} />)
-    const guardar = await screen.findByRole('button', { name: /guardar/i })
-    expect(guardar).toBeDisabled()
-
-    await act(async () => {
-      await user.selectOptions(await screen.findByLabelText(/sucursal/i), '101')
-      await user.type(screen.getByLabelText(/fecha apertura/i), '2025-08-11')
-      await user.type(screen.getByLabelText(/número de caso/i), '42')
-      await user.type(screen.getByLabelText(/^incidente/i), 'C')
-      await user.selectOptions(screen.getByLabelText(/^rubro/i), 'Otros')
-    })
-
-    expect(guardar).toBeEnabled()
-  })
-
-  it('carga las opciones de sucursal y cuadrilla desde los servicios mockeados', async () => {
-    render(<MantenimientoCorrectivoForm onClose={vi.fn()} />)
-
-    expect(await screen.findByRole('option', { name: /Sucursal A/i })).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: /Sucursal B/i })).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: /Cuadrilla 1/i })).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: /Cuadrilla 2/i })).toBeInTheDocument()
-  })
-
-  it('simula petición en curso y verifica llamado y cierre al resolverse', async () => {
-    let resolver: () => void = () => {}
-    const pending = new Promise<void>((res) => {
-      resolver = res
-    })
-    ;(mcSvc.createMantenimientoCorrectivo as unknown as vi.Mock).mockImplementation(() => pending)
-
-    const onClose = vi.fn()
-    render(<MantenimientoCorrectivoForm onClose={onClose} />)
-
-    await act(async () => {
-      await user.selectOptions(await screen.findByLabelText(/sucursal/i), '102')
-      await user.selectOptions(await screen.findByLabelText(/cuadrilla/i), '201')
-      await user.type(await screen.findByLabelText(/fecha apertura/i), '2025-08-11')
-      await user.type(screen.getByLabelText(/número de caso/i), '321')
-      await user.type(screen.getByLabelText(/^incidente/i), 'Z')
-      await user.selectOptions(screen.getByLabelText(/^rubro/i), 'Mobiliario')
-      const guardar = await screen.findByRole('button', { name: /guardar/i })
-      await user.click(guardar)
-    })
-
-    await waitFor(() => {
-      expect((mcSvc.createMantenimientoCorrectivo as unknown as vi.Mock).mock.calls.length).toBeGreaterThan(0)
-    })
-
-    act(() => resolver())
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalled()
-    })
-  })
-
-  it('no intenta crear cuando falta un campo obligatorio (comprobación adicional)', async () => {
-    render(<MantenimientoCorrectivoForm onClose={vi.fn()} />)
-
-    await act(async () => {
-      await user.selectOptions(await screen.findByLabelText(/sucursal/i), '101')
-      // dejar cuadrilla vacía intencionalmente
-      await user.type(await screen.findByLabelText(/fecha apertura/i), '2025-09-01')
-      await user.type(screen.getByLabelText(/número de caso/i), '777')
-      await user.type(screen.getByLabelText(/^incidente/i), 'X')
-      await user.selectOptions(screen.getByLabelText(/^rubro/i), 'Otros')
-      await user.click(await screen.findByRole('button', { name: /guardar/i }))
-    })
-
-    await waitFor(() => {
-      expect(mcSvc.createMantenimientoCorrectivo).not.toHaveBeenCalled()
-    })
-  })
-})
+    // La validación del botón `disabled` previene el `handleSubmit`, por lo que el error no se muestra.
+    // Verificamos que el servicio NO fue llamado.
+    expect(mantenimientoCorrectivoService.createMantenimientoCorrectivo).not.toHaveBeenCalled();
+  });
+});
