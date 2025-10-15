@@ -17,8 +17,24 @@ export default defineConfig({
     include: ['tests/**/*.{test,spec}.{js,ts,jsx,tsx}'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov', 'clover'],
-      exclude: ['src/main.tsx', 'src/main.jsx'],
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './tests/coverage',
+      
+      include: ['src/**/*.{js,jsx,ts,tsx}'],
+
+      exclude: [
+        'src/main.tsx',
+        'src/main.jsx',
+        'src/config.js',
+        'src/vite-env.d.ts',
+        'src/context/', // Los contextos suelen ser solo "boilerplate"
+        'src/routes.jsx', // Es un archivo de configuración
+        'src/styles/',
+        'src/assets/',
+        '**/__mocks__/**',
+        '**/node_modules/**',
+        '**/tests/**',
+      ],
     },
   },
 });
