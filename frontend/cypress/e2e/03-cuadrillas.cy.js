@@ -47,7 +47,7 @@
     cy.get('#zona').type(cuadrillaZone);
     cy.get('.custom-add-button').should('be.enabled').click();
 
-    cy.contains('button', 'Registrar con Google').click();
+    cy.contains('button', 'Registrar con Google').should('be.enabled').click();
 
     cy.contains('td', baseCuadrillaName, { timeout: 30000 }).should('be.visible');
     cy.contains('td', cuadrillaZone).should('be.visible');
@@ -83,7 +83,7 @@
     cy.get('#zona').type(cuadrillaZone);
     cy.get('.custom-add-button').should('be.enabled').click();
 
-    cy.contains('button', 'Registrar con Google').click();
+    cy.contains('button', 'Registrar con Google').should('be.enabled').click();
 
     cy.contains('tr', baseCuadrillaName).within(() => {
       cy.get('td').first().invoke('text').then((idText) => {

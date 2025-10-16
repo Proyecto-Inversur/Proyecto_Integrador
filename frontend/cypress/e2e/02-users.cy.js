@@ -43,7 +43,7 @@ describe('Modulo de Usuarios - Integracion', () => {
     cy.get('#nombre').clear().type(baseUserName);
     cy.get('#rol').select('Encargado de Mantenimiento');
 
-    cy.contains('button', 'Registrar con Google').click();
+    cy.contains('button', 'Registrar con Google').should('be.enabled').click();
 
     cy.contains('td', baseUserName, { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'test@example.com').should('be.visible');
@@ -71,7 +71,7 @@ describe('Modulo de Usuarios - Integracion', () => {
     cy.get('#nombre').clear().type(baseUserName);
     cy.get('#rol').select('Encargado de Mantenimiento');
 
-    cy.contains('button', 'Registrar con Google').click();
+    cy.contains('button', 'Registrar con Google').should('be.enabled').click();
   });
 
   it('permite ocultar columnas mediante el selector', () => {

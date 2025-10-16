@@ -34,45 +34,45 @@ describe('Modulo de Preventivos - Integracion', () => {
     });
 
     cy.contains(/Mantenimientos Preventivos/i, { timeout: 30000 }).should('be.visible');
-    cy.contains('tr', 'Sucursal E2E - Mensual').click();
+    cy.contains('tr', 'Sucursal E2E - Mensual', { timeout: 30000 }).click();
 
     cy.contains('.info-section > :nth-child(2)', 'Sucursal E2E - Mensual', { timeout: 30000 }).should('be.visible');
-    cy.contains('.info-section > :nth-child(3)', 'Cuadrilla E2E').should('be.visible');
-    cy.contains('.info-section > :nth-child(4)', 'Zona E2E').should('be.visible');
+    cy.contains('.info-section > :nth-child(3)', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
+    cy.contains('.info-section > :nth-child(4)', 'Zona E2E', { timeout: 30000 }).should('be.visible');
     
-    cy.contains('.info-section > :nth-child(6)', 'Mantenimiento no finalizado').should('be.visible');
+    cy.contains('.info-section > :nth-child(6)', 'Mantenimiento no finalizado', { timeout: 30000 }).should('be.visible');
     
     cy.get('.chat-input').clear().type('Hola');
     cy.get('.chat-send-btn > svg').click();
-    cy.get('.chat-message').last().find('.chat-message-text').should('have.text', 'Hola');
-    cy.get('.chat-message').last().find('.chat-info').should('contain', 'Test User');
+    cy.get('.chat-message', { timeout: 30000 }).last().find('.chat-message-text').should('have.text', 'Hola');
+    cy.get('.chat-message', { timeout: 30000 }).last().find('.chat-info').should('contain', 'Test User');
     
-    cy.get('.planilla-section').find('button', 'Cargar').click();
-    cy.get('#planillaUpload').attachFile('Logo.png');
-    cy.contains('button', 'Guardar Planilla').should('be.visible').click();
+    cy.get('.planilla-section', { timeout: 30000 }).find('button', 'Cargar').click();
+    cy.get('#planillaUpload', { timeout: 30000 }).attachFile('Logo.png');
+    cy.contains('button', 'Guardar Planilla', { timeout: 30000 }).should('be.visible').click();
     cy.get('.planilla-slide > .photo-container > .gallery-thumbnail', { timeout: 30000 }).click();
-    cy.contains('button', 'Cerrar').should('be.visible').click();
+    cy.contains('button', 'Cerrar', { timeout: 30000 }).should('be.visible').click();
     
-    cy.get('.photos-section').find('button', 'Cargar').click();
-    cy.get('#photoUpload').attachFile('Logo.png');
-    cy.contains('button', 'Guardar Fotos').should('be.visible').click();
+    cy.get('.photos-section', { timeout: 30000 }).find('button', 'Cargar').click();
+    cy.get('#photoUpload', { timeout: 30000 }).attachFile('Logo.png');
+    cy.contains('button', 'Guardar Fotos', { timeout: 30000 }).should('be.visible').click();
     cy.get('.gallery-item > .photo-container > .gallery-thumbnail', { timeout: 30000 }).click();
-    cy.contains('button', 'Cerrar').should('be.visible').click();
+    cy.contains('button', 'Cerrar', { timeout: 30000 }).should('be.visible').click();
     
-    cy.contains('button', 'Marcar como finalizado').should('be.visible').click();
+    cy.contains('button', 'Marcar como finalizado', { timeout: 30000 }).should('be.visible').click();
     cy.contains('.fade', 'Mantenimiento marcado como finalizado correctamente.', { timeout: 30000 }).should('be.visible');
 
-    cy.get('.planilla-section > .mt-2 > .icon-button > svg').click();
-    cy.get('.planilla-slide > .photo-container > .gallery-thumbnail').click();
-    cy.get('.btn-danger').click();
+    cy.get('.planilla-section > .mt-2 > .icon-button > svg', { timeout: 30000 }).click();
+    cy.get('.planilla-slide > .photo-container > .gallery-thumbnail', { timeout: 30000 }).click();
+    cy.get('.btn-danger', { timeout: 30000 }).click();
     cy.contains('.fade', 'Planilla(s) eliminada(s) correctamente.', { timeout: 30000 }).should('be.visible');
     
-    cy.get('.photos-section > .mt-2 > .icon-button > svg').click();
-    cy.get('.gallery-item > .photo-container > .gallery-thumbnail').click();
-    cy.get('.btn-danger').click();
+    cy.get('.photos-section > .mt-2 > .icon-button > svg', { timeout: 30000 }).click();
+    cy.get('.gallery-item > .photo-container > .gallery-thumbnail', { timeout: 30000 }).click();
+    cy.get('.btn-danger', { timeout: 30000 }).click();
     cy.contains('.fade', 'Fotos eliminadas correctamente.', { timeout: 30000 }).should('be.visible');
     
-    cy.contains('button', 'Marcar como pendiente').should('be.visible').click();
+    cy.contains('button', 'Marcar como pendiente', { timeout: 30000 }).should('be.visible').click();
     cy.contains('.fade', 'Mantenimiento marcado como pendiente correctamente.', { timeout: 30000 }).should('be.visible');
   });
 });

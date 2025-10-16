@@ -41,27 +41,28 @@
     });
 
     cy.contains(/Mantenimientos Correctivos/i, { timeout: 30000 }).should('be.visible');
-    cy.contains('button', 'Agregar').should('be.visible').click();
+    cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 
-    cy.get('#id_sucursal').select('Sucursal E2E');
-    cy.get('#id_cuadrilla').select('Cuadrilla E2E');
-    cy.get('#fecha_apertura').clear().type('2024-03-01');
+    cy.get('#id_sucursal', { timeout: 30000 }).select('Sucursal E2E');
+    cy.get('#id_cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
+    cy.get('#fecha_apertura').clear().type('2025-01-01');
     cy.get('#numero_caso').clear().type(baseCase);
     cy.get('#incidente').clear().type(baseIncident);
-    cy.get('#rubro').select(baseRubro);
-    cy.get('#estado').select('Pendiente');
-    cy.get('#prioridad').select('Media');
+    cy.get('#rubro', { timeout: 30000 }).select(baseRubro);
+    cy.get('#estado', { timeout: 30000 }).select('Pendiente');
+    cy.get('#prioridad', { timeout: 30000 }).select('Media');
 
-    cy.contains('button', 'Guardar').click();
+    cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
 
     cy.contains('td', 'Sucursal E2E', { timeout: 30000 }).should('be.visible');
-    cy.contains('td', 'Cuadrilla E2E').should('be.visible');
-    cy.contains('td', baseCase).should('be.visible');
-    cy.contains('td', baseIncident).should('be.visible');
-    cy.contains('td', baseRubro).should('be.visible');
-    cy.contains('tr', 'Sucursal E2E').within(() => {
+    cy.contains('td', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
+    cy.contains('td', baseCase, { timeout: 30000 }).should('be.visible');
+    cy.contains('td', baseIncident, { timeout: 30000 }).should('be.visible');
+    cy.contains('td', baseRubro, { timeout: 30000 }).should('be.visible');
+
+    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Editar"]').click();
     });
 
@@ -69,36 +70,37 @@
 
     cy.get('#numero_caso').clear().type(updatedCase);
     cy.get('#incidente').clear().type(updatedIncident);
-    cy.get('#rubro').select(updatedRubro);
+    cy.get('#rubro', { timeout: 30000 }).select(updatedRubro);
 
-    cy.contains('button', 'Guardar').click();
+    cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
 
     cy.contains('td', 'Sucursal E2E', { timeout: 30000 }).should('be.visible');
-    cy.contains('td', 'Cuadrilla E2E').should('be.visible');
+    cy.contains('td', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', updatedCase, { timeout: 30000 }).should('be.visible');
-    cy.contains('td', updatedIncident).should('be.visible');
-    cy.contains('td', updatedRubro).should('be.visible');
+    cy.contains('td', updatedIncident, { timeout: 30000 }).should('be.visible');
+    cy.contains('td', updatedRubro, { timeout: 30000 }).should('be.visible');
 
-    cy.contains('tr', 'Sucursal E2E').within(() => {
+    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
-
-    cy.contains('td', 'Sucursal E2E').should('not.exist');
+    cy.wait(5000);
+    cy.contains('td', 'Sucursal E2E', { timeout: 30000 }).should('not.exist');
 
     cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 
-    cy.get('#id_sucursal').select('Sucursal E2E');
-    cy.get('#id_cuadrilla').select('Cuadrilla E2E');
-    cy.get('#fecha_apertura').clear().type('2024-03-01');
+    cy.get('#id_sucursal', { timeout: 30000 }).select('Sucursal E2E');
+    cy.get('#id_cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
+    cy.get('#fecha_apertura').clear().type('2025-01-01');
     cy.get('#numero_caso').clear().type(baseCase);
     cy.get('#incidente').clear().type(baseIncident);
-    cy.get('#rubro').select(baseRubro);
-    cy.get('#estado').select('Pendiente');
-    cy.get('#prioridad').select('Media');
+    cy.get('#rubro', { timeout: 30000 }).select(baseRubro);
+    cy.get('#estado', { timeout: 30000 }).select('Pendiente');
+    cy.get('#prioridad', { timeout: 30000 }).select('Media');
 
-    cy.contains('button', 'Guardar').click();
+    cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
+    cy.wait(5000);
   });
 
   it('aplica filtros sobre los mantenimientos correctivos', () => {

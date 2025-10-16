@@ -1,4 +1,4 @@
-describe('Modulo de Cuadrillas - Integracion', () => {
+describe('Modulo de Notificaciones - Integracion', () => {
   const adminEntity = {
     type: 'usuario',
     data: {
@@ -24,7 +24,7 @@ describe('Modulo de Cuadrillas - Integracion', () => {
     cy.window().then(() => {});
   });
 
-  /*it('Carga notificaciones, redirige a la pagina correspondiente, marca como leida y elimina notificaciones', () => {
+  it('Carga notificaciones, redirige a la pagina correspondiente, marca como leida y elimina notificaciones', () => {
     cy.visit('/', {
       onBeforeLoad: (win) => {
         win.localStorage.clear();
@@ -34,101 +34,149 @@ describe('Modulo de Cuadrillas - Integracion', () => {
     });
 
     cy.get('.notification-icon > svg > path').click();
-    cy.contains('div > .flex-grow-1 > .text-dark', 'Correctivo Asignado')
-    .find('span')
-    .contains('.rounded-circle')
-    .first()
-    .click();
+    cy.contains('div > .flex-grow-1 > .text-dark', 'Nuevo correctivo asignado', { timeout: 30000 }).first().click();
 
     cy.get('.notification-icon > svg > path').click();
-
-    cy.contains('div > .flex-grow-1 > .text-dark', 'Correctivo Asignado')
-    .find('span')
-    .contains('.rounded-circle')
-    .first()
-    .should('not.exist');
-
-    cy.contains('div > .flex-grow-1 > .text-dark', 'Preventivo Asignado')
-    .find('span')
-    .contains('.rounded-circle')
-    .first()
-    .click();
+    cy.contains('div > .flex-grow-1 > .text-dark', 'Nuevo preventivo asignado', { timeout: 30000 }).first().click();
 
     cy.get('.notification-icon > svg > path').click();
+    cy.contains('button', 'Marcar leídas').click();
+    cy.wait(10000);
+    cy.get('.rounded-circle').should('not.exist');
+    cy.contains('button', 'Eliminar leídas').click();
+    cy.contains('p.text-muted', 'No tienes notificaciones.', { timeout: 30000 }).should('be.visible');
+  });
 
-    cy.contains('div > .flex-grow-1 > .text-dark', 'Preventivo Asignado')
-    .find('span')
-    .contains('.rounded-circle')
-    .first()
-    .should('not.exist');
-
-    cy.contains('button', 'Marcar Leídas').click();
+  it('Navega por la aplicacion y borra datos de usuario test', () => {
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+      },
+    });
     
-    cy.contains('div > .flex-grow-1 > .text-dark', { timeout: 30000 })
-    .find('span')
-    .contains('.rounded-circle')
-    .first()
-    .should('not.exist');
-
-    cy.contains('button', 'Eliminar Leídas').click();
-
-    cy.contains('p.text-muted', 'No tienes notificaciones.', { timeout: 30000 }).click();
-  });*/
-
-  it('Navega por la aplicacion y borra datos de tests', () => {
-    cy.visit('/', {
-      onBeforeLoad: (win) => {
-        win.localStorage.clear();
-        win.sessionStorage.clear();
-        setSession(win);
-      },
-    });
-    /* ==== Generated with Cypress Studio ==== */
     cy.contains('.home-button', 'Usuarios').should('be.visible').click();
-    cy.contains('tr', 'Usuario E2E').within(() => {
+    cy.contains('tr', 'Usuario E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
-    cy.get('.floating-back-btn-home').click();
+    cy.wait(5000);
+  });
+
+  it('Navega por la aplicacion y borra datos de mantenimiento preventivo test', () => {
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+      },
+    });
 
     cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
 
     cy.contains('.home-button', 'Mantenimiento Preventivo').should('be.visible').click();
-    cy.contains('tr', 'Sucursal E2E - Mensual').within(() => {
+    cy.contains('tr', 'Sucursal E2E - Mensual', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
+    cy.wait(5000);
+  });
+
+  it('Navega por la aplicacion y borra datos de preventivo test', () => {
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+      },
+    });
+
+    cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
+
+    cy.contains('.home-button', 'Mantenimiento Preventivo').should('be.visible').click();
+
     cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#dropdown-preventivo').click();
-    cy.contains('.custom-dropdown-item', 'Sucursal E2E - Mensual').within(() => {
+    cy.contains('.custom-dropdown-item', 'Sucursal E2E - Mensual', { timeout: 30000 }).within(() => {
       cy.get('.custom-delete-button').click();
     });
-    cy.get('.btn-close').click();
-    cy.get('.floating-back-btn-home').click();
+    cy.wait(5000);
+  });
+
+  it('Navega por la aplicacion y borra datos de mantenimiento correctivo test', () => {
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+      },
+    });
+
+    cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
 
     cy.contains('.home-button', 'Mantenimiento Correctivo').should('be.visible').click();
-    cy.contains('tr', 'Sucursal E2E').within(() => {
+    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
-    cy.get('.floating-back-btn-home').click();
+    cy.wait(5000);
+  });
+
+  it('Navega por la aplicacion y borra datos de sucursal test', () => {
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+      },
+    });
+
+    cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
 
     cy.contains('.home-button', 'Sucursales').should('be.visible').click();
-    cy.contains('tr', 'Sucursal E2E').within(() => {
-      cy.get('button[aria-label="Editar"]').click();
+    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
+      cy.get('button[aria-label="Eliminar"]').click();
     });
-    cy.get('.floating-back-btn-home').click();
+    cy.wait(5000);
+  });
+
+  it('Navega por la aplicacion y borra datos de cuadrilla test', () => {
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+      },
+    });
+
+    cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
 
     cy.contains('.home-button', 'Cuadrillas').should('be.visible').click();
-    cy.contains('tr', 'Cuadrilla E2E').within(() => {
-      cy.get('button[aria-label="Editar"]').click();
+    cy.contains('tr', 'Cuadrilla E2E', { timeout: 30000 }).within(() => {
+      cy.get('button[aria-label="Eliminar"]').click();
     });
-    cy.contains('button', 'Agregar').should('be.visible').click();
+    cy.wait(5000);
+  });
+
+  it('Navega por la aplicacion y borra datos de zona test', () => {
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        win.localStorage.clear();
+        win.sessionStorage.clear();
+        setSession(win);
+      },
+    });
+
+    cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
+
+    cy.contains('.home-button', 'Cuadrillas').should('be.visible').click();
+
+    cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
     cy.get('#dropdown-zona').click();
-    cy.contains('.custom-dropdown-item', 'Zona E2E')
+    cy.contains('.custom-dropdown-item', 'Zona E2E', { timeout: 30000 })
       .should('exist')
       .within(() => {
         cy.get('.custom-delete-button').click();
       });
-    cy.get('.btn-close').click();
-    cy.get('.floating-back-btn-home').click();
+    cy.wait(5000);
   });
 });

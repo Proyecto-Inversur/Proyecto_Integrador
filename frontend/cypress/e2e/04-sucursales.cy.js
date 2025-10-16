@@ -99,7 +99,7 @@
 
     cy.get('#superficie').clear().type('100');
 
-    cy.contains('button', 'Guardar').click();
+    cy.contains('button', 'Guardar').should('be.enabled').click();
 
     cy.contains('td', baseSucursalName, { timeout: 30000 }).should('be.visible');
     cy.contains('td', sucursalZone).should('be.visible');
@@ -114,7 +114,7 @@
       .should('be.visible')
       .click();
 
-    cy.contains('button', 'Guardar').click();
+    cy.contains('button', 'Guardar').should('be.enabled').click();
 
     cy.contains('td', updatedSucursalName, { timeout: 30000 }).should('be.visible');
     cy.contains('tr', updatedSucursalName).within(() => {
@@ -136,7 +136,7 @@
 
     cy.get('#superficie').clear().type('100');
 
-    cy.contains('button', 'Guardar').click();
+    cy.contains('button', 'Guardar').should('be.enabled').click();
   });
 
   it('permite ocultar columnas mediante el selector', () => {
