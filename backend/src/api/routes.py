@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-if os.environ.get("TESTING") != "true":
+if os.environ.get("TESTING") != "true" and os.environ.get("E2E_TESTING") != "true":
     initialize_firebase()
     init_admin(email=EMAIL_ADMIN, nombre=NOMBRE_ADMIN, password=PASSWORD_ADMIN)
 

@@ -54,7 +54,7 @@ class MantenimientoPreventivo(Base):
     frecuencia = Column(String)
     id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
     fecha_apertura = Column(Date)
-    fecha_cierre = Column(Date)
+    fecha_cierre = Column(Date, nullable=True)
     extendido = Column(DateTime, nullable=True)
     estado = Column(String)
 
@@ -84,7 +84,7 @@ class MantenimientoCorrectivo(Base):
     id_sucursal = Column(Integer, ForeignKey("sucursal.id"))
     id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
     fecha_apertura = Column(Date)
-    fecha_cierre = Column(Date)
+    fecha_cierre = Column(Date, nullable=True)
     numero_caso = Column(String)
     incidente = Column(String)
     rubro = Column(String)

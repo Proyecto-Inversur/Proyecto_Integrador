@@ -66,6 +66,7 @@ const PhotoSection = ({ handleSubmit, isLoading, fotos = [], onUpload, onDelete,
           multiple
           accept="image/*"
           ref={fileInputRef}
+          id="photoUpload"
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />

@@ -3,6 +3,9 @@ module.exports = {
     '@babel/preset-env',
     '@babel/preset-react',
   ],
+  plugins: [
+    '@babel/plugin-transform-modules-commonjs', // Convierte ESM a CommonJS
+  ],
   env: {
     test: {
       plugins: [
@@ -14,6 +17,7 @@ module.exports = {
               '**/*.test.jsx',
               '**/tests/**',
               '**/cypress/**',
+              '/src/services/firebase.js', // Excluir firebase.js
             ],
           },
         ],

@@ -102,8 +102,6 @@ const MantenimientoInfo = ({
             <BsSave className="me-2" /> Guardar Información
           </Button>
         )}
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
       </Form>
     )}
     {!isUser && (
@@ -116,9 +114,15 @@ const MantenimientoInfo = ({
         {isSelected ? 'Borrar de la ruta' : 'Agregar a la ruta actual'}
       </Button>
     )}
-    {showFinishButton && (
+    {showFinishButton && !isUser && (
       <Button variant="dark" className="info-button-finish" onClick={handleFinish}>
         <FiCheckCircle className="me-2" size={18} />Marcar como finalizado
+      </Button>
+    )}
+    {title === "Mantenimiento Preventivo" && isUser && (
+      <Button variant="dark" className="info-button-finish" onClick={handleFinish}>
+        <FiCheckCircle className="me-2" size={18} />
+        {showFinishButton ? 'Marcar como finalizado' : 'Marcar como pendiente'}
       </Button>
     )}
     {isUser && handleChange && (
@@ -148,10 +152,10 @@ const MantenimientoInfo = ({
             <BsSave className="me-2" /> Guardar Estado
           </Button>
         )}
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
       </Form>
     )}
+    {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+    {success && <Alert variant="success" className="mt-3">{success}</Alert>}
   </Col>
 );
 
