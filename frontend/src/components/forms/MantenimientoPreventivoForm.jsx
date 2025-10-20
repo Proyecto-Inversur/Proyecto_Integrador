@@ -306,6 +306,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
                         onChange={handleNewPreventivoChange}
                         className="me-2"
                         disabled={isLoading || sucursales.length === 0}
+                        aria-label="Sucursal"
                       >
                         <option value="">Seleccione una sucursal</option>
                         {sucursales.length > 0 ? (
@@ -323,6 +324,7 @@ const MantenimientoPreventivoForm = ({ mantenimiento, onClose }) => {
                         value={newPreventivo.frecuencia || ''}
                         onChange={handleNewPreventivoChange}
                         className="me-2"
+                        aria-label="Frecuencia"
                       >
                         <option value="">Seleccione una frecuencia</option>
                         <option value="Mensual">Mensual</option>

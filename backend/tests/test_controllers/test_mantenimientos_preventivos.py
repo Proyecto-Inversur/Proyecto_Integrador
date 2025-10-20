@@ -11,6 +11,7 @@ def test_list_mantenimientos_preventivos(client):
         planillas=[],
         fotos=[],
         extendido=None,
+        estado="Pendiente",
     )
     with patch("controllers.mantenimientos_preventivos.get_mantenimientos_preventivos", return_value=[m]):
         resp = client.get("/mantenimientos-preventivos/")
@@ -24,7 +25,8 @@ def test_list_mantenimientos_preventivos(client):
         "fecha_cierre": None,
         "planillas": [],
         "fotos": [],
-        "extendido": None
+        "extendido": None,
+        "estado": "Pendiente"
     }
 
 def test_get_mantenimiento_preventivo(client):
@@ -38,6 +40,7 @@ def test_get_mantenimiento_preventivo(client):
         planillas=[],
         fotos=[],
         extendido=None,
+        estado="Pendiente",
     )
     with patch("controllers.mantenimientos_preventivos.get_mantenimiento_preventivo", return_value=m):
         resp = client.get("/mantenimientos-preventivos/1")
@@ -51,13 +54,14 @@ def test_get_mantenimiento_preventivo(client):
         "fecha_cierre": "2025-02-01",
         "planillas": [],
         "fotos": [],
-        "extendido": None
+        "extendido": None,
+        "estado": "Pendiente"
     }
 
 def test_create_mantenimiento_preventivo(client):
-    m = MagicMock(id=1, id_sucursal=1, frecuencia="Mensual", id_cuadrilla=1, fecha_apertura="2025-01-01")
+    m = MagicMock(id=1, id_sucursal=1, frecuencia="Mensual", id_cuadrilla=1, fecha_apertura="2025-01-01", estado="Pendiente")
     with patch("controllers.mantenimientos_preventivos.create_mantenimiento_preventivo", AsyncMock(return_value=m)):
-        payload = {"id_sucursal": 1, "frecuencia": "Mensual", "id_cuadrilla": 1, "fecha_apertura": "2025-01-01"}
+        payload = {"id_sucursal": 1, "frecuencia": "Mensual", "id_cuadrilla": 1, "fecha_apertura": "2025-01-01", "estado": "Pendiente"}
         resp = client.post("/mantenimientos-preventivos/", json=payload)
     assert resp.status_code == 200
     assert resp.json() == {
@@ -65,7 +69,8 @@ def test_create_mantenimiento_preventivo(client):
         "id_sucursal": 1,
         "frecuencia": "Mensual",
         "id_cuadrilla": 1,
-        "fecha_apertura": "2025-01-01"
+        "fecha_apertura": "2025-01-01",
+        "estado": "Pendiente"
     }
 
 def test_update_mantenimiento_preventivo(client):
@@ -79,6 +84,7 @@ def test_update_mantenimiento_preventivo(client):
         planillas=[],
         fotos=[],
         extendido=None,
+        estado="Pendiente",
     )
     with patch("controllers.mantenimientos_preventivos.update_mantenimiento_preventivo", AsyncMock(return_value=m)):
         payload = {
@@ -87,6 +93,7 @@ def test_update_mantenimiento_preventivo(client):
             "id_cuadrilla": 1,
             "fecha_apertura": "2025-01-01",
             "fecha_cierre": "2025-02-01",
+            "estado": "Pendiente"
         }
         resp = client.put("/mantenimientos-preventivos/1", data=payload)
     assert resp.status_code == 200
@@ -99,7 +106,8 @@ def test_update_mantenimiento_preventivo(client):
         "fecha_cierre": "2025-02-01",
         "planillas": [],
         "fotos": [],
-        "extendido": None
+        "extendido": None,
+        "estado": "Pendiente"
     }
 
 def test_mantenimiento_preventivo_delete(client):

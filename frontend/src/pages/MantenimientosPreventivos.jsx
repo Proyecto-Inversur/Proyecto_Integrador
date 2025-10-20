@@ -76,7 +76,7 @@ const MantenimientosPreventivos = () => {
         <div className='maintenance-filters-row'>
           {isUser && (
             <div className='maintenance-filter-item'>
-              <Form.Group className='mb-0'>
+              <Form.Group className='mb-0' controlId="filterCuadrilla">
                 <Form.Label>Cuadrilla</Form.Label>
                 <Form.Select name="cuadrilla" value={filters.cuadrilla} onChange={handleFilterChange}>
                   <option value="">Todas</option>
@@ -90,7 +90,7 @@ const MantenimientosPreventivos = () => {
             </div>
           )}
           <div className='maintenance-filter-item'>
-            <Form.Group className='mb-0'>
+            <Form.Group className='mb-0' controlId="filterSucursal">
               <Form.Label>Sucursal</Form.Label>
               <Form.Select name="sucursal" value={filters.sucursal} onChange={handleFilterChange}>
                 <option value="">Todas</option>
@@ -104,7 +104,7 @@ const MantenimientosPreventivos = () => {
           </div>
           {isUser && (
             <div className='maintenance-filter-item'>
-              <Form.Group className='mb-0'>
+              <Form.Group className='mb-0' controlId="filterZona">
                 <Form.Label>Zona</Form.Label>
                 <Form.Select name="zona" value={filters.zona} onChange={handleFilterChange}>
                   <option value="">Todas</option>
@@ -118,7 +118,7 @@ const MantenimientosPreventivos = () => {
             </div>
           )}
           <div className='maintenance-filter-item'>
-            <Form.Group className='mb-0'>
+            <Form.Group className='mb-0' controlId="filterSortByDate">
               <Form.Label>Ordenar por Fecha</Form.Label>
               <Form.Select name="sortByDate" value={filters.sortByDate} onChange={handleFilterChange}>
                 <option value="desc">Más reciente</option>

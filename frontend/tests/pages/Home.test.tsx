@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
-import Home from '@/pages/Home'           // <-- ajusta si tu path es distinto
+import Home from '@/pages/Home'         
 import { AuthContext } from '@/context/AuthContext'
 
 function renderWithAuth(currentEntity: any | null) {

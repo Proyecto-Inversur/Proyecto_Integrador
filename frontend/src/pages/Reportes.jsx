@@ -26,8 +26,9 @@ const Reportes = () => {
       <h1 className="report-header">Reportes</h1>
       <div className="filters-container">
         <div>
-          <label className="date-label">Mes:</label>
+          <label htmlFor="month-select" className="date-label">Mes:</label>
           <select
+          id="month-select"
             value={month}
             onChange={e => setMonth(e.target.value)}
             className="date-input"
@@ -39,8 +40,9 @@ const Reportes = () => {
           </select>
         </div>
         <div>
-          <label className="date-label">Año:</label>
+          <label htmlFor="year-select" className="date-label">Año:</label>
           <select
+            id="year-select"
             value={year}
             onChange={e => setYear(e.target.value)}
             className="date-input"

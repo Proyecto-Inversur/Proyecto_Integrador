@@ -15,7 +15,7 @@ import routes from './routes';
 const googleMapsLibraries = ['places'];
 const isCypressRuntime = typeof window !== 'undefined' && !!window.Cypress;
 
-const AppContent = () => {
+export const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentEntity, loading, verifying } = useContext(AuthContext);
