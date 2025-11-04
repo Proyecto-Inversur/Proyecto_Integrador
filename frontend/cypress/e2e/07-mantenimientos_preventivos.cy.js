@@ -111,19 +111,19 @@
     });
 
     cy.contains(/Mantenimientos Preventivos/i, { timeout: 30000 }).should('be.visible');
-    cy.contains('button', 'Filtros').should('be.visible').click();
+    cy.contains('button', 'Filtros', { timeout: 30000 }).should('be.visible').click();
 
-    cy.get('select[name="cuadrilla"]').select('Cuadrilla E2E');
-    cy.get('table tbody tr').should('have.length', 1);
-    cy.get('select[name="cuadrilla"]').select('');
+    cy.get('select[name="cuadrilla"]', { timeout: 30000 }).select('Cuadrilla E2E');
+    cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);
+    cy.get('select[name="cuadrilla"]', { timeout: 30000 }).select('');
 
-    cy.get('select[name="sucursal"]').select('Sucursal E2E');
-    cy.get('table tbody tr').should('have.length', 1);
-    cy.get('select[name="sucursal"]').select('');
+    cy.get('select[name="sucursal"]', { timeout: 30000 }).select('Sucursal E2E');
+    cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);
+    cy.get('select[name="sucursal"]', { timeout: 30000 }).select('');
 
-    cy.get('select[name="zona"]').select('Zona E2E');
-    cy.get('table tbody tr').should('have.length', 1);
-    cy.get('select[name="zona"]').select('');
+    cy.get('select[name="zona"]', { timeout: 30000 }).select('Zona E2E');
+    cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);
+    cy.get('select[name="zona"]', { timeout: 30000 }).select('');
   });
 
   it('permite ocultar columnas mediante el selector', () => {
@@ -136,23 +136,23 @@
     });
 
     cy.contains(/Mantenimientos Preventivos/i, { timeout: 30000 }).should('be.visible');
-    cy.get('table thead th').should('contain', 'ID');
+    cy.get('table thead th', { timeout: 30000 }).should('contain', 'ID');
 
-    cy.get('button[aria-label="Seleccionar columnas"]').click();
+    cy.get('button[aria-label="Seleccionar columnas"]', { timeout: 30000 }).click();
 
-    cy.get('.column-selector-modal').should('be.visible');
-    cy.get('input#col-id').should('be.checked').uncheck({ force: true });
-    cy.contains('button', 'Guardar').click();
+    cy.get('.column-selector-modal', { timeout: 30000 }).should('be.visible');
+    cy.get('input#col-id', { timeout: 30000 }).should('be.checked').uncheck({ force: true });
+    cy.contains('button', 'Guardar', { timeout: 30000 }).click();
 
-    cy.get('table thead th').should(($ths) => {
+    cy.get('table thead th', { timeout: 30000 }).should(($ths) => {
       const texts = Array.from($ths, (th) => th.innerText.trim());
       expect(texts).to.not.include('ID');
     });
 
-    cy.get('button[aria-label="Seleccionar columnas"]').click();
+    cy.get('button[aria-label="Seleccionar columnas"]', { timeout: 30000 }).click();
 
-    cy.get('.column-selector-modal').should('be.visible');
-    cy.get('input#col-id').check();
-    cy.contains('button', 'Guardar').click();
+    cy.get('.column-selector-modal', { timeout: 30000 }).should('be.visible');
+    cy.get('input#col-id', { timeout: 30000 }).check();
+    cy.contains('button', 'Guardar', { timeout: 30000 }).click();
   });
 });

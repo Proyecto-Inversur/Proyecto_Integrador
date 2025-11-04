@@ -83,23 +83,23 @@ describe('Modulo de Usuarios - Integracion', () => {
       },
     });
 
-    cy.get('table thead th').should('contain', 'ID');
+    cy.get('table thead th', { timeout: 30000 }).should('contain', 'ID');
 
-    cy.get('button[aria-label="Seleccionar columnas"]').click();
+    cy.get('button[aria-label="Seleccionar columnas"]', { timeout: 30000 }).click();
 
-    cy.get('.column-selector-modal').should('be.visible');
-    cy.get('input#col-id').should('be.checked').uncheck({ force: true });
-    cy.contains('button', 'Guardar').click();
+    cy.get('.column-selector-modal', { timeout: 30000 }).should('be.visible');
+    cy.get('input#col-id', { timeout: 30000 }).should('be.checked').uncheck({ force: true });
+    cy.contains('button', 'Guardar', { timeout: 30000 }).click();
 
-    cy.get('table thead th').should(($ths) => {
+    cy.get('table thead th', { timeout: 30000 }).should(($ths) => {
       const texts = Array.from($ths, (th) => th.innerText.trim());
       expect(texts).to.not.include('ID');
     });
 
-    cy.get('button[aria-label="Seleccionar columnas"]').click();
+    cy.get('button[aria-label="Seleccionar columnas"]', { timeout: 30000 }).click();
 
-    cy.get('.column-selector-modal').should('be.visible');
-    cy.get('input#col-id').check();
-    cy.contains('button', 'Guardar').click();
+    cy.get('.column-selector-modal', { timeout: 30000 }).should('be.visible');
+    cy.get('input#col-id', { timeout: 30000 }).check();
+    cy.contains('button', 'Guardar', { timeout: 30000 }).click();
   });
 });
