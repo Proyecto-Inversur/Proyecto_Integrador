@@ -55,7 +55,7 @@ describe('Login', () => {
     renderWithAuth(<Login />)
 
     expect(screen.getByAltText(/inversur logo/i)).toBeInTheDocument()
-    const btn = screen.getByRole('button', { name: /iniciar sesión con gmail/i })
+    const btn = screen.getByRole('button', { name: /iniciar sesión con google/i })
     expect(btn).toBeInTheDocument()
     expect(btn).toBeEnabled()
   })
