@@ -30,7 +30,7 @@ describe('Módulo de Reportes - Integración con datos reales', () => {
       },
     });
 
-    cy.contains('Reportes', { timeout: 30000 }).should('be.visible');
+    cy.contains('Reportess', { timeout: 30000 }).should('be.visible');
 
     cy.get('.filters-container', { timeout: 30000 }).within(() => {
       cy.get('select').should('have.length.at.least', 2);
