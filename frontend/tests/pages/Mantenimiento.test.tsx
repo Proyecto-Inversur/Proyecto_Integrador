@@ -41,7 +41,7 @@ describe('Página de Mantenimiento', () => {
 
     // Verificamos que todos los botones de navegación principal estén visibles por su texto.
     expect(screen.getByRole('link', { name: /Cuadrillas/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Sucursales/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Clientes/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Mantenimiento Correctivo/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Mantenimiento Preventivo/i })).toBeInTheDocument();
   });
@@ -54,9 +54,9 @@ describe('Página de Mantenimiento', () => {
     expect(cuadrillasButton).toHaveAttribute('href', '/cuadrillas');
     expect(cuadrillasButton).toHaveAttribute('data-roles', 'user');
 
-    const sucursalesButton = screen.getByRole('link', { name: /Sucursales/i });
-    expect(sucursalesButton).toHaveAttribute('href', '/sucursales');
-    expect(sucursalesButton).toHaveAttribute('data-roles', 'user');
+    const clientesButton = screen.getByRole('link', { name: /Clientes/i });
+    expect(clientesButton).toHaveAttribute('href', '/clientes');
+    expect(clientesButton).toHaveAttribute('data-roles', 'user');
     
     const correctivoButton = screen.getByRole('link', { name: /Mantenimiento Correctivo/i });
     expect(correctivoButton).toHaveAttribute('href', '/mantenimientos-correctivos');

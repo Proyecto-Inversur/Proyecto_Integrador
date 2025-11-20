@@ -72,9 +72,9 @@ describe('SucursalPopup', () => {
   it('Debería mostrar un guion "—" para valores nulos o indefinidos', () => {
     render(<SucursalPopup sucursal={mockSucursalCompleta} />);
 
-    // En nuestro mock, el correctivo con id 102 tiene numero_caso: null
+    // En nuestro mock, el correctivo con cuadrilla "Equipo Beta" tiene numero_caso: null
     // Buscamos el contenedor (la caja) de ese mantenimiento específico
-    const correctivoBox = screen.getByText('102').closest('.inv-box');
+    const correctivoBox = screen.getByText('Equipo Beta').closest('.inv-box');
 
     // Dentro de esa caja, buscamos la etiqueta "N° Caso"
     const casoLabel = within(correctivoBox).getByText('N° Caso');

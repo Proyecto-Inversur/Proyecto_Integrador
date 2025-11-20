@@ -7,6 +7,7 @@ describe('Hook: useMantenimientos', () => {
     // Preparo los datos que el hook recibiría como argumentos.
     const mockSucursales = [{ id: 101, nombre: 'Sucursal A', zona: 'Norte' }];
     const mockCuadrillas = [{ id: 201, nombre: 'Cuadrilla Alfa' }];
+    const mockClientes = [{ id: 1, nombre: 'Cliente Demo' }];
     const mockAddToRoute = vi.fn();
     const mockRemoveFromRoute = vi.fn();
 
@@ -38,7 +39,7 @@ describe('Hook: useMantenimientos', () => {
 
     it('Debería llamar a addToRoute cuando se activa toggleRoute y no está seleccionado', () => {
         const setIsSelected = vi.fn();
-        const { result } = renderHook(() => useMantenimientos([], [], false, setIsSelected, mockAddToRoute, vi.fn()));
+        const { result } = renderHook(() => useMantenimientos([], [], [], false, setIsSelected, mockAddToRoute, vi.fn()));
 
         act(() => {
             result.current.toggleRoute();
@@ -52,7 +53,7 @@ describe('Hook: useMantenimientos', () => {
 
     it('Debería llamar a removeFromRoute cuando se activa toggleRoute y ya está seleccionado', () => {
         const setIsSelected = vi.fn();
-        const { result } = renderHook(() => useMantenimientos([], [], true, setIsSelected, vi.fn(), mockRemoveFromRoute));
+        const { result } = renderHook(() => useMantenimientos([], [], [], true, setIsSelected, vi.fn(), mockRemoveFromRoute));
 
         act(() => {
             result.current.toggleRoute();
@@ -63,7 +64,7 @@ describe('Hook: useMantenimientos', () => {
     });
 
     it('Debería devolver los nombres correctos con las funciones auxiliares', () => {
-        const { result } = renderHook(() => useMantenimientos(mockSucursales, mockCuadrillas));
+        const { result } = renderHook(() => useMantenimientos(mockSucursales, mockCuadrillas, mockClientes));
 
         // Pruebo que las funciones `get...` devuelvan el valor correcto o el por defecto.
         expect(result.current.getSucursalNombre(101)).toBe('Sucursal A');
@@ -74,7 +75,11 @@ describe('Hook: useMantenimientos', () => {
         
         expect(result.current.getZonaNombre(101)).toBe('Norte');
         expect(result.current.getZonaNombre(999)).toBe('Desconocida');
+        
+        expect(result.current.getClienteNombre(1)).toBe('Cliente Demo');
+        expect(result.current.getClienteNombre(999)).toBe('Sin cliente');
     });
+<<<<<<< Updated upstream
 
     it('Debería formatear la fecha correctamente con formatExtendido', () => {
         const { result } = renderHook(() => useMantenimientos());
@@ -88,3 +93,6 @@ describe('Hook: useMantenimientos', () => {
         expect(fechaFormateada).toContain('2025-10-15 08:58');
     });
 });
+=======
+});
+>>>>>>> Stashed changes

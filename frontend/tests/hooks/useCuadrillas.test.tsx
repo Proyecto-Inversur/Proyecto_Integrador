@@ -1,117 +1,88 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-// Importo el hook a probar y el servicio que vamos a simular.
 import useCuadrillas from '../../src/hooks/forms/useCuadrillas';
 import * as cuadrillaService from '../../src/services/cuadrillaService';
 
-// Simulo el módulo completo del servicio para controlar sus funciones.
 vi.mock('../../src/services/cuadrillaService');
 
 describe('Hook: useCuadrillas', () => {
+  const mockCuadrillasData = [
+    { id: 1, nombre: 'Cuadrilla Alfa' },
+    { id: 2, nombre: 'Cuadrilla Beta' },
+  ];
 
-    // Defino datos de prueba que usaré en varios tests.
-    const mockCuadrillasData = [
-        { id: 1, nombre: 'Cuadrilla Alfa' },
-        { id: 2, nombre: 'Cuadrilla Beta' },
-    ];
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(cuadrillaService.getCuadrillas).mockResolvedValue({ data: mockCuadrillasData });
+    vi.mocked(cuadrillaService.deleteCuadrilla).mockResolvedValue({});
+  });
 
-    beforeEach(() => {
-        // Antes de cada test, limpio los mocks.
-        vi.clearAllMocks();
-        // Configuro una respuesta exitosa por defecto para `getCuadrillas`.
-        vi.mocked(cuadrillaService.getCuadrillas).mockResolvedValue({ data: mockCuadrillasData });
-        vi.mocked(cuadrillaService.deleteCuadrilla).mockResolvedValue({});
+  it('Deber�a empezar en estado de carga y luego obtener las cuadrillas', async () => {
+    const { result } = renderHook(() => useCuadrillas());
+
+    expect(result.current.isLoading).toBe(true);
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(cuadrillaService.getCuadrillas).toHaveBeenCalledTimes(1);
+    expect(result.current.cuadrillas).toEqual(mockCuadrillasData);
+    expect(result.current.error).toBeNull();
+  });
+
+  it('Deber�a manejar correctamente un error al cargar las cuadrillas', async () => {
+    const errorMessage = 'Error de red';
+    vi.mocked(cuadrillaService.getCuadrillas).mockRejectedValueOnce({
+      response: { data: { detail: errorMessage } },
     });
 
-    it('Debería empezar en estado de carga y luego obtener las cuadrillas', async () => {
-        // `renderHook` ejecuta nuestro hook en un entorno de prueba.
-        const { result } = renderHook(() => useCuadrillas());
+    const { result } = renderHook(() => useCuadrillas());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-        // Al principio, el estado de carga debe ser verdadero.
-        expect(result.current.isLoading).toBe(true);
+    expect(result.current.error).toBe(errorMessage);
+    expect(result.current.cuadrillas).toEqual([]);
+  });
 
-        // `waitFor` espera a que las actualizaciones de estado asíncronas terminen.
-        await waitFor(() => {
-            // Verifico que el estado de carga ahora sea falso.
-            expect(result.current.isLoading).toBe(false);
-        });
+  it('Deber�a actualizar el estado para editar una cuadrilla', () => {
+    const { result } = renderHook(() => useCuadrillas());
+    const cuadrillaParaEditar = mockCuadrillasData[0];
 
-        // Verifico que el servicio fue llamado y los datos se guardaron en el estado.
-        expect(cuadrillaService.getCuadrillas).toHaveBeenCalledTimes(1);
-        expect(result.current.cuadrillas).toEqual(mockCuadrillasData);
-        expect(result.current.error).toBeNull();
-    });
-    
-    it('Debería manejar correctamente un error al cargar las cuadrillas', async () => {
-        const errorMessage = 'Error de red';
-        // Para este test, simulo que la llamada a la API falla.
-        vi.mocked(cuadrillaService.getCuadrillas).mockRejectedValueOnce({
-            response: { data: { detail: errorMessage } }
-        });
-
-        const { result } = renderHook(() => useCuadrillas());
-
-        // Espero a que la carga termine (aunque falle).
-        await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
-        });
-
-        // Verifico que el estado de error se haya actualizado.
-        expect(result.current.error).toBe(errorMessage);
-        // Y que no haya datos de cuadrillas.
-        expect(result.current.cuadrillas).toEqual([]);
+    act(() => {
+      result.current.handleEdit(cuadrillaParaEditar);
     });
 
-    it('Debería actualizar el estado para editar una cuadrilla', () => {
-        const { result } = renderHook(() => useCuadrillas());
-        const cuadrillaParaEditar = mockCuadrillasData[0];
+    expect(result.current.showForm).toBe(true);
+    expect(result.current.selectedCuadrilla).toEqual(cuadrillaParaEditar);
+  });
 
-        // `act` envuelve las acciones que causan actualizaciones de estado síncronas.
-        act(() => {
-            result.current.handleEdit(cuadrillaParaEditar);
-        });
+  it('Deber�a resetear el estado y recargar los datos al cerrar el formulario', async () => {
+    const { result } = renderHook(() => useCuadrillas());
 
-        // Verifico que el estado se actualizó para mostrar el formulario con la cuadrilla seleccionada.
-        expect(result.current.showForm).toBe(true);
-        expect(result.current.selectedCuadrilla).toEqual(cuadrillaParaEditar);
+    act(() => {
+      result.current.handleEdit(mockCuadrillasData[0]);
     });
 
-    it('Debería resetear el estado y recargar los datos al cerrar el formulario', async () => {
-        const { result } = renderHook(() => useCuadrillas());
-
-        // Primero, simulo que abrimos el formulario para tener un estado que resetear.
-        act(() => {
-            result.current.handleEdit(mockCuadrillasData[0]);
-        });
-        
-        // Ahora, simulo el cierre del formulario.
-        await act(async () => {
-            result.current.handleFormClose();
-        });
-
-        // Verifico que el estado se haya reseteado.
-        expect(result.current.showForm).toBe(false);
-        expect(result.current.selectedCuadrilla).toBeNull();
-        // Verifico que se haya vuelto a llamar a `getCuadrillas` (1 vez al inicio, 1 vez al cerrar).
-        expect(cuadrillaService.getCuadrillas).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      result.current.handleFormClose();
     });
 
-    it('Debería llamar a deleteCuadrilla y recargar los datos al eliminar', async () => {
-        const { result } = renderHook(() => useCuadrillas());
-        const idParaEliminar = 1;
+    expect(result.current.showForm).toBe(false);
+    expect(result.current.selectedCuadrilla).toBeNull();
+    expect(cuadrillaService.getCuadrillas).toHaveBeenCalledTimes(2);
+  });
 
-        // Espero a que la carga inicial termine.
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
-        
-        // Simulo la acción de eliminar.
-        await act(async () => {
-            await result.current.handleDelete(idParaEliminar);
-        });
-        
-        // Verifico que se llamó al servicio de eliminación con el ID correcto.
-        expect(cuadrillaService.deleteCuadrilla).toHaveBeenCalledWith(idParaEliminar);
-        // Verifico que se recargaron los datos.
-        expect(cuadrillaService.getCuadrillas).toHaveBeenCalledTimes(2);
+  it('Deber�a llamar a deleteCuadrilla y recargar los datos al eliminar', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const { result } = renderHook(() => useCuadrillas());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.handleDelete(1);
     });
+
+    expect(cuadrillaService.deleteCuadrilla).toHaveBeenCalledWith(1);
+    expect(cuadrillaService.getCuadrillas).toHaveBeenCalledTimes(2);
+    confirmSpy.mockRestore();
+  });
 });
+

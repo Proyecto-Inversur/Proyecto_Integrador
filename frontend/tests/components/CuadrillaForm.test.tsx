@@ -30,8 +30,60 @@ vi.mock('@/services/cuadrillaService', () => ({
 import * as zonaSvc from '@/services/zonaService'
 import * as cuadSvc from '@/services/cuadrillaService'
 
+<<<<<<< Updated upstream
 // Helper para render con contexto
 function renderWithProviders(ui: React.ReactNode, ctxOverrides: Partial<any> = {}) {
+=======
+    return (
+      <div data-testid="dropdown">
+        {toggleChild &&
+          React.cloneElement(toggleChild, {
+            onClick: (e: any) => {
+              toggleChild.props?.onClick?.(e);
+              toggle();
+            },
+          })}
+        {open && menuChild && (
+          <div data-testid="dropdown-menu">{menuChild.props.children}</div>
+        )}
+      </div>
+    );
+  };
+  const Toggle = ({ id, className, children, onClick }: any) => (
+    <button id={id} className={className} onClick={onClick} type="button">
+      {children}
+    </button>
+  );
+  Toggle.displayName = 'DropdownToggle';
+
+  const Menu = ({ className, children }: any) => (
+    <div className={className}>{children}</div>
+  );
+  Menu.displayName = 'DropdownMenu';
+
+  const Item = ({ className, children, onClick }: any) => (
+    <div role="menuitem" className={className} onClick={onClick}>
+      {children}
+    </div>
+  );
+
+  Dropdown.Toggle = Toggle;
+  Dropdown.Menu = Menu;
+  Dropdown.Item = Item;
+
+  return { ...actual, Dropdown };
+});
+
+// ---- Servicios HTTP
+vi.mock('../../src/services/cuadrillaService');
+vi.mock('../../src/services/zonaService');
+vi.mock('../../src/services/api');
+
+describe('CuadrillaForm', () => {
+  const onClose = vi.fn();
+  const setError = vi.fn();
+  const setSuccess = vi.fn();
+>>>>>>> Stashed changes
   const signInWithGoogle = vi.fn().mockResolvedValue({
     idToken: 'token-google',
     email: 'cuadrilla@inversur.com',
@@ -43,9 +95,32 @@ function renderWithProviders(ui: React.ReactNode, ctxOverrides: Partial<any> = {
   }
 }
 
+<<<<<<< Updated upstream
 describe('CuadrillaForm (genérico)', () => {
   const user = userEvent.setup()
   beforeEach(() => vi.clearAllMocks())
+=======
+  const renderWithCtx = (props: Record<string, any> = {}) =>
+    render(
+      <AuthContext.Provider
+        value={{
+          signInWithGoogle, 
+          currentUser: null,
+          currentEntity: null,
+          loading: false,
+          verifying: false,
+          verifyUser: vi.fn(),
+        }}
+      >
+        <CuadrillaForm
+          onClose={onClose}
+          setError={setError}
+          setSuccess={setSuccess}
+          {...props}
+        />
+      </AuthContext.Provider>
+    );
+>>>>>>> Stashed changes
 
   it('renderiza modo CREAR y deshabilita enviar sin datos', async () => {
     renderWithProviders(<CuadrillaForm onClose={vi.fn()} />)
@@ -54,9 +129,15 @@ describe('CuadrillaForm (genérico)', () => {
     expect(screen.getByRole('button', { name: /registrar con google/i })).toBeDisabled()
   })
 
+<<<<<<< Updated upstream
   it('carga zonas y permite seleccionar una (sin depender de nombres reales)', async () => {
     renderWithProviders(<CuadrillaForm onClose={vi.fn()} />)
     await user.click(await screen.findByRole('button', { name: /seleccione una zona/i }))
+=======
+  it('submitea creación correctamente (signIn + createCuadrilla + onClose)', async () => {
+    cuadrillaService.createCuadrilla.mockResolvedValue({} as any);
+    renderWithCtx();
+>>>>>>> Stashed changes
 
     // Menú y items
     const menu = screen.getByText(ZONAS[0].nombre).closest('.dropdown-menu')!
@@ -90,9 +171,13 @@ describe('CuadrillaForm (genérico)', () => {
     const btns = within(item).getAllByRole('button')
     await user.click(btns[btns.length - 1]) // Clic en “×”
 
+<<<<<<< Updated upstream
     // Verifica que se llamó a deleteZona y que el item ya no está
     expect(zonaSvc.deleteZona).toHaveBeenCalledWith(ZONAS[0].id)
   })
+=======
+    renderWithCtx();
+>>>>>>> Stashed changes
 
   it('GUARDA en modo CREAR usando Google y createCuadrilla', async () => {
     const onClose = vi.fn()
@@ -126,7 +211,11 @@ describe('CuadrillaForm (genérico)', () => {
     await user.click(screen.getByRole('button', { name: ZONAS[0].nombre }))
     await user.click(screen.getByText(ZONAS[2].nombre))
 
+<<<<<<< Updated upstream
     await user.click(screen.getByRole('button', { name: /^guardar$/i }))
+=======
+    renderWithCtx();
+>>>>>>> Stashed changes
 
     expect(cuadSvc.updateCuadrilla).toHaveBeenCalledWith(7, { nombre: 'Editado', zona: ZONAS[2].nombre })
     expect(onClose).toHaveBeenCalled()

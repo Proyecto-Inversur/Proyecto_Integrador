@@ -35,6 +35,7 @@ describe('Página MantenimientosCorrectivos', () => {
     // Esto representa el estado "ideal" o más común de la página.
     const mockUseCorrectivoReturn = {
         filteredMantenimientos: [],
+        clientes: [{ id: 1, nombre: 'Cliente Test' }],
         sucursales: [{ id: 1, nombre: 'Sucursal Test' }],
         cuadrillas: [{ id: 1, nombre: 'Cuadrilla Test' }],
         zonas: [{ id: 1, nombre: 'Zona Test' }],
@@ -50,8 +51,11 @@ describe('Página MantenimientosCorrectivos', () => {
         handleRowClick: vi.fn(),
         handleFormClose: vi.fn(),
         getSucursalNombre: (id) => `Sucursal ${id}`,
+        getClienteNombre: (id) => `Cliente ${id}`,
         getCuadrillaNombre: (id) => `Cuadrilla ${id}`,
         getZonaNombre: (id) => `Zona ${id}`,
+        setError: vi.fn(),
+        setSuccess: vi.fn(),
     };
 
     // Antes de cada test, limpio todas las funciones "espía" (mocks).

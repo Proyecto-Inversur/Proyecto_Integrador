@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
-import Home from '@/pages/Home'         
+import Home from '@/pages/Home'
 import { AuthContext } from '@/context/AuthContext'
 
 function renderWithAuth(currentEntity: any | null) {
@@ -17,22 +17,22 @@ function renderWithAuth(currentEntity: any | null) {
 }
 
 describe('Home', () => {
-  it('usuario Administrador: muestra Usuarios, Mantenimiento, Mapa (/mapa) y Reportes', () => {
+  it('usuario Administrador: muestra Usuarios, Mantenimiento, Mapa (/mapa) y Estadísticas', () => {
     const entity = { type: 'usuario', data: { rol: 'Administrador' } }
     renderWithAuth(entity)
 
     const usuarios = screen.getByRole('link', { name: /usuarios/i })
     const mantenimiento = screen.getByRole('link', { name: /mantenimiento/i })
     const mapa = screen.getByRole('link', { name: /mapa/i })
-    const reportes = screen.getByRole('link', { name: /reportes/i })
+    const estadisticas = screen.getByRole('link', { name: /estadísticas/i })
 
     expect(usuarios).toHaveAttribute('href', '/users')
     expect(mantenimiento).toHaveAttribute('href', '/mantenimiento')
     expect(mapa).toHaveAttribute('href', '/mapa')
-    expect(reportes).toHaveAttribute('href', '/reportes')
+    expect(estadisticas).toHaveAttribute('href', '/estadisticas')
   })
 
-  it('usuario NO administrador: muestra Mantenimiento y Mapa (/mapa); NO muestra Usuarios ni Reportes', () => {
+  it('usuario NO administrador: muestra Mantenimiento y Mapa (/mapa); NO muestra Usuarios ni Estadísticas', () => {
     const entity = { type: 'usuario', data: { rol: 'Operador' } }
     renderWithAuth(entity)
 
@@ -40,10 +40,10 @@ describe('Home', () => {
     expect(screen.getByRole('link', { name: /mapa/i })).toHaveAttribute('href', '/mapa')
 
     expect(screen.queryByRole('link', { name: /usuarios/i })).toBeNull()
-    expect(screen.queryByRole('link', { name: /reportes/i })).toBeNull()
+    expect(screen.queryByRole('link', { name: /estadísticas/i })).toBeNull()
   })
 
-  it('cuadrilla: muestra Mantenimiento y Mapa (/ruta); NO muestra Usuarios ni Reportes', () => {
+  it('cuadrilla: muestra Mantenimiento y Mapa (/ruta); NO muestra Usuarios ni Estadísticas', () => {
     const entity = { type: 'cuadrilla', data: { rol: 'X' } }
     renderWithAuth(entity)
 
@@ -52,7 +52,7 @@ describe('Home', () => {
     expect(screen.getByRole('link', { name: /mapa/i })).toHaveAttribute('href', '/ruta')
 
     expect(screen.queryByRole('link', { name: /usuarios/i })).toBeNull()
-    expect(screen.queryByRole('link', { name: /reportes/i })).toBeNull()
+    expect(screen.queryByRole('link', { name: /estadísticas/i })).toBeNull()
   })
 
   it('sin sesión (currentEntity null): no muestra botones', () => {
@@ -61,6 +61,6 @@ describe('Home', () => {
     expect(screen.queryByRole('link', { name: /usuarios/i })).toBeNull()
     expect(screen.queryByRole('link', { name: /mantenimiento/i })).toBeNull()
     expect(screen.queryByRole('link', { name: /mapa/i })).toBeNull()
-    expect(screen.queryByRole('link', { name: /reportes/i })).toBeNull()
+    expect(screen.queryByRole('link', { name: /estadísticas/i })).toBeNull()
   })
 })

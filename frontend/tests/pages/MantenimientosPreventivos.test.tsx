@@ -34,6 +34,7 @@ describe('Página MantenimientosPreventivos', () => {
     // Defino la salida por defecto del hook simulado para un usuario/admin.
     const mockUsePreventivoReturn = {
         filteredMantenimientos: [],
+        clientes: [{ id: 1, nombre: 'Cliente Test' }],
         sucursales: [{ id: 1, nombre: 'Sucursal Test' }],
         cuadrillas: [{ id: 1, nombre: 'Cuadrilla Test' }],
         zonas: [{ id: 1, nombre: 'Zona Test' }],
@@ -51,6 +52,9 @@ describe('Página MantenimientosPreventivos', () => {
         getSucursalNombre: (id) => `Sucursal ${id}`,
         getCuadrillaNombre: (id) => `Cuadrilla ${id}`,
         getZonaNombre: (id) => `Zona ${id}`,
+        getClienteNombre: (id) => `Cliente ${id}`,
+        setError: vi.fn(),
+        setSuccess: vi.fn(),
     };
 
     beforeEach(() => {
