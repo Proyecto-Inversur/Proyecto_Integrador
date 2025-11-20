@@ -9,6 +9,7 @@ const MantenimientoInfo = ({
   isUser,
   formData,
   getSucursalNombre,
+  getClienteNombre,
   getCuadrillaNombre,
   getZonaNombre,
   formatExtendido,
@@ -25,6 +26,10 @@ const MantenimientoInfo = ({
 }) => (
   <Col className="info-section">
     <h4 className="info-section-title">{title}</h4>
+    <div className="info-field">
+      <strong className="info-label">Cliente:</strong>{' '}
+      {mantenimiento.cliente_id ? getClienteNombre(mantenimiento.cliente_id) : 'N/A'}
+    </div>
     <div className="info-field">
       <strong className="info-label">
         {mantenimiento.frecuencia ? 'Sucursal - Frecuencia:' : 'Sucursal:'}

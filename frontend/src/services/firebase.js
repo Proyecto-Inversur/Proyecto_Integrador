@@ -14,7 +14,7 @@ import { config } from '../config';
 // Detect test/e2e runtime (Vite test mode or Cypress present)
 const isTestRuntime =
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'test') ||
-  (typeof window !== 'undefined' && !!window.Cypress);
+  (typeof window !== 'undefined' && window.Cypress);
 
 let database;
 let auth;

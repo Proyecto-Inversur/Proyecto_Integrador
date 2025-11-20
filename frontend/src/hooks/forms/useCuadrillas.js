@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { getCuadrillas, deleteCuadrilla } from '../../services/cuadrillaService';
+import { confirmDialog } from '../../components/ConfirmDialog';
 
 const useCuadrillas = () => {
   const [cuadrillas, setCuadrillas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedCuadrilla, setSelectedCuadrilla] = useState(null);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchCuadrillas = async () => {
@@ -26,13 +28,21 @@ const useCuadrillas = () => {
   }, []);
 
   const handleDelete = async (id) => {
+    const confirmed = await confirmDialog({
+      title: 'Eliminar cuadrilla',
+      message: '¿Seguro que querés eliminar esta cuadrilla?',
+      confirmText: 'Eliminar',
+    });
+    if (!confirmed) return;
     setIsLoading(true);
     try {
       await deleteCuadrilla(id);
       fetchCuadrillas();
       setError(null);
+      setSuccess('Cuadrilla eliminada correctamente');
   } catch (error) {
       setError(error.response?.data?.detail || 'Error al eliminar la cuadrilla');
+      setSuccess(null);
     } finally {
       setIsLoading(false);
     }
@@ -54,11 +64,14 @@ const useCuadrillas = () => {
     showForm,
     setShowForm,
     selectedCuadrilla, 
-    error, 
+    error,
+    success,
     isLoading, 
     handleDelete, 
     handleEdit, 
-    handleFormClose
+    handleFormClose,
+    setError,
+    setSuccess
   };
 };
 

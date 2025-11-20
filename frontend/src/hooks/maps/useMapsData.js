@@ -12,6 +12,49 @@ export function useMapsData() {
   const [preventivos, setPreventivos] = useState([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+  const composeSucursales = (locations, cuadrillasList, correctivosList, preventivosList) =>
+    (locations || [])
+      .map((sucursal) => {
+        const lat = parseFloat(sucursal.lat);
+        const lng = parseFloat(sucursal.lng);
+        if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+          return null;
+        }
+
+        const correctivosDetalle = (correctivosList || [])
+          .filter((c) => Number(c.id_sucursal) === Number(sucursal.id))
+          .map((c) => ({
+            id: c.id,
+            cuadrilla_name:
+              cuadrillasList.find((cuadrilla) => Number(cuadrilla.id) === Number(c.id_cuadrilla))?.name ||
+              'Unknown',
+            fecha_apertura: c.fecha_apertura || 'Sin fecha',
+            numero_caso: c.numero_caso || 'Sin número',
+            estado: c.estado || 'Sin estado',
+          }));
+
+        const preventivosDetalle = (preventivosList || [])
+          .filter((p) => Number(p.id_sucursal) === Number(sucursal.id))
+          .map((p) => ({
+            id: p.id,
+            cuadrilla_name:
+              cuadrillasList.find((cuadrilla) => Number(cuadrilla.id) === Number(p.id_cuadrilla))?.name ||
+              'Unknown',
+            fecha_apertura: p.fecha_apertura || 'Sin fecha',
+            frecuencia: p.frecuencia || 'Sin frecuencia',
+          }));
+
+        return {
+          id: sucursal.id,
+          name: sucursal.name || sucursal.nombre || 'Unknown',
+          lat,
+          lng,
+          Correctivos: correctivosDetalle,
+          Preventivos: preventivosDetalle,
+        };
+      })
+      .filter(Boolean);
+
   const fetchData = async () => {
     try {
       const [usersRes, sucursalesRes, correctivosRes, preventivosRes] =
@@ -32,13 +75,18 @@ export function useMapsData() {
         (u) => !isNaN(u.lat) && !isNaN(u.lng) && u.lat !== 0 && u.lng !== 0
       );
 
-      setCuadrillas(filteredUsers.filter((u) => u.tipo === "cuadrilla"));
-      setUsers(
-        filteredUsers.filter((u) => u.tipo === "Encargado de Mantenimiento")
-      );
-      setSucursalesLocations(sucursalesRes.data || []);
-      setCorrectivos((correctivosRes.data || []).filter((c) => !c.fecha_cierre));
-      setPreventivos((preventivosRes.data || []).filter((p) => !p.fecha_cierre));
+      const cuadrillasList = filteredUsers.filter((u) => u.tipo === "cuadrilla");
+      const encargados = filteredUsers.filter((u) => u.tipo === "Encargado de Mantenimiento");
+      const rawSucursales = sucursalesRes.data || [];
+      const activeCorrectivos = (correctivosRes.data || []).filter((c) => !c.fecha_cierre);
+      const activePreventivos = (preventivosRes.data || []).filter((p) => !p.fecha_cierre);
+
+      setCuadrillas(cuadrillasList);
+      setUsers(encargados);
+      setSucursalesLocations(rawSucursales);
+      setCorrectivos(activeCorrectivos);
+      setPreventivos(activePreventivos);
+      setSucursales(composeSucursales(rawSucursales, cuadrillasList, activeCorrectivos, activePreventivos));
       setIsDataLoaded(true);
     } catch (e) {
       console.error("Error fetching data:", e);
@@ -113,38 +161,9 @@ export function useMapsData() {
   };
   
   const fetchSucursalData = async () => {
-    if (!sucursalesLocations.length || !cuadrillas.length || (!correctivos.length && !preventivos.length)) return;
+    if (!sucursalesLocations.length) return;
     try {
-      const updatedSucursales = await Promise.all(
-        sucursalesLocations.map(async sucursal => {
-          const Correctivos = correctivos
-            .filter(c => Number(c.id_sucursal) === Number(sucursal.id))
-            .map(c => ({
-              id: c.id,
-              cuadrilla_name: cuadrillas.find(cuadrilla => Number(cuadrilla.id) === Number(c.id_cuadrilla))?.name || 'Unknown',
-              fecha_apertura: c.fecha_apertura || 'Sin fecha',
-              numero_caso: c.numero_caso || 'Sin número',
-              estado: c.estado || 'Sin estado'
-            }));
-          const Preventivos = preventivos
-            .filter(p => Number(p.id_sucursal) === Number(sucursal.id))
-            .map(p => ({
-              id: p.id,
-              cuadrilla_name: cuadrillas.find(cuadrilla => Number(cuadrilla.id) === Number(p.id_cuadrilla))?.name || 'Unknown',
-              fecha_apertura: p.fecha_apertura || 'Sin fecha',
-              frecuencia: p.frecuencia || 'Sin frecuencia'
-            }));
-          return {
-            id: sucursal.id,
-            name: sucursal.name || 'Unknown',
-            lat: parseFloat(sucursal.lat),
-            lng: parseFloat(sucursal.lng),
-            Correctivos,
-            Preventivos
-          };
-        })
-      );
-      setSucursales(updatedSucursales.filter(sucursal => !isNaN(sucursal.lat) && !isNaN(sucursal.lng) && sucursal.lat !== 0 && sucursal.lng !== 0));
+      setSucursales(composeSucursales(sucursalesLocations, cuadrillas, correctivos, preventivos));
     } catch (error) {
       console.error('Error fetching sucursal data:', error);
     }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
-import { FaTruck, FaHome, FaWrench, FaTools } from 'react-icons/fa';
+import { FaTruck, FaUsers, FaWrench, FaTools } from 'react-icons/fa';
 import HomeButton from '../components/HomeButton';
 import BackButton from '../components/BackButton';
 import '../styles/mantenimiento.css'; 
@@ -14,8 +14,8 @@ const Mantenimiento = () => {
           <HomeButton to="/cuadrillas" icon={FaTruck} requiredRoles="user">
             Cuadrillas
           </HomeButton>
-          <HomeButton to="/sucursales" icon={FaHome} requiredRoles="user">
-            Sucursales
+          <HomeButton to="/clientes" icon={FaUsers} requiredRoles="user">
+            Clientes
           </HomeButton>
           <HomeButton to="/mantenimientos-correctivos" icon={FaWrench}>
             Mantenimiento Correctivo
