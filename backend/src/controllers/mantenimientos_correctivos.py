@@ -14,7 +14,8 @@ def mantenimientos_correctivos_get(db: Session = Depends(get_db)):
     return [
         {
             "id": m.id,
-            "id_sucursal": m.id_sucursal,
+            "cliente_id": m.cliente_id,
+            "sucursal_id": m.sucursal_id,
             "id_cuadrilla": m.id_cuadrilla,
             "fecha_apertura": m.fecha_apertura,
             "fecha_cierre": m.fecha_cierre,
@@ -35,7 +36,8 @@ def mantenimiento_correctivo_get(mantenimiento_id: int, db: Session = Depends(ge
     mantenimiento = get_mantenimiento_correctivo(db, mantenimiento_id)
     return {
         "id": mantenimiento.id,
-        "id_sucursal": mantenimiento.id_sucursal,
+        "cliente_id": mantenimiento.cliente_id,
+        "sucursal_id": mantenimiento.sucursal_id,
         "id_cuadrilla": mantenimiento.id_cuadrilla,
         "fecha_apertura": mantenimiento.fecha_apertura,
         "fecha_cierre": mantenimiento.fecha_cierre,
@@ -54,7 +56,8 @@ async def mantenimiento_correctivo_create(mantenimiento: MantenimientoCorrectivo
     current_entity = request.state.current_entity
     new_mantenimiento = await create_mantenimiento_correctivo(
         db,
-        mantenimiento.id_sucursal,
+        mantenimiento.cliente_id,
+        mantenimiento.sucursal_id,
         mantenimiento.id_cuadrilla,
         mantenimiento.fecha_apertura,
         mantenimiento.numero_caso,
@@ -66,7 +69,8 @@ async def mantenimiento_correctivo_create(mantenimiento: MantenimientoCorrectivo
     )
     return {
         "id": new_mantenimiento.id,
-        "id_sucursal": new_mantenimiento.id_sucursal,
+        "cliente_id": new_mantenimiento.cliente_id,
+        "sucursal_id": new_mantenimiento.sucursal_id,
         "id_cuadrilla": new_mantenimiento.id_cuadrilla,
         "fecha_apertura": new_mantenimiento.fecha_apertura,
         "numero_caso": new_mantenimiento.numero_caso,
@@ -80,7 +84,8 @@ async def mantenimiento_correctivo_create(mantenimiento: MantenimientoCorrectivo
 async def mantenimiento_correctivo_update(
     mantenimiento_id: int,
     request: Request,
-    id_sucursal: Optional[int] = Form(None),
+    cliente_id: Optional[int] = Form(None),
+    sucursal_id: Optional[int] = Form(None),
     id_cuadrilla: Optional[int] = Form(None),
     fecha_apertura: Optional[date] = Form(None),
     fecha_cierre: Optional[date] = Form(None),
@@ -99,7 +104,8 @@ async def mantenimiento_correctivo_update(
         db,
         mantenimiento_id,
         current_entity,
-        id_sucursal,
+        cliente_id,
+        sucursal_id,
         id_cuadrilla,
         fecha_apertura,
         fecha_cierre,
@@ -114,7 +120,8 @@ async def mantenimiento_correctivo_update(
     )
     return {
         "id": updated_mantenimiento.id,
-        "id_sucursal": updated_mantenimiento.id_sucursal,
+        "cliente_id": updated_mantenimiento.cliente_id,
+        "sucursal_id": updated_mantenimiento.sucursal_id,
         "id_cuadrilla": updated_mantenimiento.id_cuadrilla,
         "fecha_apertura": updated_mantenimiento.fecha_apertura,
         "fecha_cierre": updated_mantenimiento.fecha_cierre,

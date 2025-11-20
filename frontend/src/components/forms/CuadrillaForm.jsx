@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef, useContext } from 'react';
-import { Modal, Button, Form, InputGroup, Dropdown } from 'react-bootstrap';
+import { Modal, Button, Form, InputGroup, Dropdown, Alert } from 'react-bootstrap';
 import { createCuadrilla, updateCuadrilla } from '../../services/cuadrillaService';
 import { getZonas, createZona, deleteZona } from '../../services/zonaService';
 import { AuthContext } from '../../context/AuthContext';
@@ -8,7 +8,12 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaPlus } from 'react-icons/fa';
 import '../../styles/formularios.css';
 
-const CuadrillaForm = ({ cuadrilla, onClose }) => {
+const CuadrillaForm = ({ 
+  cuadrilla, 
+  onClose,
+  setError,
+  setSuccess
+}) => {
   const [formData, setFormData] = useState({
     nombre: '',
     zona: '',
@@ -17,9 +22,10 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
   const [newZona, setNewZona] = useState('');
   const [showNewZonaInput, setShowNewZonaInput] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [error, setError] = useState(null);
   const dropdownRef = useRef(null);
   const { signInWithGoogle } = useContext(AuthContext);
+  const [error_form, setError_form] = useState(null);
+  const [success_form, setSuccess_form] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -69,10 +75,12 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
         setFormData({ ...formData, zona: newZona });
         setNewZona('');
         setShowNewZonaInput(false);
-        setError(null);
+        setError_form(null);
+        setSuccess_form('Zona creada correctamente.');
       } catch (error) {
         console.error('Error creating zona:', error);
-        setError('Error al crear la zona. Puede que ya exista.');
+        setError_form('Error al crear la zona. Puede que ya exista.');
+        setSuccess_form(null);
       } finally {
         setIsLoading(false);
       }
@@ -87,11 +95,13 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
       if (formData.zona === zonas.find((z) => z.id === id)?.nombre) {
         setFormData({ ...formData, zona: '' });
       }
-      setError(null);
+      setError_form(null);
+      setSuccess_form('Zona eliminada correctamente.');
     } catch (error) {
       console.error('Error deleting zona:', error);
       const errorMessage = error.response?.data?.detail || 'No se pudo eliminar la zona. Puede estar en uso.';
-      setError(errorMessage);
+      setError_form(errorMessage);
+      setSuccess_form(null);
     } finally {
       setIsLoading(false);
     }
@@ -108,12 +118,15 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
         const payload = { ...formData, email: email, id_token: idToken };
         await createCuadrilla(payload);
       }
-      onClose();
+      setError(null);
+      setSuccess(cuadrilla ? 'Cuadrilla actualizada correctamente.' : 'Cuadrilla creada correctamente.');
     } catch (error) {
       console.error('Error saving cuadrilla:', error);
       setError(error.message || 'Error al guardar la cuadrilla.');
+      setSuccess(null);
     } finally {
       setIsLoading(false);
+      onClose();
     }
   };
 
@@ -147,11 +160,8 @@ const CuadrillaForm = ({ cuadrilla, onClose }) => {
             </div>
           ) : (
             <div>
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
+              {error_form && <Alert variant="danger">{error_form}</Alert>}
+              {success_form && <Alert variant="success" className="mt-3">{success_form}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="nombre">
                   <Form.Label className="required required-asterisk">Nombre</Form.Label>

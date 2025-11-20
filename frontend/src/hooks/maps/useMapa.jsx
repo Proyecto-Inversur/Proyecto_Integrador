@@ -6,11 +6,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { useMapsData } from "./useMapsData";
 import { useMapRoutes } from "./useMapRoutes";
 import { usePopups } from "./usePopups";
+import { getClientes } from "../../services/clienteService";
+import { getSucursales } from "../../services/sucursalService";
+import { getZonas } from "../../services/zonaService";
+import { getCuadrillas as getCuadrillasService } from "../../services/cuadrillaService";
 
 const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
   const {
     users,
-    cuadrillas,
+    cuadrillas: rawCuadrillas,
     sucursales
   } = useMapsData();
 
@@ -20,6 +24,13 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
   );
   const { showPopup } = usePopups(mapInstanceRef, isMobile);
 
+  const [clientes, setClientes] = useState([]);
+  const [sucursalMeta, setSucursalMeta] = useState({});
+  const [clienteFilter, setClienteFilter] = useState("");
+  const [zonaSucursalFilter, setZonaSucursalFilter] = useState("");
+  const [zonaCuadrillaFilter, setZonaCuadrillaFilter] = useState("");
+  const [zonas, setZonas] = useState([]);
+  const [cuadrillasMeta, setCuadrillasMeta] = useState({});
   const [showEncargados, setShowEncargados] = useState(true);
   const [showCuadrillas, setShowCuadrillas] = useState(true);
   const [showSucursales, setShowSucursales] = useState(true);
@@ -58,7 +69,130 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
   };
 
   useEffect(() => {
-    if (!mapInstanceRef.current || !sucursales.length) return;
+    const fetchClientesData = async () => {
+      try {
+        const [clientesResponse, sucursalesResponse, zonasResponse, cuadrillasResponse] = await Promise.all([
+          getClientes(),
+          getSucursales(),
+          getZonas(),
+          getCuadrillasService(),
+        ]);
+        setClientes(clientesResponse.data || []);
+        const meta = {};
+        (sucursalesResponse.data || []).forEach((sucursal) => {
+          meta[sucursal.id] = sucursal;
+        });
+        setSucursalMeta(meta);
+        setZonas(zonasResponse.data || []);
+        const cuadMeta = {};
+        (cuadrillasResponse.data || []).forEach((c) => {
+          cuadMeta[c.id] = c;
+        });
+        setCuadrillasMeta(cuadMeta);
+      } catch (error) {
+        console.error("Error fetching clientes para el mapa:", error);
+      }
+    };
+    fetchClientesData();
+  }, []);
+
+  const normalizeZona = (z) => (z || "").toString().trim();
+
+  const mergeCuadrillaData = (cuads) =>
+    (cuads || []).map((cuadrilla) => {
+      const meta = cuadrillasMeta[cuadrilla.id] || {};
+      const name = cuadrilla.name || meta.nombre || cuadrilla.nombre || 'Unknown';
+      const zona = normalizeZona(cuadrilla.zona ?? meta.zona);
+      return {
+        ...meta,
+        ...cuadrilla,
+        name,
+        zona,
+      };
+    });
+
+  const cuadrillasCompletas = mergeCuadrillaData(rawCuadrillas);
+
+  const zonasDesdeSucursales = Object.values(sucursalMeta || {})
+    .map((sucursal) => normalizeZona(sucursal?.zona))
+    .filter(Boolean);
+
+  const zonasDesdeCuadrillas = (cuadrillasCompletas || [])
+    .map((c) => normalizeZona(c.zona))
+    .filter(Boolean);
+
+  const zonasFromService = (zonas || []).map((z) => normalizeZona(z.nombre));
+
+  const zonasDisponibles = Array.from(new Set([...zonasDesdeSucursales, ...zonasDesdeCuadrillas, ...zonasFromService])).filter(Boolean);
+
+  const filteredSucursales = sucursales
+    .map((sucursal) => {
+      const meta = sucursalMeta[sucursal.id];
+      const clienteId =
+        meta?.cliente_id ??
+        meta?.id_cliente ??
+        sucursal.cliente_id ??
+        sucursal.id_cliente ??
+        null;
+      const zona = normalizeZona(meta?.zona ?? sucursal.zona ?? null);
+      const clienteNombre =
+        clientes.find((c) => Number(c.id) === Number(clienteId))?.nombre ||
+        meta?.cliente?.nombre ||
+        sucursal.cliente_nombre ||
+        'Sin cliente';
+      const attachCliente = (items = []) =>
+        items.map((item) => {
+          const itemClienteId = item.cliente_id ?? item.id_cliente ?? clienteId;
+          const itemClienteNombre =
+            item.cliente_nombre ||
+            clientes.find((c) => Number(c.id) === Number(itemClienteId))?.nombre ||
+            clienteNombre;
+          return {
+            ...item,
+            cliente_id: itemClienteId,
+            cliente_nombre: itemClienteNombre,
+          };
+        });
+
+      return {
+        ...sucursal,
+        cliente_id: clienteId,
+        cliente_nombre: clienteNombre,
+        zona,
+        Correctivos: attachCliente(sucursal.Correctivos),
+        Preventivos: attachCliente(sucursal.Preventivos),
+      };
+    })
+    .filter((sucursal) => {
+      if (!clienteFilter) return true;
+      return sucursal.cliente_id && String(sucursal.cliente_id) === clienteFilter;
+    })
+    .filter((sucursal) => {
+      if (!zonaSucursalFilter) return true;
+      return normalizeZona(sucursal.zona).toLowerCase() === normalizeZona(zonaSucursalFilter).toLowerCase();
+    });
+
+  const enrichCuadrillas = (cuads) =>
+    (cuads || []).map((cuadrilla) => {
+      const zonasSet = new Set();
+      if (cuadrilla.zona) zonasSet.add(normalizeZona(cuadrilla.zona));
+      (cuadrilla.sucursales || []).forEach((sucursal) => {
+        const meta = sucursalMeta[sucursal.id];
+        const zona = normalizeZona(meta?.zona ?? sucursal.zona);
+        if (zona) zonasSet.add(zona);
+      });
+      return { ...cuadrilla, zonas: Array.from(zonasSet) };
+    });
+
+  const filteredCuadrillas = enrichCuadrillas(cuadrillasCompletas).filter((cuadrilla) => {
+    if (!zonaCuadrillaFilter) return true;
+    return cuadrilla.zonas?.some(
+      (z) => normalizeZona(z).toLowerCase() === normalizeZona(zonaCuadrillaFilter).toLowerCase()
+    );
+  });
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
 
     usersMarkersRef.current.forEach((m) => m?.remove());
     cuadrillasMarkersRef.current.forEach((m) => m?.remove());
@@ -80,8 +214,8 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
       });
     }
 
-    if (cuadrillas.length && showCuadrillas) {
-      cuadrillas.forEach((c) => {
+    if (filteredCuadrillas.length && showCuadrillas) {
+      filteredCuadrillas.forEach((c) => {
         const marker = L.marker([c.lat, c.lng], {
           icon: L.divIcon({
             html: renderToStaticMarkup(<FaTruck size={22} color="#2c2c2c" />),
@@ -96,8 +230,8 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
       });
     }
 
-    if (sucursales.length && showSucursales) {
-      sucursales.forEach((s) => {
+    if (filteredSucursales.length && showSucursales) {
+      filteredSucursales.forEach((s) => {
         const marker = L.marker([s.lat, s.lng], {
           icon: L.divIcon({
             html: renderToStaticMarkup(
@@ -119,7 +253,7 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
       cuadrillasMarkersRef.current.forEach(marker => marker?.remove());
       sucursalMarkersRef.current.forEach(marker => marker?.remove());
     };
-  }, [users, cuadrillas, sucursales, showEncargados, showCuadrillas, showSucursales]);
+  }, [users, filteredCuadrillas, filteredSucursales, showEncargados, showCuadrillas, showSucursales]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !compassRef.current) return;
@@ -141,8 +275,16 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
 
   return {
     users,
-    cuadrillas,
-    sucursales,
+    cuadrillas: filteredCuadrillas,
+    sucursales: filteredSucursales,
+    clientes,
+    clienteFilter,
+    setClienteFilter,
+    zonasDisponibles,
+    zonaSucursalFilter,
+    setZonaSucursalFilter,
+    zonaCuadrillaFilter,
+    setZonaCuadrillaFilter,
     compassRef,
     showEncargados,
     showCuadrillas,

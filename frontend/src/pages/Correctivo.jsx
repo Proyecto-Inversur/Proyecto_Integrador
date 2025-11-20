@@ -55,6 +55,7 @@ const Correctivo = () => {
     handleCloseModal,
     toggleRoute,
     getSucursalNombre,
+    getClienteNombre,
     getCuadrillaNombre,
     getZonaNombre,
     formatExtendido,
@@ -74,6 +75,7 @@ const Correctivo = () => {
               isUser={isUser}
               formData={formData}
               getSucursalNombre={getSucursalNombre}
+              getClienteNombre={getClienteNombre}
               getCuadrillaNombre={getCuadrillaNombre}
               getZonaNombre={getZonaNombre}
               formatExtendido={formatExtendido}

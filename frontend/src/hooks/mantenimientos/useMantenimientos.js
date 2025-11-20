@@ -1,6 +1,14 @@
 import { useState } from 'react';
 
-const useMantenimientos = (sucursales = [], cuadrillas = [], isSelected, setIsSelected, addToRoute, removeFromRoute) => {
+const useMantenimientos = (
+  sucursales = [],
+  cuadrillas = [],
+  clientes = [],
+  isSelected,
+  setIsSelected,
+  addToRoute,
+  removeFromRoute
+) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -39,6 +47,11 @@ const useMantenimientos = (sucursales = [], cuadrillas = [], isSelected, setIsSe
     return sucursal ? sucursal.zona : 'Desconocida';
   };
 
+  const getClienteNombre = (cliente_id) => {
+    const cliente = clientes.find((c) => c.id === cliente_id);
+    return cliente ? cliente.nombre : 'Sin cliente';
+  };
+
   function formatExtendido(fechaIso) {
     const date = new Date(fechaIso);
     const year = date.getFullYear();
@@ -59,6 +72,7 @@ const useMantenimientos = (sucursales = [], cuadrillas = [], isSelected, setIsSe
     getSucursalNombre,
     getCuadrillaNombre,
     getZonaNombre,
+    getClienteNombre,
     formatExtendido,
   };
 };

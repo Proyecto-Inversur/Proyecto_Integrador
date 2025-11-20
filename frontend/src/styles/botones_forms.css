@@ -27,6 +27,46 @@
   cursor: pointer;
 }
 
+.view-sucursales-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  border: 2px solid #2c2c2c;
+  background: #2c2c2c;
+  color: #ffffff;
+  font-weight: 600;
+  margin-right: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.view-sucursales-btn:hover {
+  border: 2px solid #2c2c2c;
+  background: #ffffff;
+  color: #2c2c2c;
+  transform: translateY(-1px);
+}
+
+.view-sucursales-btn.active {
+  border: 2px solid #2c2c2c;
+  background: #ffffff;
+  color: #2c2c2c;
+}
+
+.clientes-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+td.acciones-col-clientes {
+  width: 320px;
+  text-align: center;
+}
+
 /* Centrado de botones en la columna de acciones */
 .action-cell {
   text-align: center;

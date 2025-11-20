@@ -11,6 +11,15 @@ class Zona(Base):
     id = Column(Integer, primary_key=True)
     nombre = Column(String, unique=True, nullable=False)
 
+class Cliente(Base):
+    __tablename__ = "cliente"
+    id = Column(Integer, primary_key=True)
+    nombre = Column(String, nullable=False)
+    contacto = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+
+    sucursales = relationship("Sucursal", back_populates="cliente", cascade="all, delete-orphan")
+
 class Sucursal(Base):
     __tablename__ = "sucursal"
     id = Column(Integer, primary_key=True)
@@ -18,8 +27,10 @@ class Sucursal(Base):
     zona = Column(String)
     direccion = Column(String)
     superficie = Column(String)
+    cliente_id = Column(Integer, ForeignKey("cliente.id"), nullable=False)
+    frecuencia_preventivo = Column(String, nullable=True)
     
-    preventivos = relationship("Preventivo", back_populates="sucursal")
+    cliente = relationship("Cliente", back_populates="sucursales")
     mantenimientos_preventivos = relationship("MantenimientoPreventivo", back_populates="sucursal")
     mantenimientos_correctivos = relationship("MantenimientoCorrectivo", back_populates="sucursal")
     correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="sucursal")
@@ -38,19 +49,11 @@ class Cuadrilla(Base):
     correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="cuadrilla")
     preventivo_seleccionado = relationship("PreventivoSeleccionado", back_populates="cuadrilla")
 
-class Preventivo(Base):
-    __tablename__ = "preventivo"
-    id = Column(Integer, primary_key=True)
-    id_sucursal = Column(Integer, ForeignKey("sucursal.id"))
-    nombre_sucursal = Column(String)
-    frecuencia = Column(String)
-    
-    sucursal = relationship("Sucursal", back_populates="preventivos")
-
 class MantenimientoPreventivo(Base):
     __tablename__ = "mantenimiento_preventivo"
     id = Column(Integer, primary_key=True)
-    id_sucursal = Column(Integer, ForeignKey("sucursal.id"))
+    cliente_id = Column(Integer, ForeignKey("cliente.id"), nullable=False)
+    sucursal_id = Column(Integer, ForeignKey("sucursal.id"), nullable=False)
     frecuencia = Column(String)
     id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
     fecha_apertura = Column(Date)
@@ -58,6 +61,7 @@ class MantenimientoPreventivo(Base):
     extendido = Column(DateTime, nullable=True)
     estado = Column(String)
 
+    cliente = relationship("Cliente")
     sucursal = relationship("Sucursal", back_populates="mantenimientos_preventivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_preventivos")
     preventivo_seleccionado = relationship("PreventivoSeleccionado", back_populates="mantenimiento_preventivo")
@@ -81,7 +85,8 @@ class MantenimientoPreventivoFoto(Base):
 class MantenimientoCorrectivo(Base):
     __tablename__ = "mantenimiento_correctivo"
     id = Column(Integer, primary_key=True)
-    id_sucursal = Column(Integer, ForeignKey("sucursal.id"))
+    cliente_id = Column(Integer, ForeignKey("cliente.id"), nullable=False)
+    sucursal_id = Column(Integer, ForeignKey("sucursal.id"), nullable=False)
     id_cuadrilla = Column(Integer, ForeignKey("cuadrilla.id"))
     fecha_apertura = Column(Date)
     fecha_cierre = Column(Date, nullable=True)
@@ -93,6 +98,7 @@ class MantenimientoCorrectivo(Base):
     prioridad = Column(String)
     extendido = Column(DateTime, nullable=True)
     
+    cliente = relationship("Cliente")
     sucursal = relationship("Sucursal", back_populates="mantenimientos_correctivos")
     cuadrilla = relationship("Cuadrilla", back_populates="mantenimientos_correctivos")
     correctivo_seleccionado = relationship("CorrectivoSeleccionado", back_populates="mantenimiento_correctivo")

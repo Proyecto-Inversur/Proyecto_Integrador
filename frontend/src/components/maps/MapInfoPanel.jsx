@@ -4,6 +4,14 @@ const MapInfoPanel = ({
   cuadrillas = [],
   encargados = [],
   sucursales = [],
+  clientes = [],
+  clienteFilter = '',
+  onClienteChange = () => {},
+  zonas = [],
+  zonaSucFilter = '',
+  zonaCuaFilter = '',
+  onZonaSucChange = () => {},
+  onZonaCuaChange = () => {},
   onSelectCuadrilla = () => {},
   onSelectEncargado = () => {},
   onSelectSucursal = () => {},
@@ -26,6 +34,18 @@ const MapInfoPanel = ({
             <FaTruck size={18} color="#dfa700" />
             Cuadrillas
           </h4>
+          <select
+            value={zonaCuaFilter}
+            onChange={(e) => onZonaCuaChange(e.target.value)}
+            className="map-client-filter w-100 mb-2"
+          >
+            <option value="">Todas las zonas</option>
+            {zonas.map((zona) => (
+              <option key={zona} value={zona}>
+                {zona}
+              </option>
+            ))}
+          </select>
           {cuadrillas.length === 0 && <p>No hay cuadrillas activas.</p>}
           {cuadrillas.map((cuadrilla) => (
             <div key={cuadrilla.id} className="obra-item" onClick={() => onSelectCuadrilla(cuadrilla)}>
@@ -58,6 +78,30 @@ const MapInfoPanel = ({
             <FaMapMarkerAlt size={18} color="#dfa700" />
             Sucursales
           </h4>
+          <select
+            value={clienteFilter}
+            onChange={(e) => onClienteChange(e.target.value)}
+            className="map-client-filter w-100 mb-2"
+          >
+            <option value="">Todos los clientes</option>
+            {clientes.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>
+                {cliente.nombre}
+              </option>
+            ))}
+          </select>
+          <select
+            value={zonaSucFilter}
+            onChange={(e) => onZonaSucChange(e.target.value)}
+            className="map-client-filter w-100 mb-2"
+          >
+            <option value="">Todas las zonas</option>
+            {zonas.map((zona) => (
+              <option key={zona} value={zona}>
+                {zona}
+              </option>
+            ))}
+          </select>
           {sucursales.length === 0 && <p>No hay sucursales activas.</p>}
           {sucursales.map((sucursal) => (
             <div key={sucursal.id} className="obra-item" onClick={() => onSelectSucursal(sucursal)}>

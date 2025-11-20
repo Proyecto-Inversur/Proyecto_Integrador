@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { getUsers, deleteUser } from '../../services/userService';
+import { confirmDialog } from '../../components/ConfirmDialog';
 
 const useUsers = () => {
   const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchUsers = async () => {
@@ -26,13 +28,21 @@ const useUsers = () => {
   }, []);
 
   const handleDelete = async (id) => {
+    const confirmed = await confirmDialog({
+      title: 'Eliminar usuario',
+      message: '¿Seguro que querés eliminar este usuario?',
+      confirmText: 'Eliminar',
+    });
+    if (!confirmed) return;
     setIsLoading(true);
     try {
       await deleteUser(id);
       fetchUsers();
       setError(null);
+      setSuccess('Usuario eliminado correctamente');
     } catch (error) {
       setError(error.response?.data?.detail || 'Error al eliminar el usuario');
+      setSuccess(null);
     } finally {
       setIsLoading(false);
     }
@@ -54,11 +64,14 @@ const useUsers = () => {
     showForm,
     setShowForm,
     selectedUser, 
-    error, 
+    error,
+    success,
     isLoading, 
     handleDelete, 
     handleEdit, 
-    handleFormClose
+    handleFormClose,
+    setError,
+    setSuccess
   };
 };
 

@@ -18,7 +18,7 @@ const SucursalPopup = ({ sucursal }) => (
       <div className="inv-subtitle">Correctivos</div>
       {sucursal.Correctivos?.length ? sucursal.Correctivos.map(c => (
         <div key={c.id} className="inv-box">
-          <Line label="Mantenimiento" value={c.id} />
+          <Line label="Cliente" value={c.cliente_nombre || sucursal.cliente_nombre} />
           <Line label="Cuadrilla" value={c.cuadrilla_name} />
           <Line label="Fecha" value={c.fecha_apertura} />
           <Line label="N° Caso" value={c.numero_caso} />
@@ -31,7 +31,7 @@ const SucursalPopup = ({ sucursal }) => (
       <div className="inv-subtitle mt-8">Preventivos</div>
       {sucursal.Preventivos?.length ? sucursal.Preventivos.map(p => (
         <div key={p.id} className="inv-box">
-          <Line label="Mantenimiento" value={p.id} />
+          <Line label="Cliente" value={p.cliente_nombre || sucursal.cliente_nombre} />
           <Line label="Cuadrilla" value={p.cuadrilla_name} />
           <Line label="Fecha" value={p.fecha_apertura} />
           <Line label="Frecuencia" value={p.frecuencia} />

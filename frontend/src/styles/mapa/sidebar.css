@@ -23,3 +23,21 @@
 .hidden-routing-control {
   display: none !important;
 }
+
+.map-client-filter {
+  width: 100%;
+  border-radius: 999px;
+  border: 2px solid #2c2c2c;
+  padding: 0.35rem 0.85rem;
+  background: #2c2c2c;
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin-bottom: 5px;
+}
+
+.map-client-filter:hover {
+  border: 2px solid #2c2c2c;
+  background: #ffffff;
+  color: #2c2c2c;
+}

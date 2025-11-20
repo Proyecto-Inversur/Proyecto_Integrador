@@ -6,12 +6,16 @@ import { AuthContext } from '../../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
 import '../../styles/formularios.css';
 
-const UserForm = ({ user, onClose }) => {
+const UserForm = ({ 
+  user, 
+  onClose,
+  setError,
+  setSuccess
+}) => {
   const [formData, setFormData] = useState({
     nombre: '',
     rol: 'Administrador',
   });
-  const [error, setError] = useState(null);
   const { signInWithGoogle } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,12 +43,15 @@ const UserForm = ({ user, onClose }) => {
         const payload = { ...formData, email: email, id_token: idToken };
         await createUser(payload);
       }
-      onClose();
+      setError(null);
+      setSuccess(user ? 'Usuario actualizado correctamente.' : 'Usuario creado correctamente.');
     } catch (error) {
       console.error('Error saving user:', error);
       setError(error.message || 'Error al guardar el usuario.');
+      setSuccess(null);
     } finally {
       setIsLoading(false);
+      onClose();
     }
   };
 
@@ -74,11 +81,6 @@ const UserForm = ({ user, onClose }) => {
             </div>
           ) : (
             <div>
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="nombre">
                   <Form.Label className="required required-asterisk">Nombre</Form.Label>

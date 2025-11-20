@@ -99,6 +99,20 @@
   color: #ffffff !important;
 }
 
+/* Estilo para el botón "Eliminar" de las alertas */
+.custom-del-button {
+  background-color: #ffffff !important; /* Gris oscuro */
+  border-color: red !important;
+  color: red !important; /* Texto blanco */
+  width: 100%;
+}
+
+.custom-del-button:hover {
+  background-color: red !important; /* Gris más oscuro al hover */
+  border-color: red !important;
+  color: #ffffff !important;
+}
+
 /* Asterisco rojo para campos obligatorios */
 .required-asterisk::after {
   content: '*';
@@ -144,6 +158,11 @@
   position: relative;
   /* limita la altura total del contenido del modal */
   max-height: calc(100dvh - 10rem);
+}
+
+.mc-modal-alert {
+  margin: 0.75rem auto;
+  max-width: 25rem; 
 }
 
 /* Botón ColumnSelector (amarillo) */

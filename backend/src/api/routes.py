@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from controllers import users, cuadrillas, sucursales, zonas, auth, preventivos, mantenimientos_preventivos, mantenimientos_correctivos, maps, notificaciones, push, chats, preferences
+from controllers import users, cuadrillas, clientes, sucursales, zonas, auth, mantenimientos_preventivos, mantenimientos_correctivos, maps, notificaciones, push, chats, preferences
 from config.database import get_db
 from services.auth import verify_user_token
 from services.chat_ws import chat_manager
@@ -118,10 +118,10 @@ async def websocket_notifications(websocket: WebSocket, firebase_uid: str):
 
 app.include_router(users.router)
 app.include_router(cuadrillas.router)
+app.include_router(clientes.router)
 app.include_router(sucursales.router)
 app.include_router(zonas.router)
 app.include_router(auth.router)
-app.include_router(preventivos.router)
 app.include_router(mantenimientos_preventivos.router)
 app.include_router(mantenimientos_correctivos.router)
 app.include_router(maps.router)
