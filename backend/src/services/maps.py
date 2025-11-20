@@ -1,6 +1,6 @@
 from fastapi import HTTPException   
 from sqlalchemy.orm import Session
-from api.models import CorrectivoSeleccionado, PreventivoSeleccionado, Cuadrilla, Usuario
+from api.models import CorrectivoSeleccionado, PreventivoSeleccionado
 from pydantic import BaseModel
 from typing import List
 from firebase_admin import db

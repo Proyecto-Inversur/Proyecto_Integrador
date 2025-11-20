@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Container, Row, Col, Form, Collapse } from 'react-bootstrap';
+import { Button, Container, Row, Col, Form, Collapse, Alert } from 'react-bootstrap';
 import { FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import BackButton from '../components/BackButton';
@@ -13,6 +13,7 @@ const MantenimientosCorrectivos = () => {
   const [showFilters, setShowFilters] = useState(false)
   const {
     filteredMantenimientos,
+    clientes,
     sucursales,
     cuadrillas,
     zonas,
@@ -20,6 +21,8 @@ const MantenimientosCorrectivos = () => {
     setShowForm,
     selectedMantenimiento,
     filters,
+    error,
+    success,
     isLoading,
     handleFilterChange,
     handleDelete,
@@ -27,14 +30,18 @@ const MantenimientosCorrectivos = () => {
     handleRowClick,
     handleFormClose,
     getSucursalNombre,
+    getClienteNombre,
     getCuadrillaNombre,
     getZonaNombre,
-    isUser
+    isUser,
+    setError,
+    setSuccess
   } = useMantenimientoCorrectivo();
 
   const availableColumns = isUser
     ? [
         { key: 'id', label: 'ID' },
+        { key: 'cliente', label: 'Cliente' },
         { key: 'sucursal', label: 'Sucursal' },
         { key: 'cuadrilla', label: 'Cuadrilla' },
         { key: 'zona', label: 'Zona' },
@@ -48,6 +55,7 @@ const MantenimientosCorrectivos = () => {
         { key: 'acciones', label: 'Acciones' },
       ]
     : [
+        { key: 'cliente', label: 'Cliente' },
         { key: 'sucursal', label: 'Sucursal' },
         { key: 'zona', label: 'Zona' },
         { key: 'rubro', label: 'Rubro' },
@@ -61,12 +69,17 @@ const MantenimientosCorrectivos = () => {
 
   const tableData = filteredMantenimientos.map((m) => ({
     ...m,
+    cliente: getClienteNombre(m.cliente_id || m.id_cliente),
     sucursal: getSucursalNombre(m.id_sucursal),
     cuadrilla: getCuadrillaNombre(m.id_cuadrilla),
     zona: getZonaNombre(m.id_sucursal),
     fecha_apertura: m.fecha_apertura?.split('T')[0],
     fecha_cierre: m.fecha_cierre ? m.fecha_cierre?.split('T')[0] : 'No hay Fecha',
   }));
+
+  const sucursalOptions = filters.cliente
+    ? sucursales.filter((s) => String(s.cliente_id) === filters.cliente)
+    : sucursales;
 
   const filterButton = (
     <Button
@@ -99,11 +112,22 @@ const MantenimientosCorrectivos = () => {
           )}
 
           <div className='maintenance-filter-item'>
+            <Form.Group className='mb-0' controlId="filterCliente">
+              <Form.Label>Cliente</Form.Label>
+              <Form.Select name='cliente' value={filters.cliente} onChange={handleFilterChange}>
+                <option value=''>Todos</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </div>
+          <div className='maintenance-filter-item'>
             <Form.Group className='mb-0' controlId="filterSucursal">
               <Form.Label>Sucursal</Form.Label>
               <Form.Select name='sucursal' value={filters.sucursal} onChange={handleFilterChange}>
                 <option value=''>Todas</option>
-                {sucursales.map((s) => (
+                {sucursalOptions.map((s) => (
                   <option key={s.id} value={s.id}>{s.nombre}</option>
                 ))}
               </Form.Select>
@@ -210,22 +234,25 @@ const MantenimientosCorrectivos = () => {
               )}
             </Col>
           </Row>
-
-            {showForm && (
-              <MantenimientoCorrectivoForm
-                mantenimiento={selectedMantenimiento}
-                onClose={handleFormClose}
-              />
-            )}
-            <DataTable
-              columns={availableColumns}
-              data={tableData}
-              entityKey="mantenimientos_correctivos"
-              onEdit={isUser ? handleEdit : undefined}
-              onDelete={isUser ? handleDelete : undefined}
-              onRowClick={(row) => handleRowClick(row.id)}
-              filterContent={filterContent}
+          {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success" className="mt-3">{success}</Alert>}
+          {showForm && (
+            <MantenimientoCorrectivoForm
+              mantenimiento={selectedMantenimiento}
+              onClose={handleFormClose}
+              setError={setError}
+              setSuccess={setSuccess}
             />
+          )}
+          <DataTable
+            columns={availableColumns}
+            data={tableData}
+            entityKey="mantenimientos_correctivos"
+            onEdit={isUser ? handleEdit : undefined}
+            onDelete={isUser ? handleDelete : undefined}
+            onRowClick={(row) => handleRowClick(row.id)}
+            filterContent={filterContent}
+          />
         </div>
       )}
     </Container>

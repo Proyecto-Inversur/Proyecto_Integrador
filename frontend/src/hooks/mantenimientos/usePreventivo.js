@@ -8,11 +8,14 @@ import { useAuthRoles } from '../useAuthRoles';
 import useIsMobile from '../useIsMobile';
 import useChat from './useChat';
 import useMantenimientos from './useMantenimientos';
+import { getClientes } from '../../services/clienteService';
+import { confirmDialog } from '../../components/ConfirmDialog';
 
 const usePreventivo = (mantenimientoId) => {
   const { id, uid, nombre, isUser } = useAuthRoles();
   const [mantenimiento, setMantenimiento] = useState({});
   const [cuadrillas, setCuadrillas] = useState([]);
+  const [clientes, setClientes] = useState([]);
   const [sucursales, setSucursales] = useState([]);
   const [formData, setFormData] = useState({
     planillas: [],
@@ -51,7 +54,15 @@ const usePreventivo = (mantenimientoId) => {
     setSuccess('Mantenimiento eliminado de la ruta.');
   };
 
-  const common = useMantenimientos(sucursales, cuadrillas, isSelected, setIsSelected, handleAddToRoute, handleRemoveFromRoute);
+  const common = useMantenimientos(
+    sucursales,
+    cuadrillas,
+    clientes,
+    isSelected,
+    setIsSelected,
+    handleAddToRoute,
+    handleRemoveFromRoute
+  );
 
   const fetchMantenimiento = async () => {
     setIsLoading(true);
@@ -77,11 +88,13 @@ const usePreventivo = (mantenimientoId) => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [cuadrillasResponse, sucursalesResponse, preventivosResponse] = await Promise.all([
+      const [clientesResponse, cuadrillasResponse, sucursalesResponse, preventivosResponse] = await Promise.all([
+        getClientes(),
         getCuadrillas(),
         getSucursales(),
         getPreventivos(parseInt(id)),
       ]);
+      setClientes(clientesResponse.data || []);
       setCuadrillas(cuadrillasResponse.data);
       setSucursales(sucursalesResponse.data);
       const preventivoId = preventivosResponse.data.filter(p => p.id_mantenimiento === mantenimientoId);
@@ -109,6 +122,12 @@ const usePreventivo = (mantenimientoId) => {
   };
 
   const handleDeleteSelectedPhotos = async (photos) => {
+    const confirmed = await confirmDialog({
+      title: 'Eliminar fotos',
+      message: '¿Seguro que querés eliminar las fotos seleccionadas?',
+      confirmText: 'Eliminar',
+    });
+    if (!confirmed) return;
     setIsLoading(true);
     try {
       for (const photoUrl of photos) {
@@ -142,6 +161,8 @@ const usePreventivo = (mantenimientoId) => {
     if (data.extendido) {
       formDataToSend.append('extendido', data.extendido);
     }
+    formDataToSend.append('cliente_id', mantenimiento.cliente_id || mantenimiento.id_cliente || '');
+    formDataToSend.append('id_sucursal', data.id_sucursal || mantenimiento.id_sucursal);
     formDataToSend.append('estado', data.estado);
 
     try {
@@ -158,29 +179,43 @@ const usePreventivo = (mantenimientoId) => {
   };
 
   const handleFinish = async () => {
-    const hasPlanilla = mantenimiento.planillas?.length > 0;
-    const hasFoto = mantenimiento.fotos?.length > 0;
+    if (mantenimiento.fecha_cierre !== null) {
+      try {
+        const updatedFormData = {
+          ...formData,
+          fecha_cierre: '0001-01-01',
+        };
+        await handleSubmit({ preventDefault: () => {} }, updatedFormData);
+        setSuccess('Mantenimiento marcado como pendiente correctamente.');
+      } catch (error) {
+        console.error('Error marking as pending:', error);
+        setError('Error al marcar como pendiente.');
+      }
+    } else {
+      const hasPlanilla = mantenimiento.planillas?.length > 0;
+      const hasFoto = mantenimiento.fotos?.length > 0;
 
-    if (!hasPlanilla || !hasFoto) {
-      setError('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
-      return;
-    }
+      if (!hasPlanilla || !hasFoto) {
+        setError('Debe cargar al menos una planilla y una foto para marcar como finalizado.');
+        return;
+      }
 
-    try {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const formattedDate = `${year}-${month}-${day}`;
-      const updatedFormData = {
-        ...formData,
-        fecha_cierre: formattedDate,
-      };
-      await handleSubmit({ preventDefault: () => {} }, updatedFormData);
-      setSuccess('Mantenimiento marcado como finalizado correctamente.');
-    } catch (error) {
-      console.error('Error marking as finished:', error);
-      setError('Error al marcar como finalizado.');
+      try {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        const updatedFormData = {
+          ...formData,
+          fecha_cierre: formattedDate,
+        };
+        await handleSubmit({ preventDefault: () => {} }, updatedFormData);
+        setSuccess('Mantenimiento marcado como finalizado correctamente.');
+      } catch (error) {
+        console.error('Error marking as finished:', error);
+        setError('Error al marcar como finalizado.');
+      }
     }
   };
 

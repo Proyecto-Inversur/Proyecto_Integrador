@@ -14,7 +14,8 @@ def mantenimientos_preventivos_get(db: Session = Depends(get_db)):
     return [
         {
             "id": m.id,
-            "id_sucursal": m.id_sucursal,
+            "cliente_id": m.cliente_id,
+            "sucursal_id": m.sucursal_id,
             "frecuencia": m.frecuencia,
             "id_cuadrilla": m.id_cuadrilla,
             "fecha_apertura": m.fecha_apertura,
@@ -32,7 +33,8 @@ def mantenimiento_preventivo_get(mantenimiento_id: int, db: Session = Depends(ge
     mantenimiento = get_mantenimiento_preventivo(db, mantenimiento_id)
     return {
         "id": mantenimiento.id,
-        "id_sucursal": mantenimiento.id_sucursal,
+        "cliente_id": mantenimiento.cliente_id,
+        "sucursal_id": mantenimiento.sucursal_id,
         "frecuencia": mantenimiento.frecuencia,
         "id_cuadrilla": mantenimiento.id_cuadrilla,
         "fecha_apertura": mantenimiento.fecha_apertura,
@@ -48,8 +50,9 @@ async def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivo
     current_entity = request.state.current_entity
     new_mantenimiento = await create_mantenimiento_preventivo(
         db,
-        mantenimiento.id_sucursal,
-        mantenimiento.frecuencia,
+        mantenimiento.cliente_id,
+        mantenimiento.sucursal_id,
+        mantenimiento.frecuencia.value,
         mantenimiento.id_cuadrilla,
         mantenimiento.fecha_apertura,
         mantenimiento.estado,
@@ -57,7 +60,8 @@ async def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivo
     )
     return {
         "id": new_mantenimiento.id,
-        "id_sucursal": new_mantenimiento.id_sucursal,
+        "cliente_id": new_mantenimiento.cliente_id,
+        "sucursal_id": new_mantenimiento.sucursal_id,
         "frecuencia": new_mantenimiento.frecuencia,
         "id_cuadrilla": new_mantenimiento.id_cuadrilla,
         "fecha_apertura": new_mantenimiento.fecha_apertura,
@@ -68,7 +72,8 @@ async def mantenimiento_preventivo_create(mantenimiento: MantenimientoPreventivo
 async def mantenimiento_preventivo_update(
     mantenimiento_id: int,
     request: Request,
-    id_sucursal: Optional[int] = Form(None),
+    cliente_id: Optional[int] = Form(None),
+    sucursal_id: Optional[int] = Form(None),
     frecuencia: Optional[str] = Form(None),
     id_cuadrilla: Optional[int] = Form(None),
     fecha_apertura: Optional[date] = Form(None),
@@ -84,7 +89,8 @@ async def mantenimiento_preventivo_update(
         db,
         mantenimiento_id,
         current_entity,
-        id_sucursal,
+        cliente_id,
+        sucursal_id,
         frecuencia,
         id_cuadrilla,
         fecha_apertura,
@@ -96,7 +102,8 @@ async def mantenimiento_preventivo_update(
     )
     return {
         "id": updated_mantenimiento.id,
-        "id_sucursal": updated_mantenimiento.id_sucursal,
+        "cliente_id": updated_mantenimiento.cliente_id,
+        "sucursal_id": updated_mantenimiento.sucursal_id,
         "frecuencia": updated_mantenimiento.frecuencia,
         "id_cuadrilla": updated_mantenimiento.id_cuadrilla,
         "fecha_apertura": updated_mantenimiento.fecha_apertura,

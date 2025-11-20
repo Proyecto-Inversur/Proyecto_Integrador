@@ -21,11 +21,14 @@ const Users = () => {
     showForm,
     setShowForm,
     selectedUser, 
-    error, 
+    error,
+    success,
     isLoading, 
     handleDelete, 
     handleEdit, 
-    handleFormClose
+    handleFormClose,
+    setError,
+    setSuccess
   } = useUsers();
 
   return (
@@ -46,10 +49,13 @@ const Users = () => {
             </Col>
           </Row>
           {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success" className="mt-3">{success}</Alert>}
           {showForm && (
             <UserForm
               user={selectedUser}
               onClose={handleFormClose}
+              setError={setError}
+              setSuccess={setSuccess}
             />
           )}
           <DataTable

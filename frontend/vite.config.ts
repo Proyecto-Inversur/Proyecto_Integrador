@@ -15,10 +15,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],     
     include: ['tests/**/*.{test,spec}.{js,ts,jsx,tsx}'],
-        coverage: {
+    reporters: ['default', ['junit', { outputFile: 'junit.xml' }]],
+    outputFile: 'junit.xml',
+    coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
-      reportsDirectory: './tests/coverage',
+      reporter: ['text', 'html', 'json', 'lcov', 'clover'],
+      reportsDirectory: './coverage',
       include: ['src/**/*.{js,jsx,ts,tsx}'],
       
       // Aca agregamos los archivos y carpetas a excluir.

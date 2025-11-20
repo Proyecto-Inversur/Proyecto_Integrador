@@ -21,8 +21,8 @@ const List = ({ items }) => {
 const CuadrillaPopup = ({ cuadrilla }) => (
   <div className="inv-card">
     <div className="inv-header">
-      <div className="inv-title">Cuadrilla {cuadrilla.name}</div>
-      <span className="inv-badge">Ruta</span>
+      <div className="inv-title">{cuadrilla.name}</div>
+      <span className="inv-badge">Cuadrilla</span>
     </div>
 
     <div className="inv-section">

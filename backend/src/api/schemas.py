@@ -76,33 +76,47 @@ class CuadrillaUpdate(BaseModel):
 class Zona(BaseModel):
     nombre: str
 
+# Esquemas para Cliente
+class ClienteBase(BaseModel):
+    nombre: str
+    contacto: str
+    email: EmailStr
+
+class ClienteCreate(ClienteBase):
+    pass
+
+class ClienteUpdate(BaseModel):
+    nombre: Optional[str] = None
+    contacto: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+class ClienteResponse(ClienteBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 # Esquemas para Sucursal
 class SucursalCreate(BaseModel):
     nombre: str
     zona: str
     direccion: Dict[str, Any]
     superficie: str
+    cliente_id: int
+    frecuencia_preventivo: Optional[Frecuencia] = None
 
 class SucursalUpdate(BaseModel):
     nombre: Optional[str] = None
     zona: Optional[str] = None
     direccion: Optional[Dict[str, Any]] = None
     superficie: Optional[str] = None
-
-# Esquemas para Preventivo
-class PreventivoCreate(BaseModel):
-    id_sucursal: int
-    nombre_sucursal: str
-    frecuencia: Frecuencia
-
-class PreventivoUpdate(BaseModel):
-    id_sucursal: Optional[int] = None
-    nombre_sucursal: Optional[str] = None
-    frecuencia: Optional[Frecuencia] = None
+    cliente_id: Optional[int] = None
+    frecuencia_preventivo: Optional[Frecuencia] = None
     
 # Esquemas para Mantenimiento Preventivo
 class MantenimientoPreventivoCreate(BaseModel):
-    id_sucursal: int
+    cliente_id: int
+    sucursal_id: int
     frecuencia: Frecuencia
     id_cuadrilla: int
     fecha_apertura: date
@@ -110,7 +124,8 @@ class MantenimientoPreventivoCreate(BaseModel):
 
 # Esquemas para Mantenimiento Correctivo
 class MantenimientoCorrectivoCreate(BaseModel):
-    id_sucursal: int
+    cliente_id: int
+    sucursal_id: int
     id_cuadrilla: Optional[int] = None
     fecha_apertura: date
     numero_caso: str

@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { deleteSelection } from '../../services/maps';
+import { confirmDialog } from '../../components/ConfirmDialog';
 import L from "leaflet";
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const ANIMATION_DURATION = 2000;
 
 export const useRutaNavegacion = (mapInstanceRef, createRoutingControl) => {
   const [routingControl, setRoutingControl] = useState(null);
@@ -11,6 +13,7 @@ export const useRutaNavegacion = (mapInstanceRef, createRoutingControl) => {
   const routeMarkerRef = useRef(null);
   const userMarkerRef = useRef(null);
   const headingRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   useEffect(() => {
     if (!isNavigating) return;
@@ -93,8 +96,13 @@ export const useRutaNavegacion = (mapInstanceRef, createRoutingControl) => {
     }
   };
 
-  const borrarRuta = (setSucursales, sucursalMarkersRef) => {
-    if (!window.confirm("⚠️ Vas a borrar toda la selección. ¿Seguro que querés continuar?")) {
+  const borrarRuta = async (setSucursales, sucursalMarkersRef) => {
+    const confirmed = await confirmDialog({
+      title: 'Borrar ruta',
+      message: 'Vas a borrar toda la selección. ¿Seguro que querés continuar?',
+      confirmText: 'Borrar',
+    });
+    if (!confirmed) {
       return;
     }
     setSucursales([]);

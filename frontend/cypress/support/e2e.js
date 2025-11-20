@@ -1,17 +1,17 @@
-// ***********************************************************
-// This example support/e2e.js is processed and
-// loaded automatically before your test files.
-//
-// This is a great place to put global configuration and
-// behavior that modifies Cypress.
-//
-// You can change the location of this file or turn off
-// automatically serving support files with the
-// 'supportFile' configuration option.
-//
-// You can read more here:
-// https://on.cypress.io/configuration
-// ***********************************************************
+import './commands.js';
+import 'cypress-file-upload';
 
-// Import commands.js using ES2015 syntax:
-import './commands'
+console.log('Running Cypress e2e support file');
+
+before(() => {
+  // Evita errores por scripts externos (Google Maps / GSI)
+  cy.stubGoogleGlobals();
+});
+
+// Por defecto, stub de servicios externos comunes
+beforeEach(() => {
+  cy.intercept('GET', 'https://www.googleapis.com/oauth2/v3/tokeninfo*', {
+    statusCode: 200,
+    body: { email: 'test@example.com', sub: 'google-sub-123' },
+  }).as('googleTokenInfo');
+});

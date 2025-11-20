@@ -1,8 +1,41 @@
 import api from './api';
 
-export const getMantenimientosCorrectivos = () => api.get('/mantenimientos-correctivos/');
-export const getMantenimientoCorrectivo = (id) => api.get(`/mantenimientos-correctivos/${id}`);
-export const createMantenimientoCorrectivo = (mantenimiento) => api.post('/mantenimientos-correctivos/', mantenimiento);
+const normalizeCorrectivo = (mantenimiento) => ({
+  ...mantenimiento,
+  id_sucursal: mantenimiento.id_sucursal ?? mantenimiento.sucursal_id ?? null,
+  sucursal_id: mantenimiento.sucursal_id ?? mantenimiento.id_sucursal ?? null,
+});
+
+const buildCorrectivoPayload = (mantenimiento) => {
+  const payload = { ...mantenimiento };
+  payload.cliente_id = payload.cliente_id ?? payload.id_cliente ?? null;
+  payload.sucursal_id = payload.sucursal_id ?? payload.id_sucursal ?? null;
+  delete payload.id_cliente;
+  delete payload.id_sucursal;
+  return payload;
+};
+
+export const getMantenimientosCorrectivos = async () => {
+  const response = await api.get('/mantenimientos-correctivos/');
+  return {
+    ...response,
+    data: (response.data || []).map(normalizeCorrectivo),
+  };
+};
+
+export const getMantenimientoCorrectivo = async (id) => {
+  const response = await api.get(`/mantenimientos-correctivos/${id}`);
+  return {
+    ...response,
+    data: normalizeCorrectivo(response.data),
+  };
+};
+
+export const createMantenimientoCorrectivo = (mantenimiento) => {
+  const payload = buildCorrectivoPayload(mantenimiento);
+  return api.post('/mantenimientos-correctivos/', payload);
+};
+
 export const updateMantenimientoCorrectivo = (id, mantenimiento) => {
   return api.put(`/mantenimientos-correctivos/${id}`, mantenimiento, {
     headers: {

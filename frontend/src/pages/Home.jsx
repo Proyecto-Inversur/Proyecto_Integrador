@@ -20,8 +20,8 @@ const Home = () => {
           <HomeButton to="/ruta" icon={FaMapMarkerAlt} requiredRoles="cuadrilla">
             Mapa
           </HomeButton>
-          <HomeButton to="/reportes" icon={FaFileAlt} requiredRoles="admin">
-            Reportes
+          <HomeButton to="/estadisticas" icon={FaFileAlt} requiredRoles="admin">
+            Estadísticas
           </HomeButton>
         </div>
       </div>

@@ -2,8 +2,9 @@ name: Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   checks: write # Permite escribir check runs para mostrar resultados de tests
@@ -78,17 +79,27 @@ jobs:
           echo "VITE_API_URL_QA=${{ secrets.BACKEND_QA_URL }}" > .env
           echo "VITE_API_URL_PROD=${{ secrets.BACKEND_PROD_URL }}" >> .env
           echo "VITE_FRONTEND_URL=${{ secrets.FRONTEND_QA_URL }}" >> .env
+          echo "VITE_FIREBASE_CONFIG_QA=${{ secrets.FIREBASE_CONFIG_QA }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_ID_QA=${{ secrets.GOOGLE_CLIENT_ID_QA }}" >> .env
+          echo "VITE_FIREBASE_CONFIG_PROD=${{ secrets.FIREBASE_CONFIG_PROD }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_ID_PROD=${{ secrets.GOOGLE_CLIENT_ID_PROD }}" >> .env
+          echo "VITE_GOOGLE_MAPS_API_KEY_QA=${{ secrets.GOOGLE_MAPS_API_KEY_QA }}" >> .env
+          echo "VITE_GOOGLE_MAPS_API_KEY_PROD=${{ secrets.GOOGLE_MAPS_API_KEY_PROD }}" >> .env
+          echo "VITE_OSRM_URL=${{ secrets.OSRM_URL }}" >> .env
+          echo "VITE_WEB_PUSH_PUBLIC_KEY_QA=${{ secrets.VAPID_PUBLIC_KEY }}" >> .env
+          echo "VITE_WEB_PUSH_PUBLIC_KEY_PROD=${{ secrets.VAPID_PRIVATE_KEY }}" >> .env
+          echo "VITE_NODE_ENV=test" >> .env
       - name: Run Frontend Tests with Coverage
         run: |
           cd frontend
-          npm test -- --coverage --ci
-      - name: Publish Test Results
+          npm run coverage
+      - name: Publish Vitest Results
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: Jest Results
+          name: Vitest Results
           path: frontend/junit.xml
-          reporter: jest-junit
+          reporter: java-junit
       - name: Install xmlstarlet
         run: |
           sudo apt-get update
@@ -96,21 +107,18 @@ jobs:
       - name: Write Frontend Coverage to Summary
         run: |
           echo "## Frontend Unit Test Coverage" >> $GITHUB_STEP_SUMMARY
-          echo "| Package | Line Rate | Complexity | Health |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|-----------|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Line Rate | Health |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------------|--------|" >> $GITHUB_STEP_SUMMARY
 
           if [ -f frontend/coverage/clover.xml ]; then
-            # Extraer métricas por archivo
-            xmlstarlet sel -t -m "//file" -v "concat(@name, '|', metrics/@statements, '|', metrics/@coveredstatements, '|0|')" -n frontend/coverage/clover.xml | while IFS='|' read -r FILE STATEMENTS COVERED_STATEMENTS _ HEALTH; do
-              echo "Processing file: $FILE, Statements: $STATEMENTS, Covered: $COVERED_STATEMENTS" >&2
+            xmlstarlet sel -t -m "//file" -v "concat(@name,'|',metrics/@statements,'|',metrics/@coveredstatements)" -n frontend/coverage/clover.xml |
+            while IFS='|' read -r FILE STATEMENTS COVERED_STATEMENTS; do
               if [ -z "$STATEMENTS" ] || [ "$STATEMENTS" = "0" ]; then
-                LINE_RATE_INT=0
                 LINE_RATE="0%"
                 HEALTH="❌"
               else
-                LINE_RATE=$(echo "scale=2; ($COVERED_STATEMENTS * 100) / $STATEMENTS" | bc)
-                LINE_RATE_INT=$(echo "$LINE_RATE" | cut -d. -f1)
-                LINE_RATE=$(printf "%.0f%%" "$LINE_RATE_INT")
+                LINE_RATE_INT=$(echo "($COVERED_STATEMENTS * 100) / $STATEMENTS" | bc)
+                LINE_RATE=$(printf "%s%%" "$LINE_RATE_INT")
                 if [ "$LINE_RATE_INT" -ge 80 ]; then
                   HEALTH="✔"
                 elif [ "$LINE_RATE_INT" -ge 50 ]; then
@@ -119,21 +127,19 @@ jobs:
                   HEALTH="❌"
                 fi
               fi
-              echo "| $FILE | $LINE_RATE | 0 | $HEALTH |" >> $GITHUB_STEP_SUMMARY
+              echo "| $FILE | $LINE_RATE | $HEALTH |" >> $GITHUB_STEP_SUMMARY
             done
 
-            # Extraer métricas totales
             TOTAL_STATEMENTS=$(xmlstarlet sel -t -v "//project/metrics/@statements" frontend/coverage/clover.xml)
             COVERED_STATEMENTS=$(xmlstarlet sel -t -v "//project/metrics/@coveredstatements" frontend/coverage/clover.xml)
-            echo "Total statements: $TOTAL_STATEMENTS, Covered statements: $COVERED_STATEMENTS" >&2
+
             if [ -z "$TOTAL_STATEMENTS" ] || [ "$TOTAL_STATEMENTS" -eq 0 ]; then
               LINE_RATE="0%"
               HEALTH="❌"
               SUMMARY="0% (0 / 0)"
             else
-              LINE_RATE=$(echo "scale=2; ($COVERED_STATEMENTS * 100) / $TOTAL_STATEMENTS" | bc)
-              LINE_RATE_INT=$(echo "$LINE_RATE" | cut -d. -f1)
-              LINE_RATE=$(printf "%.0f%%" "$LINE_RATE_INT")
+              LINE_RATE_INT=$(echo "($COVERED_STATEMENTS * 100) / $TOTAL_STATEMENTS" | bc)
+              LINE_RATE=$(printf "%s%%" "$LINE_RATE_INT")
               SUMMARY="$LINE_RATE ($COVERED_STATEMENTS / $TOTAL_STATEMENTS)"
               if [ "$LINE_RATE_INT" -ge 80 ]; then
                 HEALTH="✔"
@@ -143,20 +149,18 @@ jobs:
                 HEALTH="❌"
               fi
             fi
-            echo "| All files | $LINE_RATE | 0 | $HEALTH |" >> $GITHUB_STEP_SUMMARY
-            echo "| Summary | $SUMMARY | 0 | $HEALTH |" >> $GITHUB_STEP_SUMMARY
+
+            echo "| **All files** | $LINE_RATE | $HEALTH |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Summary** | $SUMMARY | $HEALTH |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ No se encontró clover.xml para Jest" >> $GITHUB_STEP_SUMMARY
-            echo "| All files | N/A | 0 | ❌ |" >> $GITHUB_STEP_SUMMARY
-            echo "| Summary | N/A | 0 | ❌ |" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ No se encontró clover.xml para Vitest" >> $GITHUB_STEP_SUMMARY
+            echo "| All files | N/A | ❌ |" >> $GITHUB_STEP_SUMMARY
+            echo "| Summary | N/A | ❌ |" >> $GITHUB_STEP_SUMMARY
           fi
       - name: Build Frontend
         run: |
           cd frontend
           npm run build
-      - name: Copy staticwebapp.config.json to dist
-        run: |
-          cp frontend/staticwebapp.config.json frontend/dist/
       - name: Upload Frontend Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -176,10 +180,20 @@ jobs:
         with:
           name: backend-artifact
           path: .
-      - name: Create Backend Environment File
+      - name: Create Backend Test Environment File
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_QA_URL }}" > env.config
           echo "FRONTEND_URL=${{ secrets.FRONTEND_QA_URL }}" >> env.config
+          echo "FIREBASE_CREDENTIALS=${{ secrets.FIREBASE_CREDENTIALS_JSON_QA }}" >> env.config
+          echo "FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL_QA }}" >> env.config
+          echo "EMAIL_ADMIN=${{ secrets.EMAIL_ADMIN_QA }}" >> env.config
+          echo "NOMBRE_ADMIN=${{ secrets.NOMBRE_ADMIN_QA }}" >> env.config
+          echo "PASSWORD_ADMIN=${{ secrets.PASSWORD_ADMIN_QA }}" >> env.config
+          echo "GOOGLE_CREDENTIALS=${{ secrets.GOOGLE_CREDENTIALS_JSON_QA }}" >> env.config
+          echo "GOOGLE_CLOUD_BUCKET_NAME=${{ secrets.GOOGLE_CLOUD_BUCKET_NAME_QA }}" >> env.config
+          echo "GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID_QA }}" >> env.config
+          echo "VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}" >> env.config
+          echo "E2E_TESTING=true" >> env.config
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -231,10 +245,20 @@ jobs:
           echo "VITE_API_URL_QA=${{ secrets.BACKEND_QA_URL }}" > .env
           echo "VITE_API_URL_PROD=${{ secrets.BACKEND_PROD_URL }}" >> .env
           echo "VITE_FRONTEND_URL=${{ secrets.FRONTEND_QA_URL }}" >> .env
+          echo "VITE_FIREBASE_CONFIG_QA=${{ secrets.FIREBASE_CONFIG_QA }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_ID_QA=${{ secrets.GOOGLE_CLIENT_ID_QA }}" >> .env
+          echo "VITE_FIREBASE_CONFIG_PROD=${{ secrets.FIREBASE_CONFIG_PROD }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_ID_PROD=${{ secrets.GOOGLE_CLIENT_ID_PROD }}" >> .env
+          echo "VITE_GOOGLE_MAPS_API_KEY_QA=${{ secrets.GOOGLE_MAPS_API_KEY_QA }}" >> .env
+          echo "VITE_GOOGLE_MAPS_API_KEY_PROD=${{ secrets.GOOGLE_MAPS_API_KEY_PROD }}" >> .env
+          echo "VITE_OSRM_URL=${{ secrets.OSRM_URL }}" >> .env
+          echo "VITE_WEB_PUSH_PUBLIC_KEY_QA=${{ secrets.VAPID_PUBLIC_KEY }}" >> .env
+          echo "VITE_WEB_PUSH_PUBLIC_KEY_PROD=${{ secrets.VAPID_PRIVATE_KEY }}" >> .env
+          echo "VITE_NODE_ENV=test" >> .env
       - name: Run Cypress Tests with Coverage
         run: |
           cd frontend
-          npx cypress run --reporter mocha-junit-reporter --reporter-options "mochaFile=cypress/results.xml"
+          npm run cy:run --reporter mocha-junit-reporter --reporter-options "mochaFile=cypress/results.xml"
       - name: Publish Test Results
         uses: dorny/test-reporter@v1
         if: always()
@@ -260,6 +284,15 @@ jobs:
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_PROD_URL }}" > env.config
           echo "FRONTEND_URL=${{ secrets.FRONTEND_PROD_URL }}" >> env.config
+          echo "FIREBASE_CREDENTIALS=${{ secrets.FIREBASE_CREDENTIALS_JSON_PROD }}" >> env.config
+          echo "FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL_PROD }}" >> env.config
+          echo "EMAIL_ADMIN=${{ secrets.EMAIL_ADMIN_PROD }}" >> env.config
+          echo "NOMBRE_ADMIN=${{ secrets.NOMBRE_ADMIN_PROD }}" >> env.config
+          echo "PASSWORD_ADMIN=${{ secrets.PASSWORD_ADMIN_PROD }}" >> env.config
+          echo "GOOGLE_CREDENTIALS=${{ secrets.GOOGLE_CREDENTIALS_JSON_PROD }}" >> env.config
+          echo "GOOGLE_CLOUD_BUCKET_NAME=${{ secrets.GOOGLE_CLOUD_BUCKET_NAME_PROD }}" >> env.config
+          echo "GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID_PROD }}" >> env.config
+          echo "VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}" >> env.config
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -285,6 +318,21 @@ jobs:
         with:
           name: frontend-artifact
           path: frontend/dist/
+      - name: Create Frontend .env File
+        run: |
+          echo "VITE_API_URL_QA=${{ secrets.BACKEND_QA_URL }}" > .env
+          echo "VITE_API_URL_PROD=${{ secrets.BACKEND_PROD_URL }}" >> .env
+          echo "VITE_FRONTEND_URL=${{ secrets.FRONTEND_QA_URL }}" >> .env
+          echo "VITE_FIREBASE_CONFIG_QA=${{ secrets.FIREBASE_CONFIG_QA }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_ID_QA=${{ secrets.GOOGLE_CLIENT_ID_QA }}" >> .env
+          echo "VITE_FIREBASE_CONFIG_PROD=${{ secrets.FIREBASE_CONFIG_PROD }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_ID_PROD=${{ secrets.GOOGLE_CLIENT_ID_PROD }}" >> .env
+          echo "VITE_GOOGLE_MAPS_API_KEY_QA=${{ secrets.GOOGLE_MAPS_API_KEY_QA }}" >> .env
+          echo "VITE_GOOGLE_MAPS_API_KEY_PROD=${{ secrets.GOOGLE_MAPS_API_KEY_PROD }}" >> .env
+          echo "VITE_OSRM_URL=${{ secrets.OSRM_URL }}" >> .env
+          echo "VITE_WEB_PUSH_PUBLIC_KEY_QA=${{ secrets.VAPID_PUBLIC_KEY }}" >> .env
+          echo "VITE_WEB_PUSH_PUBLIC_KEY_PROD=${{ secrets.VAPID_PRIVATE_KEY }}" >> .env
+          echo "VITE_NODE_ENV=notest" >> .env
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:

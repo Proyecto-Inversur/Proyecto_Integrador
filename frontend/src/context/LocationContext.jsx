@@ -7,10 +7,17 @@ export const LocationContext = createContext();
 const LocationProvider = ({ children }) => {
   const { id, nombre } = useAuthRoles();
   const [userLocation, setUserLocation] = useState(null);
+  const isE2E = typeof window !== 'undefined' && !!window.Cypress;
 
   useEffect(() => {
     if (!id) {
       setUserLocation(null);
+      return;
+    }
+
+    if (isE2E) {
+      const location = { lat: -31.4167, lng: -64.1833 };
+      setUserLocation(location);
       return;
     }
 
@@ -26,8 +33,10 @@ const LocationProvider = ({ children }) => {
         const location = { lat: latitude, lng: longitude };
         setUserLocation(location);
         const name = nombre || 'Unknown';
-        updateUserLocation({ lat: latitude, lng: longitude, name })
-          .catch(error => console.error('Error updating location:', error));
+        if (!isE2E) {
+          updateUserLocation({ lat: latitude, lng: longitude, name })
+            .catch(error => console.error('Error updating location:', error));
+        }
       },
       (error) => {
         console.error('Geolocation error:', error);
@@ -37,7 +46,7 @@ const LocationProvider = ({ children }) => {
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [id]);
+  }, [id, isE2E, nombre]);
 
   return (
     <LocationContext.Provider value={{ userLocation }}>

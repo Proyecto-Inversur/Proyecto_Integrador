@@ -5,17 +5,21 @@ import { getSucursales } from '../../services/sucursalService';
 import { getCuadrillas } from '../../services/cuadrillaService';
 import { getZonas } from '../../services/zonaService';
 import { useAuthRoles } from '../useAuthRoles';
+import { getClientes } from '../../services/clienteService';
+import { confirmDialog } from '../../components/ConfirmDialog';
 
 const useMantenimientoCorrectivo = () => {
   const { id, isUser, isCuadrilla } = useAuthRoles();
   const [mantenimientos, setMantenimientos] = useState([]);
   const [filteredMantenimientos, setFilteredMantenimientos] = useState([]);
+  const [clientes, setClientes] = useState([]);
   const [sucursales, setSucursales] = useState([]);
   const [cuadrillas, setCuadrillas] = useState([]);
   const [zonas, setZonas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
   const [filters, setFilters] = useState({
+    cliente: '',
     cuadrilla: '',
     sucursal: '',
     zona: '',
@@ -25,6 +29,8 @@ const useMantenimientoCorrectivo = () => {
     sortByDate: 'desc',
   });
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchMantenimientos = async () => {
@@ -36,8 +42,9 @@ const useMantenimientoCorrectivo = () => {
         : response.data;
       setMantenimientos(mantenimientoArray);
       setFilteredMantenimientos(mantenimientoArray);
+      setError(null);
     } catch (error) {
-      console.error('Error fetching mantenimientos:', error);
+      setError(error.response?.data?.detail || 'Error al cargar los mantenimientos');
     } finally {
       setIsLoading(false);
     }
@@ -45,17 +52,15 @@ const useMantenimientoCorrectivo = () => {
 
   const fetchData = async () => {
     try {
-      const [sucursalesResponse, cuadrillasResponse, zonasResponse] = await Promise.all([
+      const [clientesResponse, sucursalesResponse, cuadrillasResponse, zonasResponse] = await Promise.all([
+        getClientes(),
         getSucursales(),
         getCuadrillas(),
         getZonas(),
       ]);
-      
-      const sucursalesConMantenimientos = sucursalesResponse.data.filter(sucursal =>
-        mantenimientos.some(m => m.id_sucursal === sucursal.id)
-      );
 
-      setSucursales(sucursalesConMantenimientos);
+      setClientes(clientesResponse.data || []);
+      setSucursales(sucursalesResponse.data || []);
       setCuadrillas(cuadrillasResponse.data);
       setZonas(zonasResponse.data);
     } catch (error) {
@@ -77,6 +82,9 @@ const useMantenimientoCorrectivo = () => {
 
     let filtered = [...mantenimientos];
 
+    if (newFilters.cliente) {
+      filtered = filtered.filter((m) => String(m.cliente_id || m.id_cliente) === newFilters.cliente);
+    }
     if (newFilters.cuadrilla) {
       filtered = filtered.filter(m => m.id_cuadrilla === parseInt(newFilters.cuadrilla));
     }
@@ -109,13 +117,22 @@ const useMantenimientoCorrectivo = () => {
   };
 
   const handleDelete = async (id) => {
+    const confirmed = await confirmDialog({
+      title: 'Eliminar correctivo',
+      message: '¿Seguro que querés eliminar este mantenimiento correctivo?',
+      confirmText: 'Eliminar',
+    });
+    if (!confirmed) return;
     setIsLoading(true);
     if (isUser) {
       try {
         await deleteMantenimientoCorrectivo(id);
         fetchMantenimientos();
+        setError(null);
+        setSuccess('Mantenimiento eliminado correctamente');
       } catch (error) {
-        console.error('Error deleting mantenimiento correctivo:', error);
+        setError(error.response?.data?.detail || 'Error al eliminar el mantenimiento');
+        setSuccess(null);
       } finally {
         setIsLoading(false);
       }
@@ -152,8 +169,14 @@ const useMantenimientoCorrectivo = () => {
     return sucursal ? sucursal.zona : 'Desconocida';
   };
 
+  const getClienteNombre = (cliente_id) => {
+    const cliente = clientes.find((c) => c.id === cliente_id);
+    return cliente ? cliente.nombre : 'Sin cliente';
+  };
+
   return { 
     filteredMantenimientos,
+    clientes,
     sucursales,
     cuadrillas,
     zonas,
@@ -161,6 +184,8 @@ const useMantenimientoCorrectivo = () => {
     setShowForm,
     selectedMantenimiento,
     filters,
+    error,
+    success,
     isLoading,
     handleFilterChange,
     handleDelete,
@@ -170,7 +195,10 @@ const useMantenimientoCorrectivo = () => {
     getSucursalNombre,
     getCuadrillaNombre,
     getZonaNombre,
-    isUser
+    getClienteNombre,
+    isUser,
+    setError,
+    setSuccess
   };
 };
 

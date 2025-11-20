@@ -13,6 +13,7 @@ import Layout from './components/Layout';
 import routes from './routes';
 
 const googleMapsLibraries = ['places'];
+const isCypressRuntime = typeof window !== 'undefined' && !!window.Cypress;
 
 export const AppContent = () => {
   const location = useLocation();
@@ -26,29 +27,37 @@ export const AppContent = () => {
     }
   }, [currentEntity, loading, verifying, location, navigate]);
 
-  return (
+  const shouldLoadMaps = Boolean(config.mapsApiKey) && !isCypressRuntime;
+
+  const routesContent = (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+        {routes.map(({ path, element, adminOnly, usersOnly }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              adminOnly || usersOnly ? (
+                <ProtectedRoute adminOnly={adminOnly} usersOnly={usersOnly}>
+                  {element}
+                </ProtectedRoute>
+              ) : (
+                element
+              )
+            }
+          />
+        ))}
+      </Route>
+    </Routes>
+  );
+
+  return shouldLoadMaps ? (
     <LoadScript googleMapsApiKey={config.mapsApiKey} libraries={googleMapsLibraries}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          {routes.map(({ path, element, adminOnly, usersOnly }) => (
-            <Route
-              key={path}
-              path={path}
-              element={
-                adminOnly || usersOnly ? (
-                  <ProtectedRoute adminOnly={adminOnly} usersOnly={usersOnly}>
-                    {element}
-                  </ProtectedRoute>
-                ) : (
-                  element
-                )
-              }
-            />
-          ))}
-        </Route>
-      </Routes>
+      {routesContent}
     </LoadScript>
+  ) : (
+    routesContent
   );
 };
 

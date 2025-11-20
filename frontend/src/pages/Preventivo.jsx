@@ -53,6 +53,7 @@ const Preventivo = () => {
     handleCloseModal,
     toggleRoute,
     getSucursalNombre,
+    getClienteNombre,
     getCuadrillaNombre,
     getZonaNombre,
     formatExtendido,
@@ -72,6 +73,7 @@ const Preventivo = () => {
               isUser={isUser}
               formData={formData}
               getSucursalNombre={getSucursalNombre}
+              getClienteNombre={getClienteNombre}
               getCuadrillaNombre={getCuadrillaNombre}
               getZonaNombre={getZonaNombre}
               formatExtendido={formatExtendido}
@@ -84,6 +86,7 @@ const Preventivo = () => {
               isLoading={isLoading}
               showFinishButton={mantenimiento.fecha_cierre === null}
               handleFinish={handleFinish}
+              handleChange={false}
             />
             {!isMobile && (
               <Col className="chat-section">

@@ -21,11 +21,14 @@ const Cuadrillas = () => {
     showForm,
     setShowForm,
     selectedCuadrilla, 
-    error, 
+    error,
+    success,
     isLoading, 
     handleDelete, 
     handleEdit, 
-    handleFormClose
+    handleFormClose,
+    setError,
+    setSuccess
   } = useCuadrillas();
 
   return (
@@ -46,10 +49,14 @@ const Cuadrillas = () => {
             </Col>
           </Row>
           {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success" className="mt-3">{success}</Alert>}
           {showForm && (
             <CuadrillaForm
               cuadrilla={selectedCuadrilla}
               onClose={handleFormClose}
+              error={error}
+              setError={setError}
+              setSuccess={setSuccess}
             />
           )}
           <DataTable

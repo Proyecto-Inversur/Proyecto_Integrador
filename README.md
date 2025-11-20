@@ -18,4 +18,4 @@ Sistema de gestión de cuadrillas para obras de mantenimiento.
 ## Tests con code coverage
 1. Backend: cd backend && pytest -v --cov=src --cov-report=xml --junitxml=pytest-report.xml
 2. Frontend: cd frontend && npm test -- --coverage --ci
-3. Cypress (Necesita estar corriendo el backend y frontend en local): cd frontend && npx cypress run --reporter mocha-junit-reporter --reporter-options "mochaFile=cypress/results.xml"
+3. Cypress (Necesita estar corriendo el backend y frontend en local): cd frontend && npm run cy:run --reporter mocha-junit-reporter --reporter-options "mochaFile=cypress/results.xml"

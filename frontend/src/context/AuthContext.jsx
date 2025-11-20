@@ -1,8 +1,7 @@
 import React, { createContext, useEffect } from 'react';
 import { config } from '../config';
 import { loadGoogleSDK } from '../utils/googleSignIn';
-import { auth } from '../services/firebase';
-import { onIdTokenChanged  } from "firebase/auth";
+import { auth, onIdTokenChanged } from '../services/firebase';
 import useAuth, { buildUserAuthError } from '../hooks/useAuth';
 
 const AuthContext = createContext();
@@ -21,6 +20,19 @@ const AuthProvider = ({ children }) => {
     isLoggingOut,
   } = useAuth();
   const signInWithGoogle = async (loginIn) => {
+    // Fast path para E2E (Cypress): evita SDK de Google y dispara el flujo
+    if (typeof window !== 'undefined' && window.Cypress) {
+      const fakeIdToken = 'test-id-token';
+      if (loginIn) {
+        localStorage.setItem('googleIdToken', fakeIdToken);
+        sessionStorage.setItem('googleIdToken', fakeIdToken);
+        startSigningIn();
+        return Promise.resolve();
+      } else {
+        return Promise.resolve({ idToken: fakeIdToken, email: 'test@example.com' });
+      }
+    }
+
     await loadGoogleSDK();
     return new Promise((resolve, reject) => {
       try {

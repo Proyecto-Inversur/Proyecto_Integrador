@@ -1,3 +1,4 @@
+import os
 from firebase_admin import auth
 from sqlalchemy.orm import Session
 from api.models import Usuario, Cuadrilla
@@ -7,6 +8,18 @@ import requests
 import time
 
 def verify_user_token(token: str, db: Session, retries: int = 3):
+    # In E2E mode, short-circuit and return a static admin entity
+    if os.environ.get("E2E_TESTING") == "true":
+        return {
+            "type": "usuario",
+            "data": {
+                "id": 1,
+                "uid": "test-uid",
+                "nombre": "Test User",
+                "email": "test@example.com",
+                "rol": Role.ADMIN,
+            },
+        }
     for attempt in range(retries):
         try:
             decoded_token = auth.verify_id_token(token)
@@ -69,29 +82,30 @@ def create_firebase_user(user_data: UserCreate, db: Session, current_entity: dic
             raise HTTPException(status_code=403, detail="No tienes permisos de administrador")
     
     try:
-        if not id_token:
-            raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
+        if os.environ.get("E2E_TESTING") != "true":
+            if not id_token:
+                raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
 
-        # Verify the Google ID token
-        response = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}")
-        decoded_token = response.json()
-        
-        if "error" in decoded_token:
-            raise HTTPException(status_code=401, detail=f"Token inválido: {decoded_token['error_description']}")
+            # Verify the Google ID token
+            response = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}")
+            decoded_token = response.json()
+            
+            if "error" in decoded_token:
+                raise HTTPException(status_code=401, detail=f"Token inválido: {decoded_token['error_description']}")
 
-        email = decoded_token.get("email")
-        google_uid = decoded_token.get("sub")
-
-        if email != user_data.email:
-            raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
-        
-        # Create Firebase user
-        try:
-            firebase_user = auth.create_user(email=user_data.email)
-            firebase_uid = firebase_user.uid
-        except auth.EmailAlreadyExistsError:
-            firebase_user = auth.get_user_by_email(user_data.email)
-            firebase_uid = firebase_user.uid
+            email = decoded_token.get("email")
+            if email != user_data.email:
+                raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
+            
+            # Create or fetch Firebase user
+            try:
+                firebase_user = auth.create_user(email=user_data.email)
+                firebase_uid = firebase_user.uid
+            except auth.EmailAlreadyExistsError:
+                firebase_user = auth.get_user_by_email(user_data.email)
+                firebase_uid = firebase_user.uid
+        else:
+            firebase_uid = "test-uid"
 
         db_user = Usuario(
             nombre=user_data.nombre,
@@ -139,7 +153,8 @@ def delete_firebase_user(user_id: int, db: Session, current_entity: dict):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     try:
-        auth.delete_user(db_user.firebase_uid)
+        if os.environ.get("E2E_TESTING") != "true" and db_user.firebase_uid:
+            auth.delete_user(db_user.firebase_uid)
         db.delete(db_user)
         db.commit()
         return {"message": f"Usuario {db_user.email} eliminado correctamente"}
@@ -153,29 +168,31 @@ def create_firebase_cuadrilla(cuadrilla_data: CuadrillaCreate, db: Session, curr
         raise HTTPException(status_code=403, detail="No tienes permisos")
     
     try:
-        if not id_token:
-            raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
+        if os.environ.get("E2E_TESTING") != "true":
+            if not id_token:
+                raise HTTPException(status_code=400, detail="Se requiere un ID token de Google")
 
-        # Verify the Google ID token
-        response = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}")
-        decoded_token = response.json()
+            # Verify the Google ID token
+            response = requests.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}")
+            decoded_token = response.json()
 
-        if "error" in decoded_token:
-            raise HTTPException(status_code=401, detail=f"Token inválido: {decoded_token['error_description']}")
+            if "error" in decoded_token:
+                raise HTTPException(status_code=401, detail=f"Token inválido: {decoded_token['error_description']}")
 
-        email = decoded_token.get("email")
-        google_uid = decoded_token.get("sub")
+            email = decoded_token.get("email")
 
-        if email != cuadrilla_data.email:
-            raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
+            if email != cuadrilla_data.email:
+                raise HTTPException(status_code=400, detail="El email del token no coincide con el proporcionado")
 
-        # Create Firebase user
-        try:
-            firebase_user = auth.create_user(email=cuadrilla_data.email)
-            firebase_uid = firebase_user.uid
-        except auth.EmailAlreadyExistsError:
-            firebase_user = auth.get_user_by_email(cuadrilla_data.email)
-            firebase_uid = firebase_user.uid
+            # Create or fetch Firebase user
+            try:
+                firebase_user = auth.create_user(email=cuadrilla_data.email)
+                firebase_uid = firebase_user.uid
+            except auth.EmailAlreadyExistsError:
+                firebase_user = auth.get_user_by_email(cuadrilla_data.email)
+                firebase_uid = firebase_user.uid
+        else:
+            firebase_uid = "test-uid"
 
         db_cuadrilla = Cuadrilla(
             nombre=cuadrilla_data.nombre,
@@ -223,7 +240,8 @@ def delete_firebase_cuadrilla(cuadrilla_id: int, db: Session, current_entity: di
         raise HTTPException(status_code=404, detail="Cuadrilla no encontrada")
 
     try:
-        auth.delete_user(db_cuadrilla.firebase_uid)
+        if os.environ.get("E2E_TESTING") != "true" and db_cuadrilla.firebase_uid:
+            auth.delete_user(db_cuadrilla.firebase_uid)
         db.delete(db_cuadrilla)
         db.commit()
         return {"message": f"Cuadrilla {db_cuadrilla.email} eliminada correctamente"}

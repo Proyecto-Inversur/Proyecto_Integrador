@@ -1,12 +1,18 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { createMantenimientoCorrectivo, updateMantenimientoCorrectivo } from '../../services/mantenimientoCorrectivoService';
-import { getSucursales } from '../../services/sucursalService';
+import { getSucursalesByCliente } from '../../services/sucursalService';
 import { getCuadrillas } from '../../services/cuadrillaService';
+import { getClientes } from '../../services/clienteService';
 import '../../styles/formularios.css';
 
-const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
+const MantenimientoCorrectivoForm = ({ 
+  mantenimiento, 
+  onClose,
+  setError,
+  setSuccess
+}) => {
   const [formData, setFormData] = useState({
     id_sucursal: '',
     id_cuadrilla: '',
@@ -17,21 +23,47 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
     estado: 'Pendiente',
     prioridad: 'Media',
   });
-  const [sucursales, setSucursales] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [clienteId, setClienteId] = useState('');
+  const [sucursalesPorCliente, setSucursalesPorCliente] = useState({});
   const [cuadrillas, setCuadrillas] = useState([]);
-  const [error, setError] = useState(null);
+  const [error_form, setError_form] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [sucursalesResponse, cuadrillasResponse] = await Promise.all([
-          getSucursales(),
+        const [clientesResponse, cuadrillasResponse] = await Promise.all([
+          getClientes(),
           getCuadrillas(),
         ]);
-        setSucursales(sucursalesResponse.data);
-        setCuadrillas(cuadrillasResponse.data);
+        const clientesData = clientesResponse.data || [];
+        setClientes(clientesData);
+        setCuadrillas(cuadrillasResponse.data || []);
+
+        let initialClienteId = mantenimiento?.cliente_id || mantenimiento?.id_cliente;
+        if (!initialClienteId && clientesData.length) {
+          initialClienteId = clientesData[0].id;
+        }
+        if (initialClienteId) {
+          setClienteId(String(initialClienteId));
+          await fetchSucursalesForCliente(initialClienteId);
+        }
+
+        if (mantenimiento) {
+          setFormData({
+            id_sucursal: mantenimiento.id_sucursal || '',
+            id_cuadrilla: mantenimiento.id_cuadrilla || '',
+            fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || '',
+            numero_caso: mantenimiento.numero_caso || '',
+            incidente: mantenimiento.incidente || '',
+            rubro: mantenimiento.rubro || '',
+            estado: mantenimiento.estado || 'Pendiente',
+            prioridad: mantenimiento.prioridad || 'Media',
+          });
+        }
+        setError(null);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Error al cargar los datos. Por favor, intenta de nuevo.');
@@ -40,20 +72,18 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
       }
     };
     fetchData();
-
-    if (mantenimiento) {
-      setFormData({
-        id_sucursal: mantenimiento.id_sucursal || '',
-        id_cuadrilla: mantenimiento.id_cuadrilla || '',
-        fecha_apertura: mantenimiento.fecha_apertura?.split('T')[0] || '',
-        numero_caso: mantenimiento.numero_caso || '',
-        incidente: mantenimiento.incidente || '',
-        rubro: mantenimiento.rubro || '',
-        estado: mantenimiento.estado || 'Pendiente',
-        prioridad: mantenimiento.prioridad || 'Media',
-      });
-    }
   }, [mantenimiento]);
+
+  const fetchSucursalesForCliente = async (id) => {
+    if (!id) return [];
+    if (sucursalesPorCliente[id]) return sucursalesPorCliente[id];
+    const response = await getSucursalesByCliente(id);
+    const data = response.data || [];
+    setSucursalesPorCliente((prev) => ({ ...prev, [id]: data }));
+    return data;
+  };
+
+  const sucursales = clienteId ? sucursalesPorCliente[clienteId] || [] : [];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,6 +95,7 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
     e.preventDefault();
     try {
       if (
+        !clienteId ||
         !formData.id_sucursal ||
         !formData.fecha_apertura ||
         !formData.numero_caso ||
@@ -73,26 +104,50 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
         !formData.estado ||
         !formData.prioridad
       ) {
-        setError('Por favor, completa todos los campos obligatorios.');
+        setError_form('Por favor, completa todos los campos obligatorios.');
         return;
       }
 
+      const payload = {
+        ...formData,
+        cliente_id: parseInt(clienteId, 10),
+        id_sucursal: formData.id_sucursal,
+      };
+
       if (mantenimiento) {
-        await updateMantenimientoCorrectivo(mantenimiento.id, formData);
+        await updateMantenimientoCorrectivo(mantenimiento.id, payload);
       } else {
-        await createMantenimientoCorrectivo(formData);
+        await createMantenimientoCorrectivo(payload);
       }
-      onClose();
+      setError(null);
+      setSuccess(mantenimiento ? 'Mantenimiento correctivo actualizado correctamente.' : 'Mantenimiento correctivo creado correctamente.');
     } catch (error) {
-      console.error('Error saving mantenimiento correctivo:', error);
-      setError('Error al guardar el mantenimiento correctivo. Por favor, intenta de nuevo.');
+      setError(error.message || 'Error al guardar el mantenimiento correctivo.');
+      setSuccess(null);
     } finally {
       setIsLoading(false);
+      onClose();
     }
   };
 
   const isFormValid = () => {
-    return formData.id_sucursal && formData.fecha_apertura && formData.numero_caso && formData.incidente && formData.rubro && formData.estado && formData.prioridad;
+    return (
+      clienteId &&
+      formData.id_sucursal &&
+      formData.fecha_apertura &&
+      formData.numero_caso &&
+      formData.incidente &&
+      formData.rubro &&
+      formData.estado &&
+      formData.prioridad
+    );
+  };
+
+  const handleClienteChange = async (e) => {
+    const value = e.target.value;
+    setClienteId(value);
+    setFormData((prev) => ({ ...prev, id_sucursal: '' }));
+    await fetchSucursalesForCliente(value);
   };
 
   return (
@@ -119,8 +174,25 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
             </div>
           ) : (
             <div>
-              {error && <div className="alert alert-danger">{error}</div>}
+              {error_form && <Alert variant="danger">{error_form}</Alert>}
               <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="cliente_id">
+                  <Form.Label className="required required-asterisk">Cliente</Form.Label>
+                  <Form.Select
+                    name="cliente_id"
+                    value={clienteId}
+                    onChange={handleClienteChange}
+                    required
+                    className='form-select'
+                  >
+                    <option value="">Seleccione un cliente</option>
+                    {clientes.map((cliente) => (
+                      <option key={cliente.id} value={cliente.id}>
+                        {cliente.nombre}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
                 <Form.Group className="mb-3" controlId="id_sucursal">
                   <Form.Label className="required required-asterisk">Sucursal</Form.Label>
                   <Form.Select
@@ -129,8 +201,9 @@ const MantenimientoCorrectivoForm = ({ mantenimiento, onClose }) => {
                     onChange={handleChange}
                     required
                     className='form-select'
+                    disabled={!clienteId || sucursales.length === 0}
                   >
-                    <option value="">Seleccione una sucursal</option>
+                    <option value="">{clienteId ? 'Seleccione una sucursal' : 'Seleccione un cliente primero'}</option>
                     {sucursales.map((sucursal) => (
                       <option key={sucursal.id} value={sucursal.id}>
                         {sucursal.nombre}

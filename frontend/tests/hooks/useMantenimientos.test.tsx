@@ -79,6 +79,7 @@ describe('Hook: useMantenimientos', () => {
         expect(result.current.getClienteNombre(1)).toBe('Cliente Demo');
         expect(result.current.getClienteNombre(999)).toBe('Sin cliente');
     });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 
     it('Debería formatear la fecha correctamente con formatExtendido', () => {
@@ -96,3 +97,6 @@ describe('Hook: useMantenimientos', () => {
 =======
 });
 >>>>>>> Stashed changes
+=======
+});
+>>>>>>> develop
