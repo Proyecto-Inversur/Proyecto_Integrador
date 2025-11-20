@@ -2,8 +2,9 @@ name: Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   checks: write # Permite escribir check runs para mostrar resultados de tests
