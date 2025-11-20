@@ -43,49 +43,49 @@
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(baseCuadrillaName);
     cy.get('#dropdown-zona').click();
-    cy.contains('.custom-dropdown-item-add', 'Agregar nueva zona...').click();
+    cy.contains('.custom-dropdown-item-add', 'Agregar nueva zona...', { timeout: 30000 }).click();
     cy.get('#zona').type(cuadrillaZone);
-    cy.get('.custom-add-button').should('be.enabled').click();
+    cy.get('.custom-add-button', { timeout: 30000 }).should('be.enabled').click();
 
-    cy.contains('button', 'Registrar con Google').should('be.enabled').click();
+    cy.contains('button', 'Registrar con Google', { timeout: 30000 }).should('be.enabled').click();
 
     cy.contains('td', baseCuadrillaName, { timeout: 30000 }).should('be.visible');
     cy.contains('td', cuadrillaZone).should('be.visible');
 
-    cy.contains('tr', baseCuadrillaName).within(() => {
+    cy.contains('tr', baseCuadrillaName, { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Editar"]').click();
     });
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     cy.get('#nombre').clear().type(updatedCuadrillaName);
-    cy.contains('button', 'Guardar').click();
+    cy.contains('button', 'Guardar', { timeout: 30000 }).click();
 
     cy.contains('td', updatedCuadrillaName, { timeout: 30000 }).should('be.visible');
 
-    cy.contains('tr', updatedCuadrillaName).within(() => {
+    cy.contains('tr', updatedCuadrillaName, { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
 
-    cy.contains('td', updatedCuadrillaName).should('not.exist');
+    cy.contains('td', updatedCuadrillaName, { timeout: 30000 }).should('not.exist');
 
     cy.contains('button', 'Agregar').should('be.visible').click();
     cy.get('#dropdown-zona').click();
-    cy.contains('.custom-dropdown-item', cuadrillaZone)
+    cy.contains('.custom-dropdown-item', cuadrillaZone, { timeout: 30000 })
       .should('exist')
       .within(() => {
         cy.get('.custom-delete-button').click();
       });
     cy.get('#dropdown-zona').click();
-    cy.contains('.custom-dropdown-item', cuadrillaZone).should('not.exist');
+    cy.contains('.custom-dropdown-item', cuadrillaZone, { timeout: 30000 }).should('not.exist');
     cy.get('#nombre').clear().type(baseCuadrillaName);
     cy.get('#dropdown-zona').click();
-    cy.contains('.custom-dropdown-item-add', 'Agregar nueva zona...').click();
+    cy.contains('.custom-dropdown-item-add', 'Agregar nueva zona...', { timeout: 30000 }).click();
     cy.get('#zona').type(cuadrillaZone);
-    cy.get('.custom-add-button').should('be.enabled').click();
+    cy.get('.custom-add-button', { timeout: 30000 }).should('be.enabled').click();
 
-    cy.contains('button', 'Registrar con Google').should('be.enabled').click();
+    cy.contains('button', 'Registrar con Google', { timeout: 30000 }).should('be.enabled').click();
 
-    cy.contains('tr', baseCuadrillaName).within(() => {
+    cy.contains('tr', baseCuadrillaName, { timeout: 30000 }).within(() => {
       cy.get('td').first().invoke('text').then((idText) => {
         const cuadrillaId = idText.trim();
         cy.writeFile('cypress/fixtures/cuadrillaId.json', { id: cuadrillaId });

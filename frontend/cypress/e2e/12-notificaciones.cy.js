@@ -33,17 +33,17 @@ describe('Modulo de Notificaciones - Integracion', () => {
       },
     });
 
-    cy.get('.notification-icon > svg > path').click();
+    cy.get('.notification-icon > svg > path', { timeout: 30000 }).click();
     cy.contains('div > .flex-grow-1 > .text-dark', 'Nuevo correctivo asignado', { timeout: 30000 }).first().click();
 
-    cy.get('.notification-icon > svg > path').click();
+    cy.get('.notification-icon > svg > path', { timeout: 30000 }).click();
     cy.contains('div > .flex-grow-1 > .text-dark', 'Nuevo preventivo asignado', { timeout: 30000 }).first().click();
 
-    cy.get('.notification-icon > svg > path').click();
-    cy.contains('button', 'Marcar leídas').click();
+    cy.get('.notification-icon > svg > path', { timeout: 30000 }).click();
+    cy.contains('button', 'Marcar leídas', { timeout: 30000 }).click();
     cy.wait(10000);
-    cy.get('.rounded-circle').should('not.exist');
-    cy.contains('button', 'Eliminar leídas').click();
+    cy.get('.rounded-circle', { timeout: 30000 }).should('not.exist');
+    cy.contains('button', 'Eliminar leídas', { timeout: 30000 }).click();
     cy.contains('p.text-muted', 'No tienes notificaciones.', { timeout: 30000 }).should('be.visible');
   });
 
@@ -75,30 +75,8 @@ describe('Modulo de Notificaciones - Integracion', () => {
     cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
 
     cy.contains('.home-button', 'Mantenimiento Preventivo').should('be.visible').click();
-    cy.contains('tr', 'Sucursal E2E - Mensual', { timeout: 30000 }).within(() => {
+    cy.contains('tr', 'Cliente E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
-    });
-    cy.wait(5000);
-  });
-
-  it('Navega por la aplicacion y borra datos de preventivo test', () => {
-    cy.visit('/', {
-      onBeforeLoad: (win) => {
-        win.localStorage.clear();
-        win.sessionStorage.clear();
-        setSession(win);
-      },
-    });
-
-    cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
-
-    cy.contains('.home-button', 'Mantenimiento Preventivo').should('be.visible').click();
-
-    cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
-    cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
-    cy.get('#dropdown-preventivo').click();
-    cy.contains('.custom-dropdown-item', 'Sucursal E2E - Mensual', { timeout: 30000 }).within(() => {
-      cy.get('.custom-delete-button').click();
     });
     cy.wait(5000);
   });
@@ -115,13 +93,13 @@ describe('Modulo de Notificaciones - Integracion', () => {
     cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
 
     cy.contains('.home-button', 'Mantenimiento Correctivo').should('be.visible').click();
-    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
+    cy.contains('tr', 'Cliente E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
     cy.wait(5000);
   });
 
-  it('Navega por la aplicacion y borra datos de sucursal test', () => {
+  it('Navega por la aplicacion y borra datos de cliente test', () => {
     cy.visit('/', {
       onBeforeLoad: (win) => {
         win.localStorage.clear();
@@ -132,9 +110,9 @@ describe('Modulo de Notificaciones - Integracion', () => {
 
     cy.contains('.home-button', 'Mantenimiento').should('be.visible').click();
 
-    cy.contains('.home-button', 'Sucursales').should('be.visible').click();
-    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
-      cy.get('button[aria-label="Eliminar"]').click();
+    cy.contains('.home-button', 'Clientes').should('be.visible').click();
+    cy.contains('tr', 'Cliente E2E', { timeout: 30000 }).within(() => {
+      cy.get('button[aria-label="Eliminar cliente"]').click();
     });
     cy.wait(5000);
   });

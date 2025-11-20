@@ -34,11 +34,12 @@ describe('Modulo de Correctivos - Integracion', () => {
     });
 
     cy.contains(/Mantenimientos Correctivos/i, { timeout: 30000 }).should('be.visible');
-    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).click();
+    cy.contains('tr', 'Cliente E2E', { timeout: 30000 }).click();
 
-    cy.contains('.info-section > :nth-child(2)', 'Sucursal E2E', { timeout: 30000 }).should('be.visible');
-    cy.contains('.info-section > :nth-child(3)', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
-    cy.contains('.info-section > :nth-child(4)', 'Zona E2E', { timeout: 30000 }).should('be.visible');
+    cy.contains('.info-section > :nth-child(2)', 'Cliente E2E', { timeout: 30000 }).should('be.visible');
+    cy.contains('.info-section > :nth-child(3)', 'Sucursal E2E', { timeout: 30000 }).should('be.visible');
+    cy.contains('.info-section > :nth-child(4)', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
+    cy.contains('.info-section > :nth-child(5)', 'Zona E2E', { timeout: 30000 }).should('be.visible');
 
     cy.get('#estado', { timeout: 30000 }).select('En Progreso');
     cy.contains('button', 'Guardar Estado', { timeout: 30000 }).should('be.visible').click();

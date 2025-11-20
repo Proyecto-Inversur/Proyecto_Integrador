@@ -25,8 +25,8 @@
   });
 
   it('carga la pagina y crea, edita y elimina un mantenimiento preventivo', () => {
-    const baseFrecuencia = 'Mensual';
-    const updatedFrecuencia = 'Trimestral';
+    const baseFecha = '2025-01-01';
+    const updatedFecha = '2025-02-02';
 
     cy.visit('/mantenimientos-preventivos', {
       onBeforeLoad: (win) => {
@@ -41,61 +41,43 @@
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 
-    cy.get('#dropdown-preventivo').click();
-    cy.contains('.custom-dropdown-item-add', 'Agregar nuevo preventivo...', { timeout: 30000 }).click();
-    cy.get('[name="id_sucursal"]', { timeout: 30000 }).select('Sucursal E2E');
-    cy.get('[name="frecuencia"]', { timeout: 30000 }).select(baseFrecuencia);
-    cy.get('.custom-add-button', { timeout: 30000 }).should('be.enabled').click();
-    cy.get('#id_cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
-    cy.get('#fecha_apertura').clear().type('2025-01-01');
+    cy.get('#cliente', { timeout: 30000 }).select('Cliente E2E');
+    cy.get('#sucursal', { timeout: 30000 }).select('Sucursal E2E');
+    cy.get('#cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
+    cy.get('#fecha_apertura').clear().type(baseFecha);
 
     cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
-
+  
+    cy.contains('td', 'Cliente E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'Sucursal E2E - Mensual', { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
-    cy.contains('tr', 'Sucursal E2E - Mensual', { timeout: 30000 }).within(() => {
+    cy.contains('td', baseFecha, { timeout: 30000 }).should('be.visible');
+    cy.contains('tr', 'Cliente E2', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Editar"]').click();
     });
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
     
-    cy.get('#dropdown-preventivo').click();
-    cy.contains('.custom-dropdown-item', 'Sucursal E2E - Mensual', { timeout: 30000 }).within(() => {
-      cy.get('.custom-edit-button').click();
-    });
-    cy.get('[name="id_sucursal"]', { timeout: 30000 }).select('Sucursal E2E');
-    cy.get('[name="frecuencia"]', { timeout: 30000 }).select(updatedFrecuencia);
-    cy.get('.custom-add-button', { timeout: 30000 }).should('be.enabled').click();
+    cy.get('#fecha_apertura').clear().type(updatedFecha);
 
     cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
 
-    cy.contains('td', 'Sucursal E2E - Trimestral', { timeout: 30000 }).should('be.visible');
+    cy.contains('td', updatedFecha, { timeout: 30000 }).should('be.visible');
 
-    cy.contains('tr', 'Sucursal E2E - Trimestral', { timeout: 30000 }).within(() => {
+    cy.contains('tr', 'Cliente E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
     cy.wait(5000);
-    cy.contains('td', 'Sucursal E2E - Trimestral', { timeout: 30000 }).should('not.exist');
+    cy.contains('td', 'Cliente E2E', { timeout: 30000 }).should('not.exist');
 
     cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 
-    cy.get('#dropdown-preventivo').click();
-    cy.contains('.custom-dropdown-item', 'Sucursal E2E - Trimestral', { timeout: 30000 }).within(() => {
-      cy.get('.custom-delete-button').click();
-    });
-
-    cy.get('#dropdown-preventivo').click();
-    cy.contains('.custom-dropdown-item', 'Sucursal E2E - Trimestral', { timeout: 30000 }).should('not.exist');
-
-    cy.get('#dropdown-preventivo').click();
-    cy.contains('.custom-dropdown-item-add', 'Agregar nuevo preventivo...', { timeout: 30000 }).click();
-    cy.get('[name="id_sucursal"]', { timeout: 30000 }).select('Sucursal E2E');
-    cy.get('[name="frecuencia"]', { timeout: 30000 }).select(baseFrecuencia);
-    cy.get('.custom-add-button', { timeout: 30000 }).should('be.enabled').click();
-    cy.get('#id_cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
-    cy.get('#fecha_apertura').clear().type('2025-01-01');
+    cy.get('#cliente', { timeout: 30000 }).select('Cliente E2E');
+    cy.get('#sucursal', { timeout: 30000 }).select('Sucursal E2E');
+    cy.get('#cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
+    cy.get('#fecha_apertura').clear().type(baseFecha);
 
     cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
     cy.wait(5000);
@@ -116,6 +98,10 @@
     cy.get('select[name="cuadrilla"]', { timeout: 30000 }).select('Cuadrilla E2E');
     cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);
     cy.get('select[name="cuadrilla"]', { timeout: 30000 }).select('');
+
+    cy.get('select[name="cliente"]', { timeout: 30000 }).select('Cliente E2E');
+    cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);
+    cy.get('select[name="cliente"]', { timeout: 30000 }).select('');
 
     cy.get('select[name="sucursal"]', { timeout: 30000 }).select('Sucursal E2E');
     cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);

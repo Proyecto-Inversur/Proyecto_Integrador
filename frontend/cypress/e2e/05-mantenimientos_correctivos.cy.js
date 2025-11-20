@@ -25,8 +25,8 @@
   });
 
   it('carga la pagina y crea, edita y elimina un mantenimiento correctivo', () => {
-    const baseCase = 'CASE-001';
-    const updatedCase = 'CASE-002';
+    const baseCase = 'TEST-CASE-001';
+    const updatedCase = 'TEST-CASE-002';
     const baseIncident = 'Fuga de agua';
     const updatedIncident = 'Rotura de vidrio';
     const baseRubro = 'Sanitarios';
@@ -45,6 +45,7 @@
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 
+    cy.get('#cliente_id', { timeout: 30000 }).select('Cliente E2E');
     cy.get('#id_sucursal', { timeout: 30000 }).select('Sucursal E2E');
     cy.get('#id_cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
     cy.get('#fecha_apertura').clear().type('2025-01-01');
@@ -56,13 +57,14 @@
 
     cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
 
+    cy.contains('td', 'Cliente E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'Sucursal E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', baseCase, { timeout: 30000 }).should('be.visible');
     cy.contains('td', baseIncident, { timeout: 30000 }).should('be.visible');
     cy.contains('td', baseRubro, { timeout: 30000 }).should('be.visible');
 
-    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
+    cy.contains('tr', 'Cliente E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Editar"]').click();
     });
 
@@ -74,22 +76,24 @@
 
     cy.contains('button', 'Guardar', { timeout: 30000 }).should('be.enabled').click();
 
+    cy.contains('td', 'Cliente E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'Sucursal E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', 'Cuadrilla E2E', { timeout: 30000 }).should('be.visible');
     cy.contains('td', updatedCase, { timeout: 30000 }).should('be.visible');
     cy.contains('td', updatedIncident, { timeout: 30000 }).should('be.visible');
     cy.contains('td', updatedRubro, { timeout: 30000 }).should('be.visible');
 
-    cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).within(() => {
+    cy.contains('tr', 'Cliente E2E', { timeout: 30000 }).within(() => {
       cy.get('button[aria-label="Eliminar"]').click();
     });
     cy.wait(5000);
-    cy.contains('td', 'Sucursal E2E', { timeout: 30000 }).should('not.exist');
+    cy.contains('td', 'Cliente E2E', { timeout: 30000 }).should('not.exist');
 
     cy.contains('button', 'Agregar', { timeout: 30000 }).should('be.visible').click();
 
     cy.get('div.modal.show', { timeout: 30000 }).should('be.visible');
 
+    cy.get('#cliente_id', { timeout: 30000 }).select('Cliente E2E');
     cy.get('#id_sucursal', { timeout: 30000 }).select('Sucursal E2E');
     cy.get('#id_cuadrilla', { timeout: 30000 }).select('Cuadrilla E2E');
     cy.get('#fecha_apertura').clear().type('2025-01-01');
@@ -118,6 +122,10 @@
     cy.get('select[name="cuadrilla"]', { timeout: 30000 }).select('Cuadrilla E2E');
     cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);
     cy.get('select[name="cuadrilla"]', { timeout: 30000 }).select('');
+
+    cy.get('select[name="cliente"]', { timeout: 30000 }).select('Cliente E2E');
+    cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);
+    cy.get('select[name="cliente"]', { timeout: 30000 }).select('');
 
     cy.get('select[name="sucursal"]', { timeout: 30000 }).select('Sucursal E2E');
     cy.get('table tbody tr', { timeout: 30000 }).should('have.length', 1);

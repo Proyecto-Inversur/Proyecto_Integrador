@@ -48,7 +48,7 @@ describe('Modulo de Ruta - Integracion', () => {
       cy.contains('tr', 'Sucursal E2E', { timeout: 30000 }).click();
     });
 
-    cy.contains('button', 'Agregar a la ruta actual').should('be.visible').click();
+    cy.contains('button', 'Agregar a la ruta actual', { timeout: 30000 }).should('be.visible').click();
     cy.contains('.fade', 'Mantenimiento agregado a la ruta.', { timeout: 30000 }).should('be.visible');
 
     cy.readFile('cypress/fixtures/cuadrillaId.json').then((data) => {
@@ -66,7 +66,7 @@ describe('Modulo de Ruta - Integracion', () => {
       cy.contains('tr', 'Sucursal E2E - Mensual', { timeout: 30000 }).click();
     });
 
-    cy.contains('button', 'Agregar a la ruta actual').should('be.visible').click();
+    cy.contains('button', 'Agregar a la ruta actual', { timeout: 30000 }).should('be.visible').click();
     cy.contains('.fade', 'Mantenimiento agregado a la ruta.', { timeout: 30000 }).should('be.visible');
   });
 
@@ -85,10 +85,10 @@ describe('Modulo de Ruta - Integracion', () => {
 
     cy.get('[stroke="#2c2c2c"]', { timeout: 30000 }).should('be.visible');
     
-    cy.contains('button', 'Iniciar').should('be.visible').click();
-    cy.contains('button', 'Detener').should('be.visible').click();
+    cy.contains('button', 'Iniciar', { timeout: 30000 }).should('be.visible').click();
+    cy.contains('button', 'Detener', { timeout: 30000 }).should('be.visible').click();
 
-    cy.contains('button', 'Borrar ruta').should('be.visible').click();
+    cy.contains('button', 'Borrar ruta', { timeout: 30000 }).should('be.visible').click();
     cy.get('[stroke="#2c2c2c"]', { timeout: 60000 }).should('not.exist');
   });
 });
