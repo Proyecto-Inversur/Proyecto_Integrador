@@ -1,7 +1,7 @@
 import pytest
 from fastapi import HTTPException
 from src.services import zonas as zonas_service
-from src.api.models import Sucursal
+from src.api.models import Cliente, Sucursal
 
 def test_get_zonas(db_session):
     zonas_service.create_zona(
@@ -50,7 +50,13 @@ def test_delete_zona_in_use(db_session):
     zona = zonas_service.create_zona(
         db_session, nombre="Zona en uso", current_entity={"type": "usuario"}
     )
-    db_session.add(Sucursal(nombre="S1", zona=zona.nombre, direccion="D", superficie="1"))
+    cliente = Cliente(nombre="ACME", contacto="Jane", email="acme@example.com")
+    db_session.add(cliente)
+    db_session.commit()
+
+    db_session.add(
+        Sucursal(nombre="S1", zona=zona.nombre, direccion="D", superficie="1", cliente_id=cliente.id)
+    )
     db_session.commit()
     
     with pytest.raises(HTTPException) as exc:

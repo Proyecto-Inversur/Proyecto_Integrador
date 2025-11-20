@@ -1,236 +1,212 @@
-from unittest.mock import Mock
 from datetime import date
-from src.services import google_sheets
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
 from src.api.models import MantenimientoCorrectivo, MantenimientoPreventivo
+from src.services import google_sheets
+from src.services.google_sheets import CellNotFound
 
-def _mock_client_with_worksheet(worksheet):
-    spreadsheet = Mock()
-    spreadsheet.worksheet.return_value = worksheet
-    client = Mock()
-    client.open_by_key.return_value = spreadsheet
-    return client
 
-def _sample_correctivo():
-    return MantenimientoCorrectivo(
-        id=1,
-        id_sucursal=1,
-        id_cuadrilla=2,
+def _correctivo():
+    m = MantenimientoCorrectivo(
+        cliente_id=1,
+        sucursal_id=1,
+        id_cuadrilla=1,
         fecha_apertura=date(2024, 1, 1),
-        fecha_cierre=None,
         numero_caso="NC",
-        incidente="Inc",
+        incidente="Incidente",
         rubro="Rubro",
-        planilla=None,
-        estado="open",
-        prioridad="alta",
-        extendido=None,
+        estado="Pendiente",
+        prioridad="Alta",
     )
+    m.id = 1
+    m.cliente_nombre = "Cliente"
+    m.sucursal_nombre = "Sucursal"
+    m.cuadrilla_nombre = "Cuadrilla"
+    return m
 
-def _sample_preventivo():
-    return MantenimientoPreventivo(
-        id=1,
-        id_sucursal=1,
-        frecuencia="mensual",
-        id_cuadrilla=2,
+
+def _preventivo():
+    m = MantenimientoPreventivo(
+        cliente_id=1,
+        sucursal_id=1,
+        frecuencia="Mensual",
+        id_cuadrilla=1,
         fecha_apertura=date(2024, 1, 1),
-        fecha_cierre=None,
-        extendido=None,
+        estado="Pendiente",
     )
+    m.id = 1
+    m.cliente_nombre = "Cliente"
+    m.sucursal_nombre = "Sucursal"
+    m.cuadrilla_nombre = "Cuadrilla"
+    return m
 
-def test_get_fotos_gallery_url(monkeypatch):
-    monkeypatch.setattr(google_sheets, '_blob_exists', lambda p: True)
-    monkeypatch.setattr(google_sheets, 'GOOGLE_CLOUD_BUCKET_NAME', 'test-bucket')
-    expected = (
-        "https://storage.googleapis.com/test-bucket/"
-        "mantenimientos_correctivos/1/fotos/index.html"
-    )
-    assert google_sheets.get_fotos_gallery_url(1, "correctivos") == expected
+
+def test_get_fotos_gallery_url_returns_none_when_blob_missing(monkeypatch):
+    monkeypatch.setattr(google_sheets, "_blob_exists", lambda _: False)
+    assert google_sheets.get_fotos_gallery_url(1, "correctivos") is None
+
 
 def test_get_planillas_gallery_url(monkeypatch):
-    monkeypatch.setattr(google_sheets, '_blob_exists', lambda p: True)
-    monkeypatch.setattr(google_sheets, 'GOOGLE_CLOUD_BUCKET_NAME', 'test-bucket')
-    expected = (
-        "https://storage.googleapis.com/test-bucket/"
-        "mantenimientos_preventivos/1/planillas/index.html"
-    )
-    assert google_sheets.get_planillas_gallery_url(1) == expected
+    monkeypatch.setattr(google_sheets, "_blob_exists", lambda _: True)
+    monkeypatch.setattr(google_sheets, "GOOGLE_CLOUD_BUCKET_NAME", "test-bucket")
+    url = google_sheets.get_planillas_gallery_url(1)
+    assert url.endswith("mantenimientos_preventivos/1/planillas/index.html")
 
-def test_append_correctivo(monkeypatch):
-    worksheet = Mock()
-    worksheet.row_values.return_value = ["id"]
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
 
-    google_sheets.append_correctivo(_sample_correctivo())
+def test_column_letter_conversion():
+    assert google_sheets._column_letter(1) == "A"
+    assert google_sheets._column_letter(27) == "AA"
 
-    worksheet.append_row.assert_called_once_with(
-        [
-            1,
-            1,
-            2,
-            "2024-01-01",
-            "",
-            "NC",
-            "Inc",
-            "Rubro",
-            "",
-            "open",
-            "alta",
-            "",
-        ]
-    )
 
-def test_update_correctivo(monkeypatch):
-    worksheet = Mock()
-    cell = Mock()
-    cell.row = 2
-    worksheet.find.return_value = cell
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
+def test_apply_filters_sets_range(monkeypatch):
+    worksheet = MagicMock(row_count=10)
+    google_sheets._apply_filters(worksheet, 5)
+    worksheet.set_basic_filter.assert_called_once_with("A1:E10")
 
-    mantenimiento = _sample_correctivo()
-    google_sheets.update_correctivo(mantenimiento)
 
-    worksheet.update.assert_called_once_with(
-        "A2:M2",
-        [[1, 1, 2, "2024-01-01", "", "NC", "Inc", "Rubro", "", "open", "alta", "", ""]],
-    )
+def test_build_correctivo_row_includes_links(monkeypatch):
+    monkeypatch.setattr(google_sheets, "get_fotos_gallery_url", lambda *args, **kwargs: "https://files/fotos.html")
+    row = google_sheets._build_correctivo_row(_correctivo(), include_links=True)
+    assert row[-2] == "https://files/fotos.html"
+    assert row[-1] == "1"
+
+
+def test_build_preventivo_row_includes_links(monkeypatch):
+    monkeypatch.setattr(google_sheets, "get_planillas_gallery_url", lambda *args, **kwargs: "https://files/planillas.html")
+    monkeypatch.setattr(google_sheets, "get_fotos_gallery_url", lambda *args, **kwargs: "https://files/fotos.html")
+    row = google_sheets._build_preventivo_row(_preventivo(), include_links=True)
+    assert row[-3] == "https://files/planillas.html"
+    assert row[-2] == "https://files/fotos.html"
+
+
+def test_append_correctivo_ensures_header(monkeypatch):
+    worksheet = MagicMock()
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    ensure = MagicMock()
+    append = MagicMock()
+    monkeypatch.setattr(google_sheets, "_ensure_header", ensure)
+    monkeypatch.setattr(google_sheets, "_append_row_with_filters", append)
+
+    google_sheets.append_correctivo(_correctivo())
+
+    ensure.assert_called_once_with(worksheet, google_sheets.CORRECTIVO_HEADER, google_sheets.CORRECTIVO_VISIBLE_COLUMNS)
+    append.assert_called_once()
+
+
+def test_append_correctivo_skips_without_sheet(monkeypatch):
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: None)
+    append = MagicMock()
+    monkeypatch.setattr(google_sheets, "_append_row_with_filters", append)
+    google_sheets.append_correctivo(_correctivo())
+    append.assert_not_called()
+
+
+def test_update_correctivo_updates_row(monkeypatch):
+    worksheet = MagicMock()
+    worksheet.find.return_value = SimpleNamespace(row=3)
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
+
+    google_sheets.update_correctivo(_correctivo())
+
+    worksheet.update.assert_called_once()
+    args, _ = worksheet.update.call_args
+    assert args[0] == "A3:N3"
+
+
+def test_update_correctivo_appends_when_not_found(monkeypatch):
+    worksheet = MagicMock()
+    worksheet.find.side_effect = CellNotFound("missing")
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    append = MagicMock()
+    monkeypatch.setattr(google_sheets, "_append_row_with_filters", append)
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
+
+    google_sheets.update_correctivo(_correctivo())
+
+    append.assert_called_once()
+
 
 def test_delete_correctivo(monkeypatch):
-    worksheet = Mock()
-    cell = Mock()
-    cell.row = 2
-    worksheet.find.return_value = cell
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
+    worksheet = MagicMock()
+    worksheet.find.return_value = SimpleNamespace(row=4)
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
 
-    google_sheets.delete_correctivo(1)
+    google_sheets.delete_correctivo(10)
 
-    worksheet.delete_rows.assert_called_once_with(2)
+    worksheet.delete_rows.assert_called_once_with(4)
 
-def test_append_preventivo(monkeypatch):
-    worksheet = Mock()
-    worksheet.row_values.return_value = ["id"]
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
 
-    google_sheets.append_preventivo(_sample_preventivo())
+def test_delete_correctivo_ignores_missing(monkeypatch):
+    worksheet = MagicMock()
+    worksheet.find.side_effect = CellNotFound("missing")
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
 
-    worksheet.append_row.assert_called_once_with(
-        [1, 1, "mensual", 2, "2024-01-01", "", ""]
-    )
-
-def test_update_preventivo(monkeypatch):
-    worksheet = Mock()
-    cell = Mock()
-    cell.row = 2
-    worksheet.find.return_value = cell
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
-
-    google_sheets.update_preventivo(_sample_preventivo())
-
-    worksheet.update.assert_called_once_with(
-        "A2:I2",
-        [[1, 1, "mensual", 2, "2024-01-01", "", "", "", ""]],
-    )
-
-def test_delete_preventivo(monkeypatch):
-    worksheet = Mock()
-    cell = Mock()
-    cell.row = 2
-    worksheet.find.return_value = cell
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
-
-    google_sheets.delete_preventivo(1)
-
-    worksheet.delete_rows.assert_called_once_with(2)
-
-def test_append_correctivo_adds_header(monkeypatch):
-    worksheet = Mock()
-    worksheet.row_values.return_value = []
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
-
-    google_sheets.append_correctivo(_sample_correctivo())
-
-    assert worksheet.append_row.call_count == 2
-
-def test_update_correctivo_not_found(monkeypatch):
-    worksheet = Mock()
-    worksheet.find.return_value = None
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
-    append_mock = Mock()
-    monkeypatch.setattr(google_sheets, "append_correctivo", append_mock)
-
-    google_sheets.update_correctivo(_sample_correctivo())
-
-    append_mock.assert_called_once()
-
-def test_delete_correctivo_not_found(monkeypatch):
-    worksheet = Mock()
-    worksheet.find.return_value = None
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
-
-    google_sheets.delete_correctivo(1)
+    google_sheets.delete_correctivo(10)
 
     worksheet.delete_rows.assert_not_called()
 
-def test_append_preventivo_adds_header(monkeypatch):
-    worksheet = Mock()
-    worksheet.row_values.return_value = []
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
 
-    google_sheets.append_preventivo(_sample_preventivo())
+def test_append_preventivo(monkeypatch):
+    worksheet = MagicMock()
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    ensure = MagicMock()
+    append = MagicMock()
+    monkeypatch.setattr(google_sheets, "_ensure_header", ensure)
+    monkeypatch.setattr(google_sheets, "_append_row_with_filters", append)
 
-    assert worksheet.append_row.call_count == 2
+    google_sheets.append_preventivo(_preventivo())
 
-def test_update_preventivo_not_found(monkeypatch):
-    worksheet = Mock()
-    worksheet.find.return_value = None
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
-    append_mock = Mock()
-    monkeypatch.setattr(google_sheets, "append_preventivo", append_mock)
+    ensure.assert_called_once_with(worksheet, google_sheets.PREVENTIVO_HEADER, google_sheets.PREVENTIVO_VISIBLE_COLUMNS)
+    append.assert_called_once()
 
-    google_sheets.update_preventivo(_sample_preventivo())
 
-    append_mock.assert_called_once()
+def test_update_preventivo_updates_existing_row(monkeypatch):
+    worksheet = MagicMock()
+    worksheet.find.return_value = SimpleNamespace(row=2)
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
+
+    google_sheets.update_preventivo(_preventivo())
+
+    worksheet.update.assert_called_once()
+    args, _ = worksheet.update.call_args
+    assert args[0] == "A2:J2"
+
+
+def test_update_preventivo_appends_when_missing(monkeypatch):
+    worksheet = MagicMock()
+    worksheet.find.side_effect = CellNotFound("missing")
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    append = MagicMock()
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
+    monkeypatch.setattr(google_sheets, "_append_row_with_filters", append)
+
+    google_sheets.update_preventivo(_preventivo())
+
+    append.assert_called_once()
+
+
+def test_delete_preventivo(monkeypatch):
+    worksheet = MagicMock()
+    worksheet.find.return_value = SimpleNamespace(row=5)
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
+
+    google_sheets.delete_preventivo(5)
+
+    worksheet.delete_rows.assert_called_once_with(5)
+
 
 def test_delete_preventivo_not_found(monkeypatch):
-    worksheet = Mock()
-    worksheet.find.return_value = None
-    monkeypatch.setattr(
-        google_sheets, "get_client", lambda: _mock_client_with_worksheet(worksheet)
-    )
-    monkeypatch.setattr(google_sheets, "SHEET_ID", "sheet")
+    worksheet = MagicMock()
+    worksheet.find.side_effect = CellNotFound("missing")
+    monkeypatch.setattr(google_sheets, "_get_worksheet", lambda _: worksheet)
+    monkeypatch.setattr(google_sheets, "_ensure_header", MagicMock())
 
-    google_sheets.delete_preventivo(1)
+    google_sheets.delete_preventivo(5)
 
     worksheet.delete_rows.assert_not_called()

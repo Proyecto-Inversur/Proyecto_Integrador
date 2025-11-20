@@ -3,8 +3,11 @@ __pycache__/
 *.pyc
 .DS_Store
 env.config
-*.env
+env.config.test
+.env
+.env.test
 test.db
+test.db-journal
 .pytest_cache
 .coverage
 dist
@@ -13,3 +16,6 @@ coverage
 credentials
 osrm-data
 __mocks__
+downloads
+cuadrillaId.json
+screenshots

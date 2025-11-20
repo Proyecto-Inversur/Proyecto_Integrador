@@ -45,7 +45,7 @@ def test_routes_registered():
         "/sucursales",
         "/zonas",
         "/auth",
-        "/preventivos",
+        "/clientes",
         "/mantenimientos-preventivos",
         "/mantenimientos-correctivos",
         "/maps",

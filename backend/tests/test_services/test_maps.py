@@ -3,16 +3,35 @@ import asyncio
 import pytest
 from fastapi import HTTPException
 from src.services import maps as maps_service
-from src.api.models import Sucursal, Cuadrilla, MantenimientoCorrectivo, CorrectivoSeleccionado, MantenimientoPreventivo, PreventivoSeleccionado
+from src.api.models import (
+    Cliente,
+    Sucursal,
+    Cuadrilla,
+    MantenimientoCorrectivo,
+    CorrectivoSeleccionado,
+    MantenimientoPreventivo,
+    PreventivoSeleccionado,
+)
 
-def test_get_correctivos(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+
+@pytest.fixture
+def cliente(db_session):
+    record = Cliente(nombre="ACME", contacto="Jane", email="acme@example.com")
+    db_session.add(record)
+    db_session.commit()
+    db_session.refresh(record)
+    return record
+
+
+def test_get_correctivos(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mantenimiento = MantenimientoCorrectivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
         numero_caso="1",
@@ -73,14 +92,15 @@ def test_get_users_locations(monkeypatch):
     assert result[0].id == "1"
     assert result[0].name == "User 1"
 
-def test_get_preventivos(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_get_preventivos(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mantenimiento = MantenimientoPreventivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
     )
@@ -130,14 +150,15 @@ def test_update_user_location(monkeypatch):
         "lng": 2.0,
     }
 
-def test_update_correctivo(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_update_correctivo(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mantenimiento = MantenimientoCorrectivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
         numero_caso="1",
@@ -160,14 +181,15 @@ def test_update_correctivo(db_session):
     assert result.id_cuadrilla == cuadrilla.id
     assert result.id_mantenimiento == mantenimiento.id
 
-def test_update_preventivo(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_update_preventivo(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mantenimiento = MantenimientoPreventivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
     )
@@ -185,14 +207,15 @@ def test_update_preventivo(db_session):
     assert result.id_cuadrilla == cuadrilla.id
     assert result.id_mantenimiento == mantenimiento.id
 
-def test_delete_sucursal(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_delete_sucursal(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mant_c = MantenimientoCorrectivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
         numero_caso="1",
@@ -202,7 +225,8 @@ def test_delete_sucursal(db_session):
         prioridad="baja",
     )
     mant_p = MantenimientoPreventivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
     )
@@ -230,14 +254,15 @@ def test_delete_sucursal(db_session):
     assert db_session.query(CorrectivoSeleccionado).count() == 0
     assert db_session.query(PreventivoSeleccionado).count() == 0
 
-def test_delete_correctivo(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_delete_correctivo(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mant_c = MantenimientoCorrectivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
         numero_caso="1",
@@ -264,14 +289,15 @@ def test_delete_correctivo(db_session):
     assert resp == {"message": "Seleccion de correctivo eliminada"}
     assert db_session.query(CorrectivoSeleccionado).count() == 0
 
-def test_delete_preventivo(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_delete_preventivo(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mant_p = MantenimientoPreventivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
     )
@@ -293,14 +319,15 @@ def test_delete_preventivo(db_session):
     assert resp == {"message": "Seleccion de preventivo eliminada"}
     assert db_session.query(PreventivoSeleccionado).count() == 0
 
-def test_delete_selection(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_delete_selection(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mant_c = MantenimientoCorrectivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
         numero_caso="1",
@@ -310,7 +337,8 @@ def test_delete_selection(db_session):
         prioridad="baja",
     )
     mant_p = MantenimientoPreventivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
     )
@@ -378,14 +406,15 @@ def test_update_user_location_unauthorized():
 
     assert exc.value.status_code == 401
 
-def test_update_correctivo_already_selected(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_update_correctivo_already_selected(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mantenimiento = MantenimientoCorrectivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
         numero_caso="1",
@@ -416,14 +445,15 @@ def test_update_correctivo_already_selected(db_session):
 
     assert exc.value.status_code == 400
 
-def test_update_preventivo_already_selected(db_session):
-    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1")
+def test_update_preventivo_already_selected(db_session, cliente):
+    sucursal = Sucursal(nombre="S", zona="Z", direccion="D", superficie="1", cliente_id=cliente.id)
     cuadrilla = Cuadrilla(nombre="C", zona="Z", email="c@example.com")
     db_session.add_all([sucursal, cuadrilla])
     db_session.commit()
 
     mantenimiento = MantenimientoPreventivo(
-        id_sucursal=sucursal.id,
+        cliente_id=cliente.id,
+        sucursal_id=sucursal.id,
         id_cuadrilla=cuadrilla.id,
         fecha_apertura=date.today(),
     )
