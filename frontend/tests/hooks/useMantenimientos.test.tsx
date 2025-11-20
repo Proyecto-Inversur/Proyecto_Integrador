@@ -79,24 +79,4 @@ describe('Hook: useMantenimientos', () => {
         expect(result.current.getClienteNombre(1)).toBe('Cliente Demo');
         expect(result.current.getClienteNombre(999)).toBe('Sin cliente');
     });
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-
-    it('Debería formatear la fecha correctamente con formatExtendido', () => {
-        const { result } = renderHook(() => useMantenimientos());
-        const fechaISO = '2025-10-15T11:58:00Z'; // UTC
-        // La función `formatExtendido` convierte la fecha a formato local.
-        const fechaFormateada = result.current.formatExtendido(fechaISO);
-
-        // Verifico que el formato sea el esperado (YYYY-MM-DD HH:mm).
-        expect(fechaFormateada).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
-        // Dado que la hora es 11:58 UTC, en Argentina (-3) debería ser 08:58.
-        expect(fechaFormateada).toContain('2025-10-15 08:58');
-    });
 });
-=======
-});
->>>>>>> Stashed changes
-=======
-});
->>>>>>> develop

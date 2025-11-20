@@ -18,25 +18,40 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),
 }));
 
-<<<<<<< HEAD
-// ---------- Mocks de servicios ----------
-vi.mock('@/services/zonaService', () => ({
-  getZonas: vi.fn().mockResolvedValue({ data: ZONAS }),
-  createZona: vi.fn().mockResolvedValue({ data: { id: 99, nombre: NUEVA_ZONA } }),
-  deleteZona: vi.fn().mockResolvedValue({}),
-}))
-vi.mock('@/services/cuadrillaService', () => ({
-  createCuadrilla: vi.fn().mockResolvedValue({}),
-  updateCuadrilla: vi.fn().mockResolvedValue({}),
-}))
+// ---- Firebase: evita efectos reales
+vi.mock('../../src/services/firebase', () => {
+  const mockUser = {
+    uid: 'mock-user-id',
+    email: 'test@example.com',
+    getIdToken: vi.fn().mockResolvedValue('mock-token'),
+  };
+  return {
+    auth: { currentUser: null },
+    signInWithEmailAndPassword: vi.fn(),
+    signOut: vi.fn(),
+    onAuthStateChanged: vi.fn((_auth, cb) => {
+      cb(null);
+      return () => {};
+    }),
+    GoogleAuthProvider: vi.fn(() => ({})),
+    signInWithPopup: vi.fn().mockResolvedValue({ user: mockUser }),
+    linkWithPopup: vi.fn(),
+  };
+});
 
-import * as zonaSvc from '@/services/zonaService'
-import * as cuadSvc from '@/services/cuadrillaService'
+vi.mock('react-bootstrap', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  const Dropdown = ({ show, onToggle, children }: any) => {
+    const [open, setOpen] = React.useState(!!show);
+    const toggle = () => {
+      const next = !open;
+      setOpen(next);
+      onToggle?.(next);
+    };
+    const kids = React.Children.toArray(children) as any[];
+    const toggleChild = kids.find((c: any) => c.type?.displayName === 'DropdownToggle') ?? kids[0];
+    const menuChild = kids.find((c: any) => c.type?.displayName === 'DropdownMenu') ?? kids[1];
 
-<<<<<<< Updated upstream
-// Helper para render con contexto
-function renderWithProviders(ui: React.ReactNode, ctxOverrides: Partial<any> = {}) {
-=======
     return (
       <div data-testid="dropdown">
         {toggleChild &&
@@ -86,41 +101,11 @@ describe('CuadrillaForm', () => {
   const onClose = vi.fn();
   const setError = vi.fn();
   const setSuccess = vi.fn();
->>>>>>> Stashed changes
   const signInWithGoogle = vi.fn().mockResolvedValue({
-    idToken: 'token-google',
-    email: 'cuadrilla@inversur.com',
-  })
-  const authValue = { signInWithGoogle, ...ctxOverrides }
-=======
-// ---- Firebase: evita efectos reales
-vi.mock('../../src/services/firebase', () => {
-  const mockUser = {
-    uid: 'mock-user-id',
+    idToken: 'mock-token',
     email: 'test@example.com',
-    getIdToken: vi.fn().mockResolvedValue('mock-token'),
-  };
->>>>>>> develop
-  return {
-    auth: { currentUser: null },
-    signInWithEmailAndPassword: vi.fn(),
-    signOut: vi.fn(),
-    onAuthStateChanged: vi.fn((_auth, cb) => {
-      cb(null);
-      return () => {};
-    }),
-    GoogleAuthProvider: vi.fn(() => ({})),
-    signInWithPopup: vi.fn().mockResolvedValue({ user: mockUser }),
-    linkWithPopup: vi.fn(),
-  };
-});
+  });
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-describe('CuadrillaForm (genérico)', () => {
-  const user = userEvent.setup()
-  beforeEach(() => vi.clearAllMocks())
-=======
   const renderWithCtx = (props: Record<string, any> = {}) =>
     render(
       <AuthContext.Provider
@@ -141,101 +126,6 @@ describe('CuadrillaForm (genérico)', () => {
         />
       </AuthContext.Provider>
     );
->>>>>>> Stashed changes
-=======
-vi.mock('react-bootstrap', async (importOriginal) => {
-  const actual = await importOriginal<any>();
-  const Dropdown = ({ show, onToggle, children }: any) => {
-    const [open, setOpen] = React.useState(!!show);
-    const toggle = () => {
-      const next = !open;
-      setOpen(next);
-      onToggle?.(next);
-    };
-    const kids = React.Children.toArray(children) as any[];
-    const toggleChild = kids.find((c: any) => c.type?.displayName === 'DropdownToggle') ?? kids[0];
-    const menuChild = kids.find((c: any) => c.type?.displayName === 'DropdownMenu') ?? kids[1];
->>>>>>> develop
-
-    return (
-      <div data-testid="dropdown">
-        {toggleChild &&
-          React.cloneElement(toggleChild, {
-            onClick: (e: any) => {
-              toggleChild.props?.onClick?.(e);
-              toggle();
-            },
-          })}
-        {open && menuChild && (
-          <div data-testid="dropdown-menu">{menuChild.props.children}</div>
-        )}
-      </div>
-    );
-  };
-  const Toggle = ({ id, className, children, onClick }: any) => (
-    <button id={id} className={className} onClick={onClick} type="button">
-      {children}
-    </button>
-  );
-  Toggle.displayName = 'DropdownToggle';
-
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-  it('carga zonas y permite seleccionar una (sin depender de nombres reales)', async () => {
-    renderWithProviders(<CuadrillaForm onClose={vi.fn()} />)
-    await user.click(await screen.findByRole('button', { name: /seleccione una zona/i }))
-=======
-  it('submitea creación correctamente (signIn + createCuadrilla + onClose)', async () => {
-    cuadrillaService.createCuadrilla.mockResolvedValue({} as any);
-    renderWithCtx();
->>>>>>> Stashed changes
-=======
-  const Menu = ({ className, children }: any) => (
-    <div className={className}>{children}</div>
-  );
-  Menu.displayName = 'DropdownMenu';
->>>>>>> develop
-
-  const Item = ({ className, children, onClick }: any) => (
-    <div role="menuitem" className={className} onClick={onClick}>
-      {children}
-    </div>
-  );
-
-  Dropdown.Toggle = Toggle;
-  Dropdown.Menu = Menu;
-  Dropdown.Item = Item;
-
-  return { ...actual, Dropdown };
-});
-
-// ---- Servicios HTTP
-vi.mock('../../src/services/cuadrillaService');
-vi.mock('../../src/services/zonaService');
-vi.mock('../../src/services/api');
-
-describe('CuadrillaForm', () => {
-  const onClose = vi.fn();
-  const signInWithGoogle = vi.fn().mockResolvedValue({
-    idToken: 'mock-token',
-    email: 'test@example.com',
-  });
-
-  const renderWithCtx = (ui: React.ReactNode) =>
-    render(
-      <AuthContext.Provider
-        value={{
-          signInWithGoogle, 
-          currentUser: null,
-          currentEntity: null,
-          loading: false,
-          verifying: false,
-          verifyUser: vi.fn(),
-        }}
-      >
-        {ui}
-      </AuthContext.Provider>
-    );
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -244,19 +134,9 @@ describe('CuadrillaForm', () => {
     } as any);
   });
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    // Verifica que se llamó a deleteZona y que el item ya no está
-    expect(zonaSvc.deleteZona).toHaveBeenCalledWith(ZONAS[0].id)
-  })
-=======
-    renderWithCtx();
->>>>>>> Stashed changes
-=======
   it('submitea creación correctamente (signIn + createCuadrilla + onClose)', async () => {
     cuadrillaService.createCuadrilla.mockResolvedValue({} as any);
-    renderWithCtx(<CuadrillaForm onClose={onClose} />);
->>>>>>> develop
+    renderWithCtx();
 
     // 1) Esperar a que termine el loading inicial
     //    (mientras está el spinner no existe el formulario)
@@ -289,18 +169,10 @@ describe('CuadrillaForm', () => {
     });
   });
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    await user.click(screen.getByRole('button', { name: /^guardar$/i }))
-=======
-    renderWithCtx();
->>>>>>> Stashed changes
-=======
   it('elimina una zona', async () => {
     zonaService.deleteZona.mockResolvedValue({} as any);
->>>>>>> develop
 
-    renderWithCtx(<CuadrillaForm onClose={onClose} />);
+    renderWithCtx();
 
     // esperar a que se vaya el spinner
     await waitForElementToBeRemoved(screen.getByRole('status'));
@@ -325,7 +197,7 @@ describe('CuadrillaForm', () => {
   it('agrega una nueva zona', async () => {
     zonaService.createZona.mockResolvedValue({ data: { id: 2, nombre: 'Nueva Zona' } } as any);
 
-    renderWithCtx(<CuadrillaForm onClose={onClose} />);
+    renderWithCtx();
 
     await waitForElementToBeRemoved(screen.getByRole('status'));
 
