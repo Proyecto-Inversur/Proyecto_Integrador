@@ -30,7 +30,7 @@ describe('Módulo de Estadísticas - Integración con datos reales', () => {
       },
     });
 
-    cy.contains('Estadísticas', { timeout: 30000 }).should('be.visible');
+    cy.contains('Reportes', { timeout: 30000 }).should('be.visible');
 
     cy.get('#preventivos-cliente', { timeout: 30000 }).select('Cliente E2E');
     cy.get('#preventivos-zona', { timeout: 30000 }).select('Zona E2E');
