@@ -41,7 +41,7 @@ describe('Pagina de Login', () => {
     expect(logo).toBeInTheDocument();
     expect(logo).toHaveAttribute('src', 'mocked-logo.png');
 
-    const loginButton = screen.getByRole('button', { name: /Iniciar Sesión con Google/i });
+    const loginButton = screen.getByRole('button', { name: /Iniciar Sesión con Gmail/i });
     expect(loginButton).toBeInTheDocument();
     expect(loginButton).not.toBeDisabled();
 
