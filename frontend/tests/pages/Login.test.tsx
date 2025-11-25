@@ -5,18 +5,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Login from '../../src/pages/Login';
 import { AuthContext } from '../../src/context/AuthContext';
 
-describe('Página de Login', () => {
-    
+vi.mock('../../src/assets/logo_inversur.png', () => ({ default: 'mocked-logo.png' }));
+
+describe('Pagina de Login', () => {
   const mockSignInWithGoogle = vi.fn();
   const mockLogOut = vi.fn();
-  
+
   const defaultAuthContextValue = {
     verifying: false,
     logOut: mockLogOut,
     signInWithGoogle: mockSignInWithGoogle,
   };
 
-  const renderWithContextAndRouter = (authValue, routeState = {}) => {
+  const renderWithContextAndRouter = (authValue: any, routeState: any = {}) => {
     const initialEntries = [{ pathname: '/login', state: routeState }];
     return render(
       <AuthContext.Provider value={authValue}>
@@ -36,11 +37,16 @@ describe('Página de Login', () => {
   it('Debería renderizar la página de login en su estado inicial', () => {
     renderWithContextAndRouter(defaultAuthContextValue);
 
-    expect(screen.getByAltText('Inversur Logo')).toBeInTheDocument();
+    const logo = screen.getByAltText('Inversur Logo');
+    expect(logo).toBeInTheDocument();
+    expect(logo).toHaveAttribute('src', 'mocked-logo.png');
+
     const loginButton = screen.getByRole('button', { name: /Iniciar Sesión con Google/i });
     expect(loginButton).toBeInTheDocument();
     expect(loginButton).not.toBeDisabled();
-    
+
+    expect(screen.getByText(/Inversur/i)).toHaveTextContent('2025');
+
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.queryByRole('status')).toBeNull();
   });
@@ -49,8 +55,9 @@ describe('Página de Login', () => {
     renderWithContextAndRouter({ ...defaultAuthContextValue, verifying: true });
 
     expect(screen.getByRole('status')).toBeInTheDocument();
-    
-    // Verificamos que el contenido principal (el botón de login) no esté.
+    expect(screen.getByAltText('Inversur Logo')).toBeInTheDocument();
+
+    // Verificamos que el contenido principal (el boton de login) no este.
     expect(screen.queryByRole('button', { name: /Iniciar Sesión con Google/i })).toBeNull();
   });
 
@@ -88,5 +95,19 @@ describe('Página de Login', () => {
     const alert = screen.getByRole('alert');
     expect(alert).toBeInTheDocument();
     expect(alert).toHaveTextContent(routeError);
+  });
+
+  it('Deberia renderizar correctamente en pantallas pequenas', () => {
+    const originalInnerWidth = window.innerWidth;
+    window.innerWidth = 320;
+
+    renderWithContextAndRouter(defaultAuthContextValue);
+
+    const footerText = screen.getByText(/Inversur/i);
+    expect(footerText.closest('.login-container')).not.toBeNull();
+    expect(screen.getByAltText('Inversur Logo')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Iniciar Sesión con Google/i })).toBeInTheDocument();
+
+    window.innerWidth = originalInnerWidth;
   });
 });
