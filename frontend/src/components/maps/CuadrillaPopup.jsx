@@ -36,7 +36,7 @@ const CuadrillaPopup = ({ cuadrilla }) => (
       <div className="inv-subtitle">Correctivos seleccionados</div>
       {cuadrilla.correctivos?.length ? cuadrilla.correctivos.map(c => (
         <div key={c.id} className="inv-box">
-          <Line label="Mantenimiento" value={c.id} />
+          <Line label="Cliente" value={c.cliente_nombre || 'Sin cliente'} />
           <Line label="Sucursal" value={c.nombre_sucursal} />
           <Line label="Fecha" value={c.fecha_apertura} />
           <Line label="N° Caso" value={c.numero_caso} />
@@ -47,7 +47,7 @@ const CuadrillaPopup = ({ cuadrilla }) => (
       <div className="inv-subtitle mt-8">Preventivos seleccionados</div>
       {cuadrilla.preventivos?.length ? cuadrilla.preventivos.map(p => (
         <div key={p.id} className="inv-box">
-          <Line label="Mantenimiento" value={p.id} />
+          <Line label="Cliente" value={p.cliente_nombre || 'Sin cliente'} />
           <Line label="Sucursal" value={p.nombre_sucursal} />
           <Line label="Fecha" value={p.fecha_apertura} />
           <Line label="Frecuencia" value={p.frecuencia} />

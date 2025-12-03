@@ -98,16 +98,55 @@ const useMapa = (mapInstanceRef, createRoutingControl, isMobile) => {
 
   const normalizeZona = (z) => (z || "").toString().trim();
 
+  const findClienteNombre = (clienteId) => {
+    if (!clienteId) return null;
+    const cliente = clientes.find((c) => Number(c.id) === Number(clienteId));
+    return cliente?.nombre || null;
+  };
+
+  const getClienteInfoFromSucursal = (sucursalId) => {
+    if (!sucursalId) return { clienteId: null, clienteNombre: null };
+    const meta = sucursalMeta[sucursalId];
+    const clienteId = meta?.cliente_id ?? meta?.id_cliente ?? null;
+    const clienteNombre =
+      meta?.cliente_nombre ??
+      meta?.cliente?.nombre ??
+      findClienteNombre(clienteId);
+    return { clienteId, clienteNombre };
+  };
+
+  const attachClienteInfo = (items = []) =>
+    (items || []).map((item) => {
+      const idSucursal = item.id_sucursal ?? item.sucursal_id ?? item.idSucursal ?? null;
+      const { clienteId, clienteNombre } = getClienteInfoFromSucursal(idSucursal);
+      const resolvedClienteId = item.cliente_id ?? item.id_cliente ?? clienteId;
+      const resolvedClienteNombre =
+        item.cliente_nombre ??
+        findClienteNombre(resolvedClienteId) ??
+        clienteNombre;
+
+      return {
+        ...item,
+        id_sucursal: idSucursal,
+        cliente_id: resolvedClienteId,
+        cliente_nombre: resolvedClienteNombre,
+      };
+    });
+
   const mergeCuadrillaData = (cuads) =>
     (cuads || []).map((cuadrilla) => {
       const meta = cuadrillasMeta[cuadrilla.id] || {};
       const name = cuadrilla.name || meta.nombre || cuadrilla.nombre || 'Unknown';
       const zona = normalizeZona(cuadrilla.zona ?? meta.zona);
+      const correctivos = attachClienteInfo(cuadrilla.correctivos);
+      const preventivos = attachClienteInfo(cuadrilla.preventivos);
       return {
         ...meta,
         ...cuadrilla,
         name,
         zona,
+        correctivos,
+        preventivos,
       };
     });
 

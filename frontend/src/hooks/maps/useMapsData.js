@@ -129,6 +129,8 @@ export function useMapsData() {
             .filter(c => correctivoMantenimientoIds.includes(Number(c.id)))
             .map(c => ({
               id: c.id,
+              id_sucursal: c.id_sucursal,
+              cliente_id: c.cliente_id,
               nombre_sucursal: filteredSucursales.find(s => Number(s.id) === Number(c.id_sucursal))?.name || 'Unknown',
               fecha_apertura: c.fecha_apertura || 'Sin fecha',
               numero_caso: c.numero_caso || 'Sin número',
@@ -138,6 +140,8 @@ export function useMapsData() {
             .filter(p => preventivoMantenimientoIds.includes(Number(p.id)))
             .map(p => ({
               id: p.id,
+              id_sucursal: p.id_sucursal,
+              cliente_id: p.cliente_id,
               nombre_sucursal: filteredSucursales.find(s => Number(s.id) === Number(p.id_sucursal))?.name || 'Unknown',
               fecha_apertura: p.fecha_apertura || 'Sin fecha',
               frecuencia: p.frecuencia || 'Sin frecuencia'
